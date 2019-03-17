@@ -1,4 +1,4 @@
-package tax
+package calc
 
 import "math"
 
