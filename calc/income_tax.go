@@ -1,6 +1,10 @@
-package tax
+package calc
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+
+	"github.com/malkhamis/tax/facts"
+)
 
 // IncomeTaxCalculator represents a calculator that simplifies the calculation
 // of Candian income tax
@@ -10,7 +14,7 @@ type IncomeTaxCalculator struct {
 	DeductionsFed  float64
 	CreditsProv    float64
 	CreditsFed     float64
-	Facts
+	facts.Facts
 }
 
 // CalcTotal computes the sum of the federal and provincial tax on the
@@ -50,7 +54,7 @@ func (c *IncomeTaxCalculator) CalcProv() (float64, error) {
 }
 
 // calcTax calculate the tax given a total income and tax bracket rates
-func calcTax(income float64, rates BracketRates) (float64, error) {
+func calcTax(income float64, rates facts.BracketRates) (float64, error) {
 
 	err := rates.Validate()
 	if err != nil {

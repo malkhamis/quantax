@@ -1,14 +1,19 @@
-package tax
+package calc
 
 import (
 	"fmt"
 	"testing"
+
+	"github.com/malkhamis/tax/facts"
+	"github.com/malkhamis/tax/facts/history"
+	"github.com/pkg/errors"
 )
 
 func TestIncomeTaxCalculator_Calc(t *testing.T) {
 
 	cases := []struct {
 		year            uint
+		prov            history.Province
 		income          float64
 		deductionsFed   float64
 		deductionsProv  float64
@@ -21,6 +26,7 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 	}{
 		{
 			year:            2018,
+			prov:            history.BC,
 			income:          300000,
 			expectedTaxProv: 39156,
 			expectedTaxFed:  76969,
@@ -29,6 +35,7 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 		},
 		{
 			year:            2018,
+			prov:            history.BC,
 			income:          0,
 			expectedTaxProv: 0,
 			expectedTaxFed:  0,
@@ -37,6 +44,7 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 		},
 		{
 			year:            2018,
+			prov:            history.BC,
 			income:          9000,
 			expectedTaxProv: 0,
 			expectedTaxFed:  0,
@@ -45,6 +53,7 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 		},
 		{
 			year:            2018,
+			prov:            history.BC,
 			income:          12000,
 			expectedTaxProv: 80.35,
 			expectedTaxFed:  28.65,
@@ -53,6 +62,7 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 		},
 		{
 			year:            2018,
+			prov:            history.BC,
 			income:          85000,
 			expectedTaxProv: 5128,
 			expectedTaxFed:  13090,
@@ -62,8 +72,13 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		c := c
+		i, c := i, c
 		t.Run(fmt.Sprintf("case-%d", i), func(t *testing.T) {
+
+			f, err := history.Get(c.year, c.prov)
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			calculator := &IncomeTaxCalculator{
 				Income:         c.income,
@@ -71,7 +86,7 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 				DeductionsProv: c.deductionsProv,
 				CreditsFed:     c.creditsFed,
 				CreditsProv:    c.creditsProv,
-				Facts:          facts[c.year],
+				Facts:          f,
 			}
 
 			actualTaxProv, err := calculator.CalcProv()
@@ -112,6 +127,50 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 
 		})
 
+	}
+
+}
+
+func TestIncomeTaxCalculator_Calc_InvalidRatesFed(t *testing.T) {
+
+	invalidFacts := facts.Facts{
+		FactsFed: facts.FactsFed{
+			facts.BracketRates{
+				0.10: facts.Bracket{-100, 200},
+			},
+		},
+	}
+
+	calculator := IncomeTaxCalculator{
+		Facts: invalidFacts,
+	}
+
+	_, err := calculator.CalcTotal()
+	cause := errors.Cause(err)
+	if cause != facts.ErrValNeg {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", facts.ErrValNeg, err)
+	}
+
+}
+
+func TestIncomeTaxCalculator_Calc_InvalidRatesProv(t *testing.T) {
+
+	invalidFacts := facts.Facts{
+		FactsProv: facts.FactsProv{
+			facts.BracketRates{
+				0.10: facts.Bracket{-100, 200},
+			},
+		},
+	}
+
+	calculator := IncomeTaxCalculator{
+		Facts: invalidFacts,
+	}
+
+	_, err := calculator.CalcTotal()
+	cause := errors.Cause(err)
+	if cause != facts.ErrValNeg {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", facts.ErrValNeg, err)
 	}
 
 }
