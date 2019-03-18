@@ -1,4 +1,4 @@
-package calc
+package cra
 
 import "math"
 
@@ -11,9 +11,5 @@ func areEqual(actual, expected, errMargin float64) bool {
 	allowedDiff := math.Abs(errMargin * expected)
 	actualDiff := math.Abs(actual - expected)
 
-	if actualDiff > allowedDiff {
-		return false
-	}
-
-	return true
+	return actualDiff <= allowedDiff
 }

@@ -1,3 +1,4 @@
+// Package history provides historical tax params for the Canadian tax system
 package history
 
 import (
@@ -19,31 +20,33 @@ func init() {
 
 }
 
-// Get returns a clone of the federal and the given provincial facts for a
-// specific tax year
-func Get(year uint, province Province) (facts.Facts, error) {
-
-	factsFed, ok := factsFederal[year]
-	if !ok {
-		return facts.Facts{}, errors.Wrap(ErrNoFacts, "federal year's facts don't exist")
-	}
+// Get returns the facts for the given province in a specific tax year
+func GetProvincial(year uint, province Province) (facts.FactsProv, error) {
 
 	factsProvAllYears, ok := factsAllProvinces[province]
 	if !ok {
-		return facts.Facts{}, ErrNoProvince
+		return facts.FactsProv{}, ErrNoProvince
 	}
 
 	factsProv, ok := factsProvAllYears[year]
 	if !ok {
-		return facts.Facts{}, errors.Wrap(ErrNoFacts, "provincial year's facts don't exist")
+		err := errors.Wrap(ErrNoFacts, "provincial year's facts don't exist")
+		return facts.FactsProv{}, err
 	}
 
-	f := facts.Facts{
-		Year:      year,
-		FactsFed:  factsFed.Clone(),
-		FactsProv: factsProv.Clone(),
+	return factsProv.Clone(), nil
+}
+
+// Get returns the facts for the given province in a specific tax year
+func GetFederal(year uint) (facts.FactsFed, error) {
+
+	factsFed, ok := factsFederal[year]
+	if !ok {
+		err := errors.Wrap(ErrNoFacts, "federal year's facts don't exist")
+		return facts.FactsFed{}, err
 	}
-	return f, nil
+
+	return factsFed.Clone(), nil
 }
 
 func validateFactsFederal() error {
