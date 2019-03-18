@@ -2,7 +2,7 @@
 package history
 
 import (
-	"github.com/malkhamis/tax/facts"
+	"github.com/malkhamis/quantax/facts"
 	"github.com/pkg/errors"
 )
 

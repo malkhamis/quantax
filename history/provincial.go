@@ -1,6 +1,6 @@
 package history
 
-import "github.com/malkhamis/tax/facts"
+import "github.com/malkhamis/quantax/facts"
 
 // Province represents a name of a province/state
 type Province string

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/malkhamis/tax/facts"
-	"github.com/malkhamis/tax/facts/history"
+	"github.com/malkhamis/quantax/facts"
+	"github.com/malkhamis/quantax/history"
 	"github.com/pkg/errors"
 )
 
@@ -75,11 +75,21 @@ func TestTaxCalculator_Calc(t *testing.T) {
 		i, c := i, c
 		t.Run(fmt.Sprintf("case-%d", i), func(t *testing.T) {
 
-			taxParams, err := history.Get(c.year, c.prov)
+			taxParamsProv, err := history.GetProvincial(c.year, c.prov)
 			if err != nil {
 				t.Fatal(err)
 			}
 
+			taxParamsFed, err := history.GetFederal(c.year)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			taxParams := facts.Facts{
+				Year:      c.year,
+				FactsProv: taxParamsProv,
+				FactsFed:  taxParamsFed,
+			}
 			finNums := FinancialNumbers{
 				Income:         c.income,
 				DeductionsFed:  c.deductionsFed,
