@@ -3,6 +3,8 @@ package facts
 import (
 	"reflect"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 func TestFacts_Clone_NewCopy(t *testing.T) {
@@ -57,4 +59,57 @@ func TestFactsFed_NumFieldsUnchanged(t *testing.T) {
 				"type. Next, update this test with the new number of fields",
 		)
 	}
+}
+
+func TestFacts_Validate(t *testing.T) {
+
+	valid := Facts{
+		FactsProv: FactsProv{
+			BracketRates{
+				0.10: Bracket{100, 200},
+			},
+		},
+	}
+
+	err := valid.Validate()
+	if err != nil {
+		t.Errorf("expected no error validating valid facts got: %v", err)
+	}
+
+}
+
+func TestFacts_Validate_InvalidFactsFed(t *testing.T) {
+
+	invalidFacts := Facts{
+		FactsFed: FactsFed{
+			BracketRates{
+				0.10: Bracket{-100, 200},
+			},
+		},
+	}
+
+	err := invalidFacts.Validate()
+	cause := errors.Cause(err)
+	if cause != ErrValNeg {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrValNeg, err)
+	}
+
+}
+
+func TestFacts_Validate_InvalidFactsProv(t *testing.T) {
+
+	invalidFacts := Facts{
+		FactsProv: FactsProv{
+			BracketRates{
+				0.10: Bracket{-100, 200},
+			},
+		},
+	}
+
+	err := invalidFacts.Validate()
+	cause := errors.Cause(err)
+	if cause != ErrValNeg {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrValNeg, err)
+	}
+
 }

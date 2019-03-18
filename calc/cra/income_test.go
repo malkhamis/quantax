@@ -1,4 +1,4 @@
-package calc
+package cra
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TestIncomeTaxCalculator_Calc(t *testing.T) {
+func TestTaxCalculator_Calc(t *testing.T) {
 
 	cases := []struct {
 		year            uint
@@ -75,24 +75,25 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 		i, c := i, c
 		t.Run(fmt.Sprintf("case-%d", i), func(t *testing.T) {
 
-			f, err := history.Get(c.year, c.prov)
+			taxParams, err := history.Get(c.year, c.prov)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			calculator := &IncomeTaxCalculator{
+			finNums := FinancialNumbers{
 				Income:         c.income,
 				DeductionsFed:  c.deductionsFed,
 				DeductionsProv: c.deductionsProv,
 				CreditsFed:     c.creditsFed,
 				CreditsProv:    c.creditsProv,
-				Facts:          f,
 			}
 
-			actualTaxProv, err := calculator.CalcProv()
+			calculator, err := NewTaxCalculator(finNums, taxParams)
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
+
+			actualTaxProv := calculator.CalcTaxProvincial()
 			if !areEqual(actualTaxProv, c.expectedTaxProv, c.errMargin) {
 				t.Errorf(
 					"difference between actual and expected provincial "+
@@ -101,10 +102,7 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 				)
 			}
 
-			actualTaxFed, err := calculator.CalcFed()
-			if err != nil {
-				t.Error(err)
-			}
+			actualTaxFed := calculator.CalcTaxFederal()
 			if !areEqual(actualTaxFed, c.expectedTaxFed, c.errMargin) {
 				t.Errorf(
 					"difference between actual and expected federal "+
@@ -113,10 +111,7 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 				)
 			}
 
-			actualTaxTot, err := calculator.CalcTotal()
-			if err != nil {
-				t.Error(err)
-			}
+			actualTaxTot := calculator.CalcTaxTotal()
 			if !areEqual(actualTaxTot, c.expectedTaxTot, c.errMargin) {
 				t.Errorf(
 					"difference between actual and expected total "+
@@ -131,9 +126,9 @@ func TestIncomeTaxCalculator_Calc(t *testing.T) {
 
 }
 
-func TestIncomeTaxCalculator_Calc_InvalidRatesFed(t *testing.T) {
+func TestNewTaxCalculator_Error(t *testing.T) {
 
-	invalidFacts := facts.Facts{
+	invalidTaxParams := facts.Facts{
 		FactsFed: facts.FactsFed{
 			facts.BracketRates{
 				0.10: facts.Bracket{-100, 200},
@@ -141,33 +136,7 @@ func TestIncomeTaxCalculator_Calc_InvalidRatesFed(t *testing.T) {
 		},
 	}
 
-	calculator := IncomeTaxCalculator{
-		Facts: invalidFacts,
-	}
-
-	_, err := calculator.CalcTotal()
-	cause := errors.Cause(err)
-	if cause != facts.ErrValNeg {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", facts.ErrValNeg, err)
-	}
-
-}
-
-func TestIncomeTaxCalculator_Calc_InvalidRatesProv(t *testing.T) {
-
-	invalidFacts := facts.Facts{
-		FactsProv: facts.FactsProv{
-			facts.BracketRates{
-				0.10: facts.Bracket{-100, 200},
-			},
-		},
-	}
-
-	calculator := IncomeTaxCalculator{
-		Facts: invalidFacts,
-	}
-
-	_, err := calculator.CalcTotal()
+	_, err := NewTaxCalculator(FinancialNumbers{}, invalidTaxParams)
 	cause := errors.Cause(err)
 	if cause != facts.ErrValNeg {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", facts.ErrValNeg, err)
