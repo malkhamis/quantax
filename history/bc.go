@@ -3,7 +3,7 @@ package history
 import (
 	"math"
 
-	"github.com/malkhamis/tax/facts"
+	"github.com/malkhamis/quantax/facts"
 )
 
 var factsBC = map[uint]facts.FactsProv{

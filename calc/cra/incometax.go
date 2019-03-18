@@ -3,8 +3,8 @@ package cra
 import (
 	"github.com/pkg/errors"
 
-	"github.com/malkhamis/tax/calc"
-	"github.com/malkhamis/tax/facts"
+	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/facts"
 )
 
 // compile-time check for interface implementation
