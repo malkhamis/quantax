@@ -1,4 +1,4 @@
-package facts
+package calc
 
 import (
 	"math"
@@ -36,14 +36,9 @@ func TestBracketRates_Clone(t *testing.T) {
 
 func TestBracketRates_Validate(t *testing.T) {
 
-	f := testFacts(t)
+	rates := BracketRates{0.10: Bracket{100, 200}}
 
-	err := f.FactsFed.Rates.Validate()
-	if err != nil {
-		t.Fatalf("expected facts object to validate with no errors, got: %v", err)
-	}
-
-	err = f.FactsProv.Rates.Validate()
+	err := rates.Validate()
 	if err != nil {
 		t.Fatalf("expected facts object to validate with no errors, got: %v", err)
 	}

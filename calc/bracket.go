@@ -1,4 +1,4 @@
-package facts
+package calc
 
 import (
 	"math"
