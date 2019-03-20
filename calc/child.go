@@ -7,17 +7,17 @@ import (
 	"github.com/rickb777/date"
 )
 
-// Child represents a dependent child for tax purposes
-type Child struct {
-	name      string
-	birthdate date.Date
-}
-
 // DOB represents a calendar date without the context of locales
 type Date struct {
 	Year  int
 	Month time.Month
 	Day   int
+}
+
+// Child represents a dependent child for tax purposes
+type Child struct {
+	name      string
+	birthdate date.Date
 }
 
 // NewChild returns a new child instance. Month and day values are normalized
@@ -41,4 +41,19 @@ func (c Child) IsOlderThan(nMonths uint, on Date) (bool, error) {
 
 	// TODO inaccurate?
 	return age > testAge, nil
+}
+
+// Children is a convenience type for handling one or more child
+type Children []Child
+
+// NewChildren returns Children type from a multiple Child instances
+func NewChildren(first Child, others ...Child) Children {
+	all := []Child{first}
+	all = append(all, others...)
+	return all
+}
+
+// Count returns the number of children
+func (c Children) Count() int {
+	return len(c)
 }
