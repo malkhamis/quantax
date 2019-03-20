@@ -66,7 +66,7 @@ func TestCalculator_Calc(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			finNums := calc.FinancialNumbers{
+			finNums := calc.Finances{
 				TaxableAmount: c.taxableAmnt,
 				Deductions:    c.deductions,
 				Credits:       c.credits,
@@ -95,7 +95,7 @@ func TestCalculator_Calc(t *testing.T) {
 func TestNewCalculator_Error(t *testing.T) {
 
 	invalidTaxParams := calc.BracketRates{0.10: calc.Bracket{-100, 200}}
-	_, err := NewCalculator(calc.FinancialNumbers{}, invalidTaxParams)
+	_, err := NewCalculator(calc.Finances{}, invalidTaxParams)
 	cause := errors.Cause(err)
 	if cause != calc.ErrValNeg {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrValNeg, err)
@@ -106,14 +106,14 @@ func TestNewCalculator_Error(t *testing.T) {
 func TestCalculator_Setters(t *testing.T) {
 
 	c := Calculator{
-		FinancialNumbers: calc.FinancialNumbers{
+		Finances: calc.Finances{
 			TaxableAmount: 0,
 			Credits:       0,
 			Deductions:    0,
 		},
 	}
 
-	newFinNums := calc.FinancialNumbers{
+	newFinNums := calc.Finances{
 		TaxableAmount: 10,
 		Credits:       20,
 		Deductions:    30,

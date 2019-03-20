@@ -13,7 +13,7 @@ type IncomeTaxParams struct {
 }
 
 // NewIncomeTaxCalculator returns a tax calculator for the given parameters
-func NewIncomeTaxCalculator(finNums calc.FinancialNumbers, params IncomeTaxParams) (calc.TaxCalculator, error) {
+func NewIncomeTaxCalculator(finNums calc.Finances, params IncomeTaxParams) (calc.TaxCalculator, error) {
 
 	rates, err := history.Get(params.Year, params.Region)
 	if err != nil {
@@ -40,7 +40,7 @@ func (agg *incomeTaxCalculatorAgg) Calc() float64 {
 }
 
 // Update sets the given financial numbers in all underlying calculators
-func (agg *incomeTaxCalculatorAgg) Update(finNums calc.FinancialNumbers) {
+func (agg *incomeTaxCalculatorAgg) Update(finNums calc.Finances) {
 	for _, c := range agg.calculators {
 		c.Update(finNums)
 	}
@@ -51,7 +51,7 @@ func (agg *incomeTaxCalculatorAgg) Update(finNums calc.FinancialNumbers) {
 // This also applies to Update(), where all underlying calculators are updated
 // to the same given financial numbers. The returned calculator is useful for
 // the cases in which income tax is calculated for two or more jurisdications
-func NewIncomeTaxCalculatorAgg(finNums calc.FinancialNumbers, params1, params2 IncomeTaxParams, extras ...IncomeTaxParams) (calc.TaxCalculator, error) {
+func NewIncomeTaxCalculatorAgg(finNums calc.Finances, params1, params2 IncomeTaxParams, extras ...IncomeTaxParams) (calc.TaxCalculator, error) {
 
 	first, err := NewIncomeTaxCalculator(finNums, params1)
 	if err != nil {

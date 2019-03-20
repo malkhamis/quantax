@@ -13,9 +13,6 @@ import (
 //
 // define types:
 //
-//  type Child struct{}
-//  (c) AgeAsOf(Date)
-//
 //  type IncomeAdjustmentMethod int
 //  const(
 //    NetAdjFamily = iota

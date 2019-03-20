@@ -20,7 +20,7 @@ func ExampleNewIncomeTaxCalculatorAgg_Calc() {
 		Region: history.BC,
 	}
 
-	finNums := calc.FinancialNumbers{TaxableAmount: 170000.0}
+	finNums := calc.Finances{TaxableAmount: 170000.0}
 
 	c, err := NewIncomeTaxCalculatorAgg(finNums, taxParamsProv, taxParamsFed)
 	if err != nil {
@@ -44,7 +44,7 @@ func ExampleNewIncomeTaxCalculatorAgg_Update() {
 		Region: history.BC,
 	}
 
-	finNums := calc.FinancialNumbers{TaxableAmount: 170000.0}
+	finNums := calc.Finances{TaxableAmount: 170000.0}
 
 	c, err := NewIncomeTaxCalculatorAgg(finNums, taxParamsProv, taxParamsFed)
 	if err != nil {
@@ -52,7 +52,7 @@ func ExampleNewIncomeTaxCalculatorAgg_Update() {
 		os.Exit(1)
 	}
 
-	newFinNums := calc.FinancialNumbers{TaxableAmount: 20000.0}
+	newFinNums := calc.Finances{TaxableAmount: 20000.0}
 	c.Update(newFinNums)
 
 	aggTax := c.Calc()

@@ -14,16 +14,16 @@ var (
 // Calculator is used to calculate payable tax
 type Calculator struct {
 	taxRates calc.BracketRates
-	calc.FinancialNumbers
+	calc.Finances
 }
 
 // NewCalculator returns a new calculator for the given financial numbers
 // and tax brackets.
-func NewCalculator(finNums calc.FinancialNumbers, rates calc.BracketRates) (*Calculator, error) {
+func NewCalculator(finNums calc.Finances, rates calc.BracketRates) (*Calculator, error) {
 
 	c := &Calculator{
-		FinancialNumbers: finNums,
-		taxRates:         rates.Clone(),
+		Finances: finNums,
+		taxRates: rates.Clone(),
 	}
 
 	return c, c.validate()
@@ -62,6 +62,6 @@ func (c *Calculator) Calc() float64 {
 }
 
 // Update sets the financial numbers which the tax will be calculated for
-func (c *Calculator) Update(newFinNums calc.FinancialNumbers) {
-	c.FinancialNumbers = newFinNums
+func (c *Calculator) Update(newFinNums calc.Finances) {
+	c.Finances = newFinNums
 }

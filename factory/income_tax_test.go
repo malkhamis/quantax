@@ -48,7 +48,7 @@ func TestNewIncomeTaxCalculatorAgg_Errors(t *testing.T) {
 	for i, c := range cases {
 		c := c
 		t.Run(fmt.Sprintf("case%d-%s", i, c.name), func(t *testing.T) {
-			dummy := calc.FinancialNumbers{}
+			dummy := calc.Finances{}
 			_, err := NewIncomeTaxCalculatorAgg(dummy, c.first, c.second, c.extras...)
 			cause := errors.Cause(err)
 			if cause != c.err {
