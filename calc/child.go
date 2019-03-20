@@ -7,35 +7,6 @@ import (
 	"github.com/rickb777/date"
 )
 
-// Introduce DeductionsType iota?
-//
-// In root pkg:
-//
-// define types:
-//
-//  type IncomeAdjustmentMethod int
-//  const(
-//    NetAdjFamily = iota
-// )
-//
-//  FinancesFamily [2]Finances
-//
-//   (calc) AdjustedIncome(adj AdjustmentType)
-//
-//  define interfaces:
-//    type ChildBenefitCalculator {
-//      Calc()
-//      UpdateFinances(FinancesFamily)
-//      UpdateBeneficiary(Child)
-//      UpdateRule(Rule)
-//    }
-//
-//    type ChildBenefitRule iface {
-//
-//   }
-//
-//
-
 // Child represents a dependent child for tax purposes
 type Child struct {
 	name      string
