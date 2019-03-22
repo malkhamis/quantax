@@ -1,21 +1,28 @@
 package calc
 
+import "time"
+
+// Date represents a calendar date without the context of locales
+type Date struct {
+	Year  int
+	Month time.Month
+	Day   int
+}
+
 // TODO: deductions should be a map[Type]float64 to allow for exclusion of
 // certain deductions under different criteria
-// Finances is used by types implementing the TaxCalculator interface
-// to recieve input needed to calculate payable taxes
-type Finances struct {
-	TaxableAmount float64 `json:"taxable-amount"` // amount to be taxed
-	Deductions    float64 `json:"deductions"`     // subtracted from taxableAmount
-	Credits       float64 `json:"credits"`        // subtracted from total tax
+// IndividualFinances represents the financial data of an individual
+type IndividualFinances struct {
+	Income     float64 `json:"income"`
+	Deductions float64 `json:"deductions"`
 }
 
 // NetIncome calculate the total income of +/- adjustments. The income is
 // calculated as the sum of taxable amounts less the sum of deductions,
 // plus/minus the given adjustments (if any)
-func (f Finances) NetIncome(adjustments ...float64) float64 {
+func (f IndividualFinances) NetIncome(adjustments ...float64) float64 {
 
-	total := f.TaxableAmount - f.Deductions
+	total := f.Income - f.Deductions
 	for _, adj := range adjustments {
 		total += adj
 	}
@@ -24,7 +31,7 @@ func (f Finances) NetIncome(adjustments ...float64) float64 {
 
 // FamilyFinances is used by types implementing the ChildBenefitCalculator
 // interface to recieve input needed to calculate benefits
-type FamilyFinances [2]Finances
+type FamilyFinances [2]IndividualFinances
 
 // NetIncome calculate the total income of the family +/- adjustments. The
 // income is calculated as the sum of taxable amounts less the sum of
@@ -36,4 +43,9 @@ func (f FamilyFinances) NetIncome(adjustments ...float64) float64 {
 		total += adj
 	}
 	return total
+}
+
+// Split returns the individual finances that jointly represent this object
+func (f FamilyFinances) Split() (IndividualFinances, IndividualFinances) {
+	return f[0], f[1]
 }
