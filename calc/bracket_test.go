@@ -16,19 +16,24 @@ func TestBracket_Validate(t *testing.T) {
 		err     error
 	}{
 		{
+			name:    "lower-bound-greater",
+			bracket: Bracket{2000, 1000},
+			err:     ErrBoundsReversed,
+		},
+		{
 			name:    "lower-bound-neg-inf",
 			bracket: Bracket{math.Inf(-1), 1000},
-			err:     ErrValInf,
+			err:     nil,
 		},
 		{
 			name:    "lower-bound-pos-inf",
 			bracket: Bracket{math.Inf(1), 1000},
-			err:     ErrValInf,
+			err:     ErrBoundsReversed,
 		},
 		{
 			name:    "upper-bound-neg-inf",
 			bracket: Bracket{1000, math.Inf(-1)},
-			err:     ErrValInfNeg,
+			err:     ErrBoundsReversed,
 		},
 		{
 			name:    "upper-bound-pos-inf",
@@ -38,26 +43,21 @@ func TestBracket_Validate(t *testing.T) {
 		{
 			name:    "upper-bound-neg",
 			bracket: Bracket{1000, -2000},
-			err:     ErrValNeg,
+			err:     ErrBoundsReversed,
 		},
 		{
 			name:    "lower-bound-neg",
 			bracket: Bracket{-1000, 2000},
-			err:     ErrValNeg,
+			err:     nil,
 		},
 		{
 			name:    "bounds-zero",
 			bracket: Bracket{0, 0},
-			err:     ErrValZero,
+			err:     nil,
 		},
 		{
 			name:    "upper-bound-zero",
 			bracket: Bracket{1000, 0},
-			err:     ErrBoundsReversed,
-		},
-		{
-			name:    "lower-bound-greater",
-			bracket: Bracket{2000, 1000},
 			err:     ErrBoundsReversed,
 		},
 		{
