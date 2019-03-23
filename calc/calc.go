@@ -1,36 +1,30 @@
 // Package calc defines interfaces for various tax-related calculators
 package calc
 
-// Formula represents a method for doing calculations on numeric parameters
-type Formula interface {
-	// Apply applies the formula on numeric parameters and returns the results
-	Apply() float64
+// BasicFormula takes a single numeric input and produces a numeric output
+type BasicFormula interface {
+	// Apply applies the formula on the given numeric parameter
+	Apply(param float64) float64
 	// Validate checks if the formula is valid for use
 	Validate() error
 }
 
-// TaxFormula represents a method for calculating tax on income
+// TaxFormula computes payable taxes on individual income
 type TaxFormula interface {
-	// Update sets the financial numbers which the tax will be calculated for.
-	// Users may call this method to set the financial numbers to anything other
-	// than what the tax formula was initialized with
-	Update(IndividualFinances)
-	Formula
+	BasicFormula
 }
 
 // ChildBenefitFormula represents a method for calculating child benefits
 type ChildBenefitFormula interface {
-	// Update sets the financial numbers which benefits will be calculated for.
-	// Users may call this method to set the financial numbers to anything other
-	// than what the child benefit formula was initialized with
-	Update(FamilyFinances)
-	Formula
+	// Apply returns the sum of benefits for all beneficiaries
+	Apply(income float64, first Person, others ...Person) float64
+	// Validate checks if the formula is valid for use
+	Validate() error
 }
 
-// TaxCalculator is used to calculate payable tax. Constructors for types
-// implementing this interface should typically accept 'Finances' as argument
+// TaxCalculator is used to calculate payable tax.
 type TaxCalculator interface {
-	// Calc returns the payable amount of tax set/initialized in this calculator
+	// Calc returns the payable amount of tax on the income in this calculator
 	Calc(taxCredits ...float64) float64
 	// UpdateFinances sets the financial numbers which the tax will be calculated
 	// for in subsequent calls to Calc(). Users may call this method to set the
@@ -44,8 +38,7 @@ type TaxCalculator interface {
 }
 
 // ChildBenefitCalculator is used to calculate recievable child benefits for
-// families with dependent children. Constructors for types implementing this
-// interface should typically accept 'FamilyFinances' as argument
+// families with dependent children.
 type ChildBenefitCalculator interface {
 	// Calc returns the recievable amount of child benefits
 	Calc() float64
