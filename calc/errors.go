@@ -11,4 +11,5 @@ var (
 	ErrValInfPos      = errors.New("positive infinity value is not allowed")
 	ErrBoundsReversed = errors.New("lower-bound is greater than upper-bound")
 	ErrInvalidDate    = errors.New("invalid date")
+	ErrNoFormula      = errors.New("no formula given")
 )
