@@ -1,4 +1,4 @@
-package incometax
+package tax
 
 import (
 	"fmt"

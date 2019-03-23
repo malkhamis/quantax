@@ -1,5 +1,5 @@
-// Package incometax provides implementations for calc.TaxCalculator
-package incometax
+// Package tax provides implementations for calc.TaxCalculator
+package tax
 
 import (
 	"github.com/malkhamis/quantax/calc"
