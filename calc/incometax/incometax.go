@@ -11,57 +11,58 @@ var (
 	_ calc.TaxCalculator = (*Calculator)(nil)
 )
 
-// Calculator is used to calculate payable tax
+type IndividualFinances = calc.IndividualFinances
+type TaxFormula = calc.TaxFormula
+
+// Calculator is used to calculate payable tax for individuals
 type Calculator struct {
-	taxRates calc.BracketRates
-	calc.Finances
+	formula TaxFormula
+	IndividualFinances
 }
 
 // NewCalculator returns a new calculator for the given financial numbers
 // and tax brackets.
-func NewCalculator(finNums calc.Finances, rates calc.BracketRates) (*Calculator, error) {
+func NewCalculator(finNums IndividualFinances, formula TaxFormula) (*Calculator, error) {
 
-	c := &Calculator{
-		Finances: finNums,
-		taxRates: rates.Clone(),
+	if formula == nil {
+		return nil, calc.ErrNoFormula
 	}
 
-	return c, c.validate()
-}
+	err := formula.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid formula")
+	}
 
-// validate ensures that this calculator is valid for use.
-func (c *Calculator) validate() error {
+	c := &Calculator{
+		formula:            formula,
+		IndividualFinances: finNums,
+	}
 
-	err := c.taxRates.Validate()
-	return errors.Wrap(err, "invalid tax parameters")
+	return c, nil
 }
 
 // Calc computes the tax on the taxable amount set in this calculator
-func (c *Calculator) Calc() float64 {
+func (c *Calculator) Calc(taxCredits ...float64) float64 {
 
-	var (
-		payableTax     float64
-		taxableAmntTot = c.TaxableAmount - c.Deductions
-	)
+	netIncome := c.Income - c.Deductions
+	payableTax := c.formula.Apply(netIncome)
 
-	for rate, bracket := range c.taxRates {
-
-		if taxableAmntTot < bracket.Lower() {
-			continue
-		}
-
-		if taxableAmntTot >= bracket.Upper() {
-			payableTax += rate * bracket.Amount()
-			continue
-		}
-
-		payableTax += rate * (taxableAmntTot - bracket.Lower())
+	for _, credit := range taxCredits {
+		payableTax -= credit
 	}
 
-	return payableTax - c.Credits
+	return payableTax
 }
 
 // Update sets the financial numbers which the tax will be calculated for
-func (c *Calculator) Update(newFinNums calc.Finances) {
-	c.Finances = newFinNums
+func (c *Calculator) UpdateFinances(newFinNums IndividualFinances) {
+	c.IndividualFinances = newFinNums
+}
+
+// UpdateFormula sets this calculator up with the given formula. If the new
+// formula is nil, the formula is not changed
+func (c *Calculator) UpdateFormula(newFormula TaxFormula) {
+	if newFormula != nil {
+		c.formula = newFormula
+	}
 }

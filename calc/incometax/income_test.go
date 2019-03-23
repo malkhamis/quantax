@@ -2,56 +2,57 @@ package incometax
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/malkhamis/quantax/calc"
-	"github.com/malkhamis/quantax/history"
 	"github.com/pkg/errors"
 )
 
 func TestCalculator_Calc(t *testing.T) {
 
+	formulaCanada2018 := calc.WeightedBracketFormula{
+		-0.150: calc.Bracket{0, 11809},
+		0.150:  calc.Bracket{0, 46605},
+		0.205:  calc.Bracket{46606, 93208},
+		0.260:  calc.Bracket{93209, 144489},
+		0.290:  calc.Bracket{144490, 205842},
+		0.330:  calc.Bracket{205843, math.Inf(1)},
+	}
+
 	cases := []struct {
-		year        uint
-		region      history.Jurisdiction
-		taxableAmnt float64
-		deductions  float64
-		credits     float64
+		finances    IndividualFinances
+		formula     TaxFormula
 		expectedTax float64
 		errMargin   float64
 	}{
 		{
-			year:        2018,
-			region:      history.Canada,
-			taxableAmnt: 300000,
+			finances:    IndividualFinances{Income: 300000},
+			formula:     formulaCanada2018,
 			expectedTax: 76969,
 			errMargin:   1e-9,
 		},
 		{
-			year:        2018,
-			region:      history.Canada,
-			taxableAmnt: 0,
+			finances:    IndividualFinances{},
+			formula:     formulaCanada2018,
 			expectedTax: 0,
 			errMargin:   1e-9,
 		},
 		{
-			year:        2018,
-			region:      history.Canada,
-			taxableAmnt: 9000,
+			finances:    IndividualFinances{Income: 9000},
+			formula:     formulaCanada2018,
 			expectedTax: 0,
 			errMargin:   1e-9,
 		},
 		{
-			year:        2018,
-			region:      history.Canada,
-			taxableAmnt: 12000,
+			finances:    IndividualFinances{Income: 12000},
+			formula:     formulaCanada2018,
 			expectedTax: 28.65,
 			errMargin:   1e-9,
 		},
 		{
-			year:        2018,
-			region:      history.Canada,
-			taxableAmnt: 85000,
+			finances:    IndividualFinances{Income: 85000},
+			formula:     formulaCanada2018,
 			expectedTax: 13090,
 			errMargin:   1e-9,
 		},
@@ -61,18 +62,7 @@ func TestCalculator_Calc(t *testing.T) {
 		i, c := i, c
 		t.Run(fmt.Sprintf("case-%d", i), func(t *testing.T) {
 
-			taxRates, err := history.Get(c.year, c.region)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			finNums := calc.Finances{
-				TaxableAmount: c.taxableAmnt,
-				Deductions:    c.deductions,
-				Credits:       c.credits,
-			}
-
-			calculator, err := NewCalculator(finNums, taxRates)
+			calculator, err := NewCalculator(c.finances, c.formula)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -89,15 +79,14 @@ func TestCalculator_Calc(t *testing.T) {
 		})
 
 	}
-
 }
 
 func TestNewCalculator_Error(t *testing.T) {
 
-	invalidTaxParams := calc.BracketRates{0.10: calc.Bracket{-100, 200}}
-	_, err := NewCalculator(calc.Finances{}, invalidTaxParams)
+	invalidTaxParams := calc.WeightedBracketFormula{0.10: calc.Bracket{300, 200}}
+	_, err := NewCalculator(IndividualFinances{}, invalidTaxParams)
 	cause := errors.Cause(err)
-	if cause != calc.ErrValNeg {
+	if cause != calc.ErrBoundsReversed {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrValNeg, err)
 	}
 
@@ -106,25 +95,20 @@ func TestNewCalculator_Error(t *testing.T) {
 func TestCalculator_Setters(t *testing.T) {
 
 	c := Calculator{
-		Finances: calc.Finances{
-			TaxableAmount: 0,
-			Credits:       0,
-			Deductions:    0,
+		IndividualFinances: IndividualFinances{
+			Income:     0,
+			Deductions: 0,
 		},
 	}
 
-	newFinNums := calc.Finances{
-		TaxableAmount: 10,
-		Credits:       20,
-		Deductions:    30,
+	newFinNums := IndividualFinances{
+		Income:     10,
+		Deductions: 30,
 	}
 
-	c.Update(newFinNums)
+	c.UpdateFinances(newFinNums)
 
-	if c.TaxableAmount != 10 {
-		t.Error("expected Update() to mutate the calculator")
-	}
-	if c.Credits != 20 {
+	if c.Income != 10 {
 		t.Error("expected Update() to mutate the calculator")
 	}
 	if c.Deductions != 30 {
