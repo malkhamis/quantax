@@ -6,6 +6,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+var _ BasicFormula = (WeightedBracketFormula)(nil)
+
 // Bracket represents a float number range, e.g. [47630.51, 95259.32]
 type Bracket [2]float64
 
@@ -39,11 +41,31 @@ func (b Bracket) Clone() Bracket {
 	return Bracket{b[0], b[1]}
 }
 
-// WeightedBrackets maps weights (rates) to numeric ranges, e.g. brackets
-type WeightedBrackets map[float64]Bracket
+// WeightedBracketFormula maps weights (rates) to numeric ranges, e.g. brackets
+type WeightedBracketFormula map[float64]Bracket
 
-// // Validate ensures that this weighted brackets object is valid for use
-func (wb WeightedBrackets) Validate() error {
+// Apply applies the formula to the set Param and returns the result
+func (wb WeightedBracketFormula) Apply(param float64) (result float64) {
+
+	for rate, bracket := range wb {
+
+		if param < bracket.Lower() {
+			continue
+		}
+
+		if param >= bracket.Upper() {
+			result += rate * bracket.Amount()
+			continue
+		}
+
+		result += rate * (param - bracket.Lower())
+	}
+
+	return result
+}
+
+// Validate ensures that this weighted brackets object is valid for use
+func (wb WeightedBracketFormula) Validate() error {
 
 	for rate, bracket := range wb {
 
@@ -62,12 +84,12 @@ func (wb WeightedBrackets) Validate() error {
 }
 
 // Clone returns a copy of this weighted bracket instance
-func (wb WeightedBrackets) Clone() WeightedBrackets {
+func (wb WeightedBracketFormula) Clone() WeightedBracketFormula {
 
-	var clone WeightedBrackets
+	var clone WeightedBracketFormula
 
 	if wb != nil {
-		clone = make(WeightedBrackets)
+		clone = make(WeightedBracketFormula)
 	}
 
 	for rate, bracket := range wb {
@@ -75,36 +97,4 @@ func (wb WeightedBrackets) Clone() WeightedBrackets {
 	}
 
 	return clone
-}
-
-// RateAdjBracketFormula is a formula used to slice the given parameter into
-// ranges such that each range is weighted according to the mapped rate
-type RateAdjBracketFormula struct {
-	RateMap WeightedBrackets
-	Param   float64
-}
-
-// NewRateAdjBracketFormula returns a new instance, copying the given rate map
-func NewRateAdjBracketFormula(rateMap WeightedBrackets, param float64) (*RateAdjBracketFormula, error) {
-
-	rab := &RateAdjBracketFormula{
-		RateMap: rateMap.Clone(),
-		Param:   param,
-	}
-
-	return rab, rab.Validate()
-}
-
-// Validate ensures that this formula is valid for use
-func (r *RateAdjBracketFormula) Validate() error {
-	return r.RateMap.Validate()
-}
-
-// Clone returns a copy of this formula
-func (r *RateAdjBracketFormula) Clone() *RateAdjBracketFormula {
-
-	return &RateAdjBracketFormula{
-		RateMap: r.RateMap.Clone(),
-		Param:   r.Param,
-	}
 }

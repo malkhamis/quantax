@@ -5,25 +5,25 @@ import (
 	"testing"
 )
 
-func TestRateAdjBracketFormula_Clone(t *testing.T) {
+func TestWeightedBracketFormula_Clone(t *testing.T) {
 
 	originalBracket := Bracket{100, 200}
-	originalRateMap := WeightedBrackets{0.10: originalBracket}
-	original, err := NewRateAdjBracketFormula(originalRateMap, 2)
+	original := WeightedBracketFormula{0.10: originalBracket}
+	err := original.Validate()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	clone := original.Clone()
 
-	if len(clone.RateMap) != len(original.RateMap) {
+	if len(clone) != len(original) {
 		t.Fatalf(
 			"expected clone len to be %d, got: %d",
-			len(original.RateMap), len(clone.RateMap),
+			len(original), len(clone),
 		)
 	}
 
-	actualBracket, ok := clone.RateMap[0.10]
+	actualBracket, ok := clone[0.10]
 	if !ok {
 		t.Fatal("expected bracket to exist in cloned object")
 	}
@@ -40,24 +40,18 @@ func TestRateAdjBracketFormula_Clone(t *testing.T) {
 		)
 	}
 
-	if clone.Param != original.Param {
-		t.Fatalf(
-			"actual formula param (%.2f) is not equal to expected (%.2f)",
-			original.Param, clone.Param,
-		)
-	}
 }
 
-func TestRateAdjBracketFormula_Validate(t *testing.T) {
+func TestWeightedBracketFormula_Validate(t *testing.T) {
 
-	rateMap := WeightedBrackets{0.10: Bracket{100, 200}}
+	rateMap := WeightedBracketFormula{0.10: Bracket{100, 200}}
 
 	err := rateMap.Validate()
 	if err != nil {
 		t.Fatalf("expected facts object to validate with no errors, got: %v", err)
 	}
 
-	invalid := WeightedBrackets{
+	invalid := WeightedBracketFormula{
 		math.Inf(-1): Bracket{10, 20},
 		math.Inf(1):  Bracket{10, 20},
 	}
@@ -67,7 +61,7 @@ func TestRateAdjBracketFormula_Validate(t *testing.T) {
 		t.Fatal("expected an error validating an bracket rates with infinity rates")
 	}
 
-	invalid = WeightedBrackets{0.15: Bracket{20, 10}}
+	invalid = WeightedBracketFormula{0.15: Bracket{20, 10}}
 	err = invalid.Validate()
 	if err == nil {
 		t.Fatal("expected an error validating an bracket rates with invalid brackets")
