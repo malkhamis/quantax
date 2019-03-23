@@ -15,47 +15,60 @@ func ExampleNewIncomeTaxCalculatorAgg_Calc() {
 		Region: history.Canada,
 	}
 
-	taxParamsProv := IncomeTaxParams{
+	taxParamsBC := IncomeTaxParams{
 		Year:   2018,
 		Region: history.BC,
 	}
 
-	finNums := calc.Finances{TaxableAmount: 170000.0}
+	finNums := calc.IndividualFinances{Income: 170000.0}
 
-	c, err := NewIncomeTaxCalculatorAgg(finNums, taxParamsProv, taxParamsFed)
+	calcFed, err := NewIncomeTaxCalculator(finNums, taxParamsFed)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	aggTax := c.Calc()
+	calcBC, err := NewIncomeTaxCalculator(finNums, taxParamsBC)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	aggTax := calcFed.Calc() + calcBC.Calc()
 	fmt.Printf("%.2f", aggTax) // Output: 52819.71
 }
 
-func ExampleNewIncomeTaxCalculatorAgg_Update() {
+func ExampleNewIncomeTaxCalculator_Update() {
 
 	taxParamsFed := IncomeTaxParams{
 		Year:   2018,
 		Region: history.Canada,
 	}
 
-	taxParamsProv := IncomeTaxParams{
+	taxParamsBC := IncomeTaxParams{
 		Year:   2018,
 		Region: history.BC,
 	}
 
-	finNums := calc.Finances{TaxableAmount: 170000.0}
+	finNums := calc.IndividualFinances{Income: 170000.0}
 
-	c, err := NewIncomeTaxCalculatorAgg(finNums, taxParamsProv, taxParamsFed)
+	calcFed, err := NewIncomeTaxCalculator(finNums, taxParamsFed)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	newFinNums := calc.Finances{TaxableAmount: 20000.0}
-	c.Update(newFinNums)
+	calcBC, err := NewIncomeTaxCalculator(finNums, taxParamsBC)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
-	aggTax := c.Calc()
+	newFinNums := calc.IndividualFinances{Income: 20000.0}
+	calcFed.UpdateFinances(newFinNums)
+	calcBC.UpdateFinances(newFinNums)
+
+	aggTax := calcFed.Calc() + calcBC.Calc()
 	fmt.Printf("%.2f", aggTax) // Output: 1713.80
 
 }
