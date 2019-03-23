@@ -6,45 +6,48 @@ import (
 	"github.com/pkg/errors"
 )
 
-type historicalRates = map[uint]calc.BracketRates
+type TaxFormula = calc.TaxFormula
+type yearlyTaxFormulas = map[uint]TaxFormula
 
-var ratesAll = map[Jurisdiction]historicalRates{
-	BC:     ratesBC,
-	Canada: ratesCanada,
+type WeightedBracketFormula = calc.WeightedBracketFormula
+type Bracket = calc.Bracket
+
+var taxFormulasAll = map[Jurisdiction]yearlyTaxFormulas{
+	BC:     taxFormulasBC,
+	Canada: taxFormulasCanada,
 }
 
 func init() {
 
-	err := validateAllRates()
+	err := validateAllFormulas()
 	if err != nil {
 		panic(err)
 	}
 
 }
 
-// Get returns the rates for the given jurisdiction in a specific tax year
-func Get(year uint, region Jurisdiction) (calc.BracketRates, error) {
+// GetFormula returns the tax formula for the given region in a specific year
+func GetFormula(year uint, region Jurisdiction) (TaxFormula, error) {
 
-	jurisdictionRates, ok := ratesAll[region]
+	jurisdictionRates, ok := taxFormulasAll[region]
 	if !ok {
-		return calc.BracketRates{}, ErrNoJurisdiction
+		return nil, ErrJurisdictionNotExist
 	}
 
-	rates, ok := jurisdictionRates[year]
+	formula, ok := jurisdictionRates[year]
 	if !ok {
-		err := errors.Wrap(ErrNoRates, "jurisdiction year's rates don't exist")
-		return calc.BracketRates{}, err
+		return nil, ErrFormulaNotExist
 	}
 
-	return rates.Clone(), nil
+	return formula, nil
 }
 
-func validateAllRates() error {
+func validateAllFormulas() error {
 
-	for jursdiction, ratesAllYears := range ratesAll {
-		for year, rates := range ratesAllYears {
+	for jursdiction, formulasAllYears := range taxFormulasAll {
+		for year, formula := range formulasAllYears {
 
-			err := rates.Validate()
+			err := formula.Validate()
 			if err != nil {
 				return errors.Wrapf(err, "jurisdiction %q, year %d", jursdiction, year)
 			}
