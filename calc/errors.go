@@ -12,4 +12,5 @@ var (
 	ErrBoundsReversed = errors.New("lower-bound is greater than upper-bound")
 	ErrInvalidDate    = errors.New("invalid date")
 	ErrNoFormula      = errors.New("no formula given")
+	ErrInvalidAge     = errors.New("invalid age")
 )

@@ -8,39 +8,34 @@ import (
 var _ calc.ChildBenefitFormula = (*CCBFormula)(nil)
 
 type Child = calc.Person
-type ChildCount = int
+type Payments = calc.Payments
 
 // CCBFormula computes Canada Child Benefits amounts for child(ren)
 type CCBFormula struct {
 	// the [min, max] dollar amounts for given age groups
-	Benefits []AgeGroupBenefits
-	// the sub-formulas to reduce the maximum benefits. Negative child
-	// count indicate any number of children above the maximum positve
+	BenefitClasses []AgeGroupBenefits
+	// the sub-formulas to reduce the maximum benefits. Step numbers
+	// indicate the number of children, where zero means no children
 	Reducers StepReducer
 }
 
-func (cbf *CCBFormula) Apply(income float64, first Child, others ...Child) float64 {
-	// TODO not implemented
-	return 0
-}
+// Apply returns a 12-month payment schedule for the children given the income
+func (cbf *CCBFormula) Apply(income float64, first Child, others ...Child) Payments {
 
-// TODO reduction from net total vs reduction from each child benefits
-// func (CCBFormula) Calc(finances calc.FamilyFinances, children []Child) float64 {
-//
-// 	var total float64
-//
-// 	for _, c := range children {
-// 		for _, ba := range mr.MaxAmnts {
-// 			if c.IsOlderThan(ba.Ages.Min(), mr.AgeAt) && !c.IsOlderThan(ba.Ages.Max(), mr.AgeAt) {
-//         total += // reduce per reduction rule
-// 			}
-// 		}
-// 	}
-// }
+	maxBenefits := cbf.maxAnnualAmount(first)
+	for _, child := range others {
+		maxBenefits += cbf.maxAnnualAmount(child)
+	}
+
+	childCount := len(others) + 1
+	reductionAmnt := cbf.Reducers.Reduce(income, childCount)
+
+	return nil
+}
 
 func (cbf *CCBFormula) Validate() error {
 
-	for _, ageGroupBenefit := range cbf.Benefits {
+	for _, ageGroupBenefit := range cbf.BenefitClasses {
 		if err := ageGroupBenefit.Validate(); err != nil {
 			return errors.Wrap(err, "invalid age group benefits")
 		}
@@ -51,4 +46,25 @@ func (cbf *CCBFormula) Validate() error {
 	}
 
 	return nil
+}
+
+// maxAnnualAmount returns the maximum annual benefits for the given child
+func (cbf *CCBFormula) maxAnnualAmount(c Child) float64 {
+
+	child := c.Clone()
+	maxPayments := make(Payments, 12)
+
+	for month := range maxPayments {
+		for _, ageGroup := range cbf.BenefitClasses {
+
+			if ageGroup.IsInAgeGroup(child) {
+				maxPayments[month] += ageGroup.Amounts.Upper()
+			}
+			// we still want to loop in case the child
+			// belongs to multiple benefit classes
+		}
+		child.AgeMonths++
+	}
+
+	return maxPayments.Total()
 }

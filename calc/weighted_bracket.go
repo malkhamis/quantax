@@ -44,7 +44,9 @@ func (b Bracket) Clone() Bracket {
 // WeightedBracketFormula maps weights (rates) to numeric ranges, e.g. brackets
 type WeightedBracketFormula map[float64]Bracket
 
-// Apply applies the formula to the set Param and returns the result
+// Apply slices the given param into this formula's brackets. Then, it applies
+// the rate asscoiated with the bracket to the sliced amounts and returns the
+// sum of all results
 func (wb WeightedBracketFormula) Apply(param float64) (result float64) {
 
 	for rate, bracket := range wb {

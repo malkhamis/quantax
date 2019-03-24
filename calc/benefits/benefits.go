@@ -5,8 +5,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-const maxChildAgeMonths = 12 * 18
-
 type AgeGroupBenefits struct {
 	Ages    calc.AgeRange
 	Amounts calc.Bracket
@@ -22,14 +20,18 @@ func NewAgeGroupBenefits(ages calc.AgeRange, minmaxAmnts calc.Bracket) (AgeGroup
 	return benf, benf.Validate()
 }
 
-func (b AgeGroupBenefits) Validate() error {
+func (g AgeGroupBenefits) IsInAgeGroup(c Child) bool {
+	return c.AgeMonths >= g.Ages.Min() && c.AgeMonths <= g.Ages.Max()
+}
 
-	err := b.Amounts.Validate()
+func (g AgeGroupBenefits) Validate() error {
+
+	err := g.Amounts.Validate()
 	if err != nil {
 		return errors.Wrap(err, "invalid bracket")
 	}
 
-	err = b.Ages.Validate()
+	err = g.Ages.Validate()
 	if err != nil {
 		return errors.Wrap(err, "invalid age range")
 	}

@@ -1,12 +1,49 @@
 package calc
 
-import "time"
+// Payments represent a recurring payment schedule where the index of each
+// payment in the slice represents a time period, i.e. month, year etc.
+type Payments []float64
 
-// Date represents a calendar date without the context of locales
-type Date struct {
-	Year  int
-	Month time.Month
-	Day   int
+// Total returns the total payments in this schedule
+func (p Payments) Total() float64 {
+
+	var total float64
+	for _, payment := range p {
+		total += payment
+	}
+	return total
+}
+
+// Normalize returns a copy of these payments such that the total amount is the
+// the same as 'p', but all payments in the returned copy are equal
+func (p Payments) Normalize() Payments {
+
+	if p == nil {
+		return nil
+	}
+
+	avg := p.Total() / float64(len(p))
+	clone := make(Payments, len(p))
+	for i := range clone {
+		clone[i] = avg
+	}
+
+	return clone
+}
+
+// Clone returns a copy of these payments
+func (p Payments) Clone() Payments {
+
+	if p == nil {
+		return nil
+	}
+
+	clone := make(Payments, len(p))
+	for i, payment := range p {
+		clone[i] = payment
+	}
+
+	return clone
 }
 
 // TODO: deductions should be a map[Type]float64 to allow for exclusion of
