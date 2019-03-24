@@ -5,6 +5,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+type Child = calc.Person
+type Payments = calc.Payments
+
 type AgeGroupBenefits struct {
 	Ages    calc.AgeRange
 	Amounts calc.Bracket

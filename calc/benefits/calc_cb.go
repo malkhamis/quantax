@@ -7,42 +7,68 @@ import (
 
 var _ calc.ChildBenefitCalculator = (*CCBCalculator)(nil)
 
+type Person = calc.Person
 type FamilyFinances = calc.FamilyFinances
+type ChildBenefitFormula = calc.ChildBenefitFormula
 
-type CCBCalculator struct {
-	children []Child
-	formula  calc.ChildBenefitFormula
-	calc.FamilyFinances
+// ParamsCCB are the parameters for creating a new child benefit calculator
+type ParamsCCB struct {
+	Finances FamilyFinances
+	Formula  ChildBenefitFormula
 }
 
-func NewCCBCalculator() (*CCBCalculator, error) {
-	return nil, errors.New("not implemented")
+// CCBCalculator is used to calculate recievable child benefits for families
+// with dependent children. This type implements 'calc.ChildBenefitCalculator'
+type CCBCalculator struct {
+	children []Person
+	formula  ChildBenefitFormula
+	finances FamilyFinances
+}
+
+// NewCCBCalculator returns a new child benefit calculator
+func NewCCBCalculator(params ParamsCCB, child Person, others ...Person) (*CCBCalculator, error) {
+
+	cbc := &CCBCalculator{}
+	cbc.UpdateFinances(params.Finances)
+	cbc.UpdateBeneficiaries(child, others...)
+	err := cbc.UpdateForumla(params.Formula)
+	return cbc, err
 }
 
 // Calc returns the recievable amount of child benefits
 func (c *CCBCalculator) Calc() float64 {
-	// Not implemented
-	return 0
+
+	benefits := c.formula.Apply(
+		c.finances.NetIncome(),
+		c.children[0], // calc has at least one child
+		c.children[1:]...,
+	)
+
+	return benefits
 }
 
 // UpdateFinances sets the financial numbers which the calculator will use in
 // subsequent calls to Calc(). Users may call this method to set financial
 // numbers to anything other than what the calculator was initialized with
-func (c *CCBCalculator) UpdateFinances(newFinNums calc.FamilyFinances) {
-	// Not implemented
+func (c *CCBCalculator) UpdateFinances(newFinances FamilyFinances) {
+	c.finances = newFinances
 }
 
 // UpdateBeneficiary sets the child which the calculator will use in
 // subsequent calls to Calc(). Users may call this method to set beneficiary
 // to anything other than what the calculator was initialized with
-func (c *CCBCalculator) UpdateBeneficiaries(newChildren []calc.Person) {
-	// Not implemented
+func (c *CCBCalculator) UpdateBeneficiaries(child Person, others ...Person) {
+
+	c.children = []Person{child.Clone()}
+	for _, otherChild := range others {
+		c.children = append(c.children, otherChild.Clone())
+	}
 }
 
 // UpdateForumla sets the formula for calculating the amount of benefits for
 // children given family finances. Users may call this method to set the
 // formula to anything other than what the calculator was initialized with
-func (c *CCBCalculator) UpdateForumla(newFormula calc.ChildBenefitFormula) error {
+func (c *CCBCalculator) UpdateForumla(newFormula ChildBenefitFormula) error {
 
 	if newFormula == nil {
 		return calc.ErrNoFormula

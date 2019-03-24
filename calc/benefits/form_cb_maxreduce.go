@@ -7,9 +7,6 @@ import (
 
 var _ calc.ChildBenefitFormula = (*CCBFormula)(nil)
 
-type Child = calc.Person
-type Payments = calc.Payments
-
 // CCBFormula computes Canada Child Benefits amounts for child(ren)
 type CCBFormula struct {
 	// the [min, max] dollar amounts for given age groups
@@ -27,10 +24,19 @@ func (cbf *CCBFormula) Apply(income float64, first Child, others ...Child) float
 		maxBenefits += cbf.maxAnnualAmount(child)
 	}
 
+	minBenefits := cbf.minAnnualAmount(first)
+	for _, child := range others {
+		minBenefits += cbf.minAnnualAmount(child)
+	}
+
 	childCount := uint(len(others) + 1)
 	reduction := cbf.Reducers.Reduce(income, childCount)
 
 	reducedBenefits := maxBenefits - reduction
+	if reducedBenefits < minBenefits {
+		return minBenefits
+	}
+
 	return reducedBenefits
 }
 
@@ -68,4 +74,25 @@ func (cbf *CCBFormula) maxAnnualAmount(c Child) float64 {
 	}
 
 	return maxPayments.Total()
+}
+
+// minAnnualAmount returns the minimum annual benefits for the given child
+func (cbf *CCBFormula) minAnnualAmount(c Child) float64 {
+
+	child := c.Clone()
+	minPayments := make(Payments, 12)
+
+	for month := range minPayments {
+		for _, ageGroup := range cbf.BenefitClasses {
+
+			if ageGroup.IsInAgeGroup(child) {
+				minPayments[month] += ageGroup.Amounts.Lower()
+			}
+			// we still want to loop in case the child
+			// belongs to multiple benefit classes
+		}
+		child.AgeMonths++
+	}
+
+	return minPayments.Total()
 }

@@ -72,7 +72,7 @@ type FamilyFinances [2]IndividualFinances
 
 // NetIncome calculate the total income of the family +/- adjustments. The
 // income is calculated as the sum of taxable amounts less the sum of
-// deductions. Adjustments are added/subtracted from the total income
+// deductions. Adjustments are added/subtracted from the total income.
 func (f FamilyFinances) NetIncome(adjustments ...float64) float64 {
 
 	total := f[0].NetIncome() + f[1].NetIncome()
@@ -80,6 +80,10 @@ func (f FamilyFinances) NetIncome(adjustments ...float64) float64 {
 		total += adj
 	}
 	return total
+}
+
+func (f FamilyFinances) NetAdjIncome() float64 {
+	panic("not implemented")
 }
 
 // Split returns the individual finances that jointly represent this object

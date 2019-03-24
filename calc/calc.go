@@ -58,7 +58,7 @@ type ChildBenefitCalculator interface {
 	// UpdateBeneficiary sets the child which the calculator will use in
 	// subsequent calls to Calc(). Users may call this method to set beneficiary
 	// to anything other than what the calculator was initialized with
-	UpdateBeneficiaries([]Person)
+	UpdateBeneficiaries(Person, ...Person)
 	// UpdateForumla sets the formula for calculating the amount of benefits for
 	// children given family finances. Users may call this method to set the
 	// formula to anything other than what the calculator was initialized with

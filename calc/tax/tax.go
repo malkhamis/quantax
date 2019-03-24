@@ -22,23 +22,12 @@ type Calculator struct {
 
 // NewCalculator returns a new calculator for the given financial numbers
 // and tax brackets.
-func NewCalculator(finNums IndividualFinances, formula TaxFormula) (*Calculator, error) {
+func NewCalculator(finances IndividualFinances, formula TaxFormula) (*Calculator, error) {
 
-	if formula == nil {
-		return nil, calc.ErrNoFormula
-	}
-
-	err := formula.Validate()
-	if err != nil {
-		return nil, errors.Wrap(err, "invalid formula")
-	}
-
-	c := &Calculator{
-		formula:            formula,
-		IndividualFinances: finNums,
-	}
-
-	return c, nil
+	c := &Calculator{}
+	c.UpdateFinances(finances)
+	err := c.UpdateFormula(formula)
+	return c, err
 }
 
 // Calc computes the tax on the taxable amount set in this calculator
@@ -55,8 +44,8 @@ func (c *Calculator) Calc(taxCredits ...float64) float64 {
 }
 
 // Update sets the financial numbers which the tax will be calculated for
-func (c *Calculator) UpdateFinances(newFinNums IndividualFinances) {
-	c.IndividualFinances = newFinNums
+func (c *Calculator) UpdateFinances(newFinances IndividualFinances) {
+	c.IndividualFinances = newFinances
 }
 
 // UpdateFormula sets this calculator up with the given formula. If the new
