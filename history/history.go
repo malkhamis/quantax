@@ -21,15 +21,32 @@ var cbFormulasAll = map[Jurisdiction]yearlyCBFormulas{
 	Canada: cbFormulasCanada,
 }
 
-// GetFormula returns the tax formula for the given region in a specific year
+// GetTaxFormula returns the tax formula for the given year and region
 func GetTaxFormula(year uint, region Jurisdiction) (calc.TaxFormula, error) {
 
-	jurisdictionRates, ok := taxFormulasAll[region]
+	jurisdictionFormulas, ok := taxFormulasAll[region]
 	if !ok {
 		return nil, ErrJurisdictionNotExist
 	}
 
-	formula, ok := jurisdictionRates[year]
+	formula, ok := jurisdictionFormulas[year]
+	if !ok {
+		return nil, ErrFormulaNotExist
+	}
+
+	return formula, nil
+}
+
+// GetChildBenefitFormula returns the child benefit formula for the given year
+// and region
+func GetChildBenefitFormula(year uint, region Jurisdiction) (calc.ChildBenefitFormula, error) {
+
+	jurisdictionFormulas, ok := cbFormulasAll[region]
+	if !ok {
+		return nil, ErrJurisdictionNotExist
+	}
+
+	formula, ok := jurisdictionFormulas[year]
 	if !ok {
 		return nil, ErrFormulaNotExist
 	}

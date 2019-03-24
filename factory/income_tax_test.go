@@ -13,22 +13,22 @@ func TestNewIncomeTaxCalculator_Errors(t *testing.T) {
 
 	cases := []struct {
 		name   string
-		params IncomeTaxParams
+		params CalculatorConfig
 		err    error
 	}{
 		{
 			name:   "invalid-year",
-			params: IncomeTaxParams{Year: 1000, Region: history.BC},
+			params: CalculatorConfig{Year: 1000, Region: history.BC},
 			err:    history.ErrFormulaNotExist,
 		},
 		{
 			name:   "invalid-region",
-			params: IncomeTaxParams{Year: 2018, Region: history.Jurisdiction("o'lala")},
+			params: CalculatorConfig{Year: 2018, Region: history.Jurisdiction("o'lala")},
 			err:    history.ErrJurisdictionNotExist,
 		},
 		{
 			name:   "valid",
-			params: IncomeTaxParams{Year: 2018, Region: history.BC},
+			params: CalculatorConfig{Year: 2018, Region: history.BC},
 			err:    nil,
 		},
 	}
