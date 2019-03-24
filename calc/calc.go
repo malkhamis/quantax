@@ -43,7 +43,7 @@ type TaxCalculator interface {
 	// UpdateFormula sets the tax formula used in this calculator. Users may call
 	// this method to set the formula to anything other than what the calculator
 	// was initialized with
-	UpdateFormula(TaxFormula)
+	UpdateFormula(TaxFormula) error
 }
 
 // ChildBenefitCalculator is used to calculate recievable child benefits for
@@ -62,5 +62,5 @@ type ChildBenefitCalculator interface {
 	// UpdateForumla sets the formula for calculating the amount of benefits for
 	// children given family finances. Users may call this method to set the
 	// formula to anything other than what the calculator was initialized with
-	UpdateForumla(ChildBenefitFormula)
+	UpdateForumla(ChildBenefitFormula) error
 }

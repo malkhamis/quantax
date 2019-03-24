@@ -1,9 +1,8 @@
 package benefits
 
 import (
-	"errors"
-
 	"github.com/malkhamis/quantax/calc"
+	"github.com/pkg/errors"
 )
 
 var _ calc.ChildBenefitCalculator = (*CCBCalculator)(nil)
@@ -43,6 +42,17 @@ func (c *CCBCalculator) UpdateBeneficiaries(newChildren []calc.Person) {
 // UpdateForumla sets the formula for calculating the amount of benefits for
 // children given family finances. Users may call this method to set the
 // formula to anything other than what the calculator was initialized with
-func (c *CCBCalculator) UpdateForumla(newFormula calc.ChildBenefitFormula) {
-	// Not Implemented
+func (c *CCBCalculator) UpdateForumla(newFormula calc.ChildBenefitFormula) error {
+
+	if newFormula == nil {
+		return calc.ErrNoFormula
+	}
+
+	err := newFormula.Validate()
+	if err != nil {
+		return errors.Wrap(err, "invalid formula")
+	}
+
+	c.formula = newFormula
+	return nil
 }

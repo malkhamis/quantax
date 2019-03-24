@@ -61,8 +61,17 @@ func (c *Calculator) UpdateFinances(newFinNums IndividualFinances) {
 
 // UpdateFormula sets this calculator up with the given formula. If the new
 // formula is nil, the formula is not changed
-func (c *Calculator) UpdateFormula(newFormula TaxFormula) {
-	if newFormula != nil {
-		c.formula = newFormula
+func (c *Calculator) UpdateFormula(newFormula TaxFormula) error {
+
+	if newFormula == nil {
+		return calc.ErrNoFormula
 	}
+
+	err := newFormula.Validate()
+	if err != nil {
+		return errors.Wrap(err, "invalid formula")
+	}
+
+	c.formula = newFormula
+	return nil
 }
