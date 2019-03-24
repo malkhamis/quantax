@@ -20,17 +20,18 @@ type CCBFormula struct {
 }
 
 // Apply returns a 12-month payment schedule for the children given the income
-func (cbf *CCBFormula) Apply(income float64, first Child, others ...Child) Payments {
+func (cbf *CCBFormula) Apply(income float64, first Child, others ...Child) float64 {
 
 	maxBenefits := cbf.maxAnnualAmount(first)
 	for _, child := range others {
 		maxBenefits += cbf.maxAnnualAmount(child)
 	}
 
-	childCount := len(others) + 1
-	reductionAmnt := cbf.Reducers.Reduce(income, childCount)
+	childCount := uint(len(others) + 1)
+	reduction := cbf.Reducers.Reduce(income, childCount)
 
-	return nil
+	reducedBenefits := maxBenefits - reduction
+	return reducedBenefits
 }
 
 func (cbf *CCBFormula) Validate() error {

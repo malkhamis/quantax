@@ -25,7 +25,7 @@ type TaxFormula interface {
 // ChildBenefitFormula represents a method for calculating child benefits
 type ChildBenefitFormula interface {
 	// Apply returns the sum of benefits for all beneficiaries
-	Apply(income float64, first Person, others ...Person) Payments
+	Apply(income float64, first Person, others ...Person) float64
 	// Validate checks if the formula is valid for use
 	Validate() error
 	// TODO: embed Formula
