@@ -1,16 +1,19 @@
 package benefits
 
 import (
+	"math"
+
 	"github.com/malkhamis/quantax/calc"
 	"github.com/pkg/errors"
 )
 
-type WBFormula = calc.WeightedBracketFormula
+var _ Reducer = (*StepReducer)(nil)
 
 // StepReducer represents a lookup table for formulas such that each formula
 // is mapped to an index that could represent something meaningful. For example
 // this number may indicate the number of children or a range of number of tax
-// days spent in a specific region
+// days spent in a specific region. It implements the 'Reducer' interface which
+// is defined in this package
 type StepReducer struct {
 	StepFormulas        []calc.WeightedBracketFormula
 	AboveMaxStepFormula calc.WeightedBracketFormula
@@ -18,11 +21,11 @@ type StepReducer struct {
 
 // NewStepReducerFormula returns a step reducer instance. The above-max step
 // indicates that this formula is used for steps above the maximum available
-func NewStepReducer(aboveMaxStep, firstStep WBFormula, extraSteps ...WBFormula) (*StepReducer, error) {
+func NewStepReducer(aboveMaxStep, firstStep calc.WeightedBracketFormula, extraSteps ...calc.WeightedBracketFormula) (*StepReducer, error) {
 
 	stepReducer := &StepReducer{
 		AboveMaxStepFormula: aboveMaxStep.Clone(),
-		StepFormulas:        []WBFormula{firstStep.Clone()},
+		StepFormulas:        []calc.WeightedBracketFormula{firstStep.Clone()},
 	}
 
 	for _, extra := range extraSteps {
@@ -33,16 +36,23 @@ func NewStepReducer(aboveMaxStep, firstStep WBFormula, extraSteps ...WBFormula) 
 }
 
 // Reduce returns the reduced value from the given amount using the given step.
+// If step is negative or fractional, the floor of the absolute value is used.
 // The first step is indexed at zero. If the given step exceeds the maximum
 // available step, the formula of the above-max step is used for the reduction
-func (sr *StepReducer) Reduce(amount float64, step uint) (reduction float64) {
+func (sr *StepReducer) Reduce(amount float64, step float64) (reduction float64) {
+
+	santizedStep := int(
+		math.Floor(
+			math.Abs(step),
+		),
+	)
 
 	indexMaxAvailableStep := len(sr.StepFormulas) - 1
-	if step > uint(indexMaxAvailableStep) {
+	if int(step) > indexMaxAvailableStep {
 		return sr.AboveMaxStepFormula.Apply(amount)
 	}
 
-	return sr.StepFormulas[step].Apply(amount)
+	return sr.StepFormulas[santizedStep].Apply(amount)
 }
 
 // Validate ensures this step reducer is valid for use
@@ -55,10 +65,6 @@ func (sr *StepReducer) Validate() error {
 	err := sr.AboveMaxStepFormula.Validate()
 	if err != nil {
 		return errors.Wrap(err, "invalid formula for the above-max step")
-	}
-
-	if len(sr.StepFormulas) < 1 {
-		return errors.Wrap(calc.ErrNoFormula, "empty step formulas")
 	}
 
 	for i, formula := range sr.StepFormulas {
@@ -76,14 +82,14 @@ func (sr *StepReducer) Validate() error {
 }
 
 // Clone returns a copy of this step reducer
-func (sr *StepReducer) Clone() *StepReducer {
+func (sr *StepReducer) Clone() Reducer {
 
 	clone := &StepReducer{
 		AboveMaxStepFormula: sr.AboveMaxStepFormula.Clone(),
 	}
 
 	if sr.StepFormulas != nil {
-		clone.StepFormulas = make([]WBFormula, len(sr.StepFormulas))
+		clone.StepFormulas = make([]calc.WeightedBracketFormula, len(sr.StepFormulas))
 	}
 	for i, formula := range sr.StepFormulas {
 		clone.StepFormulas[i] = formula.Clone()

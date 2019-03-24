@@ -13,7 +13,7 @@ type CCBFormula struct {
 	BenefitClasses []AgeGroupBenefits
 	// the sub-formulas to reduce the maximum benefits. Step numbers
 	// indicate the number of children, where zero means no children
-	Reducers *StepReducer
+	BenefitReducer Reducer
 }
 
 // Apply returns a 12-month payment schedule for the children given the income
@@ -29,8 +29,8 @@ func (cbf *CCBFormula) Apply(income float64, first Child, others ...Child) float
 		minBenefits += cbf.minAnnualAmount(child)
 	}
 
-	childCount := uint(len(others) + 1)
-	reduction := cbf.Reducers.Reduce(income, childCount)
+	childCount := float64(len(others) + 1)
+	reduction := cbf.BenefitReducer.Reduce(income, childCount)
 
 	reducedBenefits := maxBenefits - reduction
 	if reducedBenefits < minBenefits {
@@ -48,7 +48,7 @@ func (cbf *CCBFormula) Validate() error {
 		}
 	}
 
-	if err := cbf.Reducers.Validate(); err != nil {
+	if err := cbf.BenefitReducer.Validate(); err != nil {
 		return errors.Wrap(err, "invalid step reducers")
 	}
 

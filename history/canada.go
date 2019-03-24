@@ -13,7 +13,7 @@ var (
 	}
 
 	cbFormulasCanada = yearlyCBFormulas{
-		2018: cbFormulaCanada2018,
+		2017: cbFormulaCanada2017,
 	}
 )
 
@@ -26,7 +26,7 @@ var taxFormulaCanada2018 = calc.WeightedBracketFormula{
 	0.330:  calc.Bracket{205842, math.Inf(1)},
 }
 
-var cbFormulaCanada2018 = &benefits.CCBFormula{
+var cbFormulaCanada2017 = &benefits.CCBFormula{
 	BenefitClasses: []benefits.AgeGroupBenefits{
 		benefits.AgeGroupBenefits{
 			Ages:    calc.AgeRange{0, (MonthsInYear * 6) - 1},
@@ -37,11 +37,9 @@ var cbFormulaCanada2018 = &benefits.CCBFormula{
 			Amounts: calc.Bracket{0, 456.75},
 		},
 	},
-	Reducers: &benefits.StepReducer{
+	BenefitReducer: &benefits.StepReducer{
 		StepFormulas: []calc.WeightedBracketFormula{
-			calc.WeightedBracketFormula{ // no children
-				0.000: calc.Bracket{0, math.Inf(1)},
-			},
+			calc.WeightedBracketFormula{}, // 0 child
 			calc.WeightedBracketFormula{ // 1 child
 				0.000: calc.Bracket{0, 30450},
 				0.070: calc.Bracket{30450, 65976},

@@ -18,6 +18,7 @@ var taxFormulasAll = map[Jurisdiction]yearlyTaxFormulas{
 }
 
 var cbFormulasAll = map[Jurisdiction]yearlyCBFormulas{
+	BC:     cbFormulasBC,
 	Canada: cbFormulasCanada,
 }
 
