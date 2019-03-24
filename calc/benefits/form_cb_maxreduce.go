@@ -13,7 +13,7 @@ type CCBFormula struct {
 	BenefitClasses []AgeGroupBenefits
 	// the sub-formulas to reduce the maximum benefits. Step numbers
 	// indicate the number of children, where zero means no children
-	Reducers StepReducer
+	Reducers *StepReducer
 }
 
 // Apply returns a 12-month payment schedule for the children given the income

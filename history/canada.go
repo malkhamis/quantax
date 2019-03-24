@@ -37,7 +37,7 @@ var cbFormulaCanada2018 = &benefits.CCBFormula{
 			Amounts: calc.Bracket{0, 456.75},
 		},
 	},
-	Reducers: benefits.StepReducer{
+	Reducers: &benefits.StepReducer{
 		StepFormulas: []calc.WeightedBracketFormula{
 			calc.WeightedBracketFormula{ // no children
 				0.000: calc.Bracket{0.00, math.Inf(1)},
