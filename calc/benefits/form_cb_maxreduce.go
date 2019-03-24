@@ -17,7 +17,7 @@ type CCBFormula struct {
 }
 
 // Apply returns a 12-month payment schedule for the children given the income
-func (cbf *CCBFormula) Apply(income float64, first Child, others ...Child) float64 {
+func (cbf *CCBFormula) Apply(income float64, first calc.Person, others ...calc.Person) float64 {
 
 	maxBenefits := cbf.maxAnnualAmount(first)
 	for _, child := range others {
@@ -56,10 +56,10 @@ func (cbf *CCBFormula) Validate() error {
 }
 
 // maxAnnualAmount returns the maximum annual benefits for the given child
-func (cbf *CCBFormula) maxAnnualAmount(c Child) float64 {
+func (cbf *CCBFormula) maxAnnualAmount(c calc.Person) float64 {
 
 	child := c.Clone()
-	maxPayments := make(Payments, 12)
+	maxPayments := make(payments, 12)
 
 	for month := range maxPayments {
 		for _, ageGroup := range cbf.BenefitClasses {
@@ -77,10 +77,10 @@ func (cbf *CCBFormula) maxAnnualAmount(c Child) float64 {
 }
 
 // minAnnualAmount returns the minimum annual benefits for the given child
-func (cbf *CCBFormula) minAnnualAmount(c Child) float64 {
+func (cbf *CCBFormula) minAnnualAmount(c calc.Person) float64 {
 
 	child := c.Clone()
-	minPayments := make(Payments, 12)
+	minPayments := make(payments, 12)
 
 	for month := range minPayments {
 		for _, ageGroup := range cbf.BenefitClasses {
