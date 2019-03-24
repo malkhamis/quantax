@@ -9,38 +9,26 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TestNewIncomeTaxCalculatorAgg_Errors(t *testing.T) {
+func TestNewIncomeTaxCalculator_Errors(t *testing.T) {
 
 	cases := []struct {
 		name   string
-		first  IncomeTaxParams
-		second IncomeTaxParams
-		extras []IncomeTaxParams
+		params CalculatorConfig
 		err    error
 	}{
 		{
-			name:  "invalid-first",
-			first: IncomeTaxParams{Year: 1000, Region: history.BC},
-			err:   history.ErrNoRates,
+			name:   "invalid-year",
+			params: CalculatorConfig{Year: 1000, Region: history.BC},
+			err:    history.ErrFormulaNotExist,
 		},
 		{
-			name:   "invalid-second",
-			first:  IncomeTaxParams{Year: 2018, Region: history.BC},
-			second: IncomeTaxParams{Year: 1000, Region: history.BC},
-			err:    history.ErrNoRates,
-		},
-		{
-			name:   "invalid-extra",
-			first:  IncomeTaxParams{Year: 2018, Region: history.BC},
-			second: IncomeTaxParams{Year: 2018, Region: history.Canada},
-			extras: []IncomeTaxParams{{Year: 1000, Region: history.BC}},
-			err:    history.ErrNoRates,
+			name:   "invalid-region",
+			params: CalculatorConfig{Year: 2018, Region: history.Jurisdiction("o'lala")},
+			err:    history.ErrJurisdictionNotExist,
 		},
 		{
 			name:   "valid",
-			first:  IncomeTaxParams{Year: 2018, Region: history.BC},
-			second: IncomeTaxParams{Year: 2018, Region: history.Canada},
-			extras: []IncomeTaxParams{{Year: 2018, Region: history.Canada}},
+			params: CalculatorConfig{Year: 2018, Region: history.BC},
 			err:    nil,
 		},
 	}
@@ -48,8 +36,8 @@ func TestNewIncomeTaxCalculatorAgg_Errors(t *testing.T) {
 	for i, c := range cases {
 		c := c
 		t.Run(fmt.Sprintf("case%d-%s", i, c.name), func(t *testing.T) {
-			dummy := calc.FinancialNumbers{}
-			_, err := NewIncomeTaxCalculatorAgg(dummy, c.first, c.second, c.extras...)
+			dummy := calc.IndividualFinances{}
+			_, err := NewIncomeTaxCalculator(dummy, c.params)
 			cause := errors.Cause(err)
 			if cause != c.err {
 				t.Errorf("unexpected error\nwant: %v\n got: %v", c.err, err)

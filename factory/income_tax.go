@@ -1,79 +1,54 @@
 package factory
 
 import (
+	"errors"
+
 	"github.com/malkhamis/quantax/calc"
-	"github.com/malkhamis/quantax/calc/incometax"
+	"github.com/malkhamis/quantax/calc/benefits"
+	"github.com/malkhamis/quantax/calc/tax"
 	"github.com/malkhamis/quantax/history"
 )
 
-// IncomeTaxParams is used to pass tax parameters to relevant factory functions
-type IncomeTaxParams struct {
+// Config is used to set up the various calculators this factory creates
+type CalculatorConfig struct {
 	Year   uint
 	Region history.Jurisdiction
 }
 
 // NewIncomeTaxCalculator returns a tax calculator for the given parameters
-func NewIncomeTaxCalculator(finNums calc.FinancialNumbers, params IncomeTaxParams) (calc.TaxCalculator, error) {
+func NewIncomeTaxCalculator(finances calc.IndividualFinances, cfg CalculatorConfig) (calc.TaxCalculator, error) {
 
-	rates, err := history.Get(params.Year, params.Region)
+	formula, err := history.GetTaxFormula(cfg.Year, cfg.Region)
 	if err != nil {
 		return nil, err
 	}
 
-	return incometax.NewCalculator(finNums, rates)
+	return tax.NewCalculator(finances, formula)
 }
 
-// incomeTaxCalculatorAgg wraps multiple calc.Calculator's and presents an
-// implementation of calc.TaxCalculator as a single calculator. Results of
-// the underlying calculators are aggregated
-type incomeTaxCalculatorAgg struct {
-	calculators []calc.TaxCalculator
+// ChildBenefitParams is used to pass child benefit calculation parameters to
+// the relevant factory functions
+type CBCalculatorConfig struct {
+	Children []calc.Person
+	CalculatorConfig
 }
 
-// Calc returns the sum of results of calling Calc() on underlying calculators
-func (agg *incomeTaxCalculatorAgg) Calc() float64 {
-	var sum float64
-	for _, c := range agg.calculators {
-		sum += c.Calc()
+// NewChildBenefitCalculator returns a tax calculator for the given parameters
+func NewChildBenefitCalculator(finances calc.FamilyFinances, cfg CBCalculatorConfig) (calc.ChildBenefitCalculator, error) {
+
+	if len(cfg.Children) < 1 {
+		return nil, errors.New("a minimum of one child is required")
 	}
-	return sum
-}
 
-// Update sets the given financial numbers in all underlying calculators
-func (agg *incomeTaxCalculatorAgg) Update(finNums calc.FinancialNumbers) {
-	for _, c := range agg.calculators {
-		c.Update(finNums)
-	}
-}
-
-// NewIncomeTaxCalculatorAgg returns a wrapper arounf multiple tax calculators.
-// Calls to Calc return the sum of the results from all underlying calculators.
-// This also applies to Update(), where all underlying calculators are updated
-// to the same given financial numbers. The returned calculator is useful for
-// the cases in which income tax is calculated for two or more jurisdications
-func NewIncomeTaxCalculatorAgg(finNums calc.FinancialNumbers, params1, params2 IncomeTaxParams, extras ...IncomeTaxParams) (calc.TaxCalculator, error) {
-
-	first, err := NewIncomeTaxCalculator(finNums, params1)
+	formula, err := history.GetChildBenefitFormula(cfg.Year, cfg.Region)
 	if err != nil {
 		return nil, err
 	}
 
-	second, err := NewIncomeTaxCalculator(finNums, params2)
-	if err != nil {
-		return nil, err
+	calcCfg := benefits.ConfigCCB{
+		Finances: finances,
+		Formula:  formula,
 	}
 
-	agg := &incomeTaxCalculatorAgg{
-		calculators: []calc.TaxCalculator{first, second},
-	}
-
-	for _, params := range extras {
-		c, err := NewIncomeTaxCalculator(finNums, params)
-		if err != nil {
-			return nil, err
-		}
-		agg.calculators = append(agg.calculators, c)
-	}
-
-	return agg, nil
+	return benefits.NewCBCalculator(calcCfg, cfg.Children[0], cfg.Children[1:]...)
 }

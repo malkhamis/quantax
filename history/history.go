@@ -3,54 +3,54 @@ package history
 
 import (
 	"github.com/malkhamis/quantax/calc"
-	"github.com/pkg/errors"
 )
 
-type historicalRates = map[uint]calc.BracketRates
+type (
+	yearlyTaxFormulas = map[uint]calc.TaxFormula
+	yearlyCBFormulas  = map[uint]calc.ChildBenefitFormula
+)
 
-var ratesAll = map[Jurisdiction]historicalRates{
-	BC:     ratesBC,
-	Canada: ratesCanada,
+const MonthsInYear = 12
+
+var taxFormulasAll = map[Jurisdiction]yearlyTaxFormulas{
+	BC:     taxFormulasBC,
+	Canada: taxFormulasCanada,
 }
 
-func init() {
-
-	err := validateAllRates()
-	if err != nil {
-		panic(err)
-	}
-
+var cbFormulasAll = map[Jurisdiction]yearlyCBFormulas{
+	BC:     cbFormulasBC,
+	Canada: cbFormulasCanada,
 }
 
-// Get returns the rates for the given jurisdiction in a specific tax year
-func Get(year uint, region Jurisdiction) (calc.BracketRates, error) {
+// GetTaxFormula returns the tax formula for the given year and region
+func GetTaxFormula(year uint, region Jurisdiction) (calc.TaxFormula, error) {
 
-	jurisdictionRates, ok := ratesAll[region]
+	jurisdictionFormulas, ok := taxFormulasAll[region]
 	if !ok {
-		return calc.BracketRates{}, ErrNoJurisdiction
+		return nil, ErrJurisdictionNotExist
 	}
 
-	rates, ok := jurisdictionRates[year]
+	formula, ok := jurisdictionFormulas[year]
 	if !ok {
-		err := errors.Wrap(ErrNoRates, "jurisdiction year's rates don't exist")
-		return calc.BracketRates{}, err
+		return nil, ErrFormulaNotExist
 	}
 
-	return rates.Clone(), nil
+	return formula, nil
 }
 
-func validateAllRates() error {
+// GetChildBenefitFormula returns the child benefit formula for the given year
+// and region
+func GetChildBenefitFormula(year uint, region Jurisdiction) (calc.ChildBenefitFormula, error) {
 
-	for jursdiction, ratesAllYears := range ratesAll {
-		for year, rates := range ratesAllYears {
-
-			err := rates.Validate()
-			if err != nil {
-				return errors.Wrapf(err, "jurisdiction %q, year %d", jursdiction, year)
-			}
-
-		}
+	jurisdictionFormulas, ok := cbFormulasAll[region]
+	if !ok {
+		return nil, ErrJurisdictionNotExist
 	}
 
-	return nil
+	formula, ok := jurisdictionFormulas[year]
+	if !ok {
+		return nil, ErrFormulaNotExist
+	}
+
+	return formula, nil
 }
