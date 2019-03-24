@@ -65,7 +65,7 @@ func (cbf *CCBFormula) maxAnnualAmount(c Child) float64 {
 		for _, ageGroup := range cbf.BenefitClasses {
 
 			if ageGroup.IsInAgeGroup(child) {
-				maxPayments[month] += ageGroup.Amounts.Upper()
+				maxPayments[month] += ageGroup.AmountsPerMonth.Upper()
 			}
 			// we still want to loop in case the child
 			// belongs to multiple benefit classes
@@ -86,7 +86,7 @@ func (cbf *CCBFormula) minAnnualAmount(c Child) float64 {
 		for _, ageGroup := range cbf.BenefitClasses {
 
 			if ageGroup.IsInAgeGroup(child) {
-				minPayments[month] += ageGroup.Amounts.Lower()
+				minPayments[month] += ageGroup.AmountsPerMonth.Lower()
 			}
 			// we still want to loop in case the child
 			// belongs to multiple benefit classes

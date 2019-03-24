@@ -5,36 +5,36 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Child = calc.Person
-type Payments = calc.Payments
-
 type AgeGroupBenefits struct {
-	Ages    calc.AgeRange
-	Amounts calc.Bracket // TODO change var name to indicate monthly amounts
+	AgesInMonths    calc.AgeRange
+	AmountsPerMonth calc.Bracket
 }
 
 func NewAgeGroupBenefits(ages calc.AgeRange, minmaxAmnts calc.Bracket) (AgeGroupBenefits, error) {
 
 	benf := AgeGroupBenefits{
-		Ages:    ages.Clone(),
-		Amounts: minmaxAmnts.Clone(),
+		AgesInMonths:    ages.Clone(),
+		AmountsPerMonth: minmaxAmnts.Clone(),
 	}
 
 	return benf, benf.Validate()
 }
 
-func (g AgeGroupBenefits) IsInAgeGroup(c Child) bool {
-	return c.AgeMonths >= g.Ages.Min() && c.AgeMonths <= g.Ages.Max()
+func (g AgeGroupBenefits) IsInAgeGroup(child calc.Person) bool {
+
+	geqMinAge := child.AgeMonths >= g.AgesInMonths.Min()
+	leqMaxAge := child.AgeMonths <= g.AgesInMonths.Max()
+	return geqMinAge && leqMaxAge
 }
 
 func (g AgeGroupBenefits) Validate() error {
 
-	err := g.Amounts.Validate()
+	err := g.AmountsPerMonth.Validate()
 	if err != nil {
 		return errors.Wrap(err, "invalid bracket")
 	}
 
-	err = g.Ages.Validate()
+	err = g.AgesInMonths.Validate()
 	if err != nil {
 		return errors.Wrap(err, "invalid age range")
 	}
