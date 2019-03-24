@@ -47,6 +47,7 @@ type WeightedBracketFormula map[float64]Bracket
 // Apply slices the given param into this formula's brackets. Then, it applies
 // the rate asscoiated with the bracket to the sliced amounts and returns the
 // sum of applying the rates on all sliced amounts
+// TODO: gaps might are problematic
 func (wb WeightedBracketFormula) Apply(param float64) float64 {
 
 	var result float64

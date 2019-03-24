@@ -10,7 +10,7 @@ type Payments = calc.Payments
 
 type AgeGroupBenefits struct {
 	Ages    calc.AgeRange
-	Amounts calc.Bracket
+	Amounts calc.Bracket // TODO change var name to indicate monthly amounts
 }
 
 func NewAgeGroupBenefits(ages calc.AgeRange, minmaxAmnts calc.Bracket) (AgeGroupBenefits, error) {

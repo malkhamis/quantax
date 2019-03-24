@@ -57,6 +57,7 @@ type IndividualFinances struct {
 // NetIncome calculate the total income of +/- adjustments. The income is
 // calculated as the sum of taxable amounts less the sum of deductions,
 // plus/minus the given adjustments (if any)
+// TODO: this might not be the responsibility of this type?
 func (f IndividualFinances) NetIncome(adjustments ...float64) float64 {
 
 	total := f.Income - f.Deductions

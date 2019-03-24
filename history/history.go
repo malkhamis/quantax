@@ -3,31 +3,28 @@ package history
 
 import (
 	"github.com/malkhamis/quantax/calc"
-	"github.com/pkg/errors"
 )
 
 type TaxFormula = calc.TaxFormula
 type yearlyTaxFormulas = map[uint]TaxFormula
+type yearlyCBFormulas = map[uint]calc.ChildBenefitFormula
 
 type WeightedBracketFormula = calc.WeightedBracketFormula
 type Bracket = calc.Bracket
+
+const MonthsInYear = 12
 
 var taxFormulasAll = map[Jurisdiction]yearlyTaxFormulas{
 	BC:     taxFormulasBC,
 	Canada: taxFormulasCanada,
 }
 
-func init() {
-
-	err := validateAllFormulas()
-	if err != nil {
-		panic(err)
-	}
-
+var cbFormulasAll = map[Jurisdiction]yearlyCBFormulas{
+	Canada: cbFormulasCanada,
 }
 
 // GetFormula returns the tax formula for the given region in a specific year
-func GetFormula(year uint, region Jurisdiction) (TaxFormula, error) {
+func GetTaxFormula(year uint, region Jurisdiction) (TaxFormula, error) {
 
 	jurisdictionRates, ok := taxFormulasAll[region]
 	if !ok {
@@ -40,20 +37,4 @@ func GetFormula(year uint, region Jurisdiction) (TaxFormula, error) {
 	}
 
 	return formula, nil
-}
-
-func validateAllFormulas() error {
-
-	for jursdiction, formulasAllYears := range taxFormulasAll {
-		for year, formula := range formulasAllYears {
-
-			err := formula.Validate()
-			if err != nil {
-				return errors.Wrapf(err, "jurisdiction %q, year %d", jursdiction, year)
-			}
-
-		}
-	}
-
-	return nil
 }
