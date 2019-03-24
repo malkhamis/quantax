@@ -5,12 +5,10 @@ import (
 	"github.com/malkhamis/quantax/calc"
 )
 
-type TaxFormula = calc.TaxFormula
-type yearlyTaxFormulas = map[uint]TaxFormula
-type yearlyCBFormulas = map[uint]calc.ChildBenefitFormula
-
-type WeightedBracketFormula = calc.WeightedBracketFormula
-type Bracket = calc.Bracket
+type (
+	yearlyTaxFormulas = map[uint]calc.TaxFormula
+	yearlyCBFormulas  = map[uint]calc.ChildBenefitFormula
+)
 
 const MonthsInYear = 12
 
@@ -24,7 +22,7 @@ var cbFormulasAll = map[Jurisdiction]yearlyCBFormulas{
 }
 
 // GetFormula returns the tax formula for the given region in a specific year
-func GetTaxFormula(year uint, region Jurisdiction) (TaxFormula, error) {
+func GetTaxFormula(year uint, region Jurisdiction) (calc.TaxFormula, error) {
 
 	jurisdictionRates, ok := taxFormulasAll[region]
 	if !ok {
