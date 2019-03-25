@@ -14,7 +14,8 @@ func NewAgeRange(min, max uint) (AgeRange, error) {
 	return ar, ar.Validate()
 }
 
-// Validate ensures that this age range is valid for the intended use
+// Validate ensures this instance is valid for the intended use. Users need to
+// call this method before use only if the instance was manually created/modified
 func (ar AgeRange) Validate() error {
 
 	switch {

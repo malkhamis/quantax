@@ -11,7 +11,8 @@ var _ BasicFormula = (WeightedBracketFormula)(nil)
 // Bracket represents a float number range, e.g. [47630.51, 95259.32]
 type Bracket [2]float64
 
-// Validate ensures that this bracket is within [0, +Inf]
+// Validate ensures that this bracket is within [0, +Inf]. Users need to call
+// this method before use only if the instance was manually created/modified
 func (b Bracket) Validate() error {
 
 	if b.Lower() > b.Upper() {

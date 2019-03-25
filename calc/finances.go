@@ -25,20 +25,25 @@ func (f IndividualFinances) NetIncome(adjustments ...float64) float64 {
 // interface to recieve input needed to calculate benefits
 type FamilyFinances [2]IndividualFinances
 
-// NetIncome calculate the total income of the family +/- adjustments. The
-// income is calculated as the sum of taxable amounts less the sum of
-// deductions. Adjustments are added/subtracted from the total income.
-func (f FamilyFinances) NetIncome(adjustments ...float64) float64 {
+// Income calculate the the income sum of the family +/- adjustments. The
+// calculation is based on taxable amounts only without subtracting deductions
+func (f FamilyFinances) Income(adjustments ...float64) float64 {
 
-	total := f[0].NetIncome() + f[1].NetIncome()
+	total := f[0].Income + f[1].Income
 	for _, adj := range adjustments {
 		total += adj
 	}
 	return total
 }
 
-func (f FamilyFinances) NetAdjIncome() float64 {
-	panic("not implemented")
+// Deductions calculate the the total deductions of the family +/- adjustments.
+func (f FamilyFinances) Deductions(adjustments ...float64) float64 {
+
+	total := f[0].Deductions + f[1].Deductions
+	for _, adj := range adjustments {
+		total += adj
+	}
+	return total
 }
 
 // Split returns the individual finances that jointly represent this object

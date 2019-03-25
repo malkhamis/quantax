@@ -91,7 +91,7 @@ func (mrf *MaxReducerFormula) minAnnualAmount(c calc.Person) float64 {
 				minPayments[month] += ageGroup.AmountsPerMonth.Lower()
 			}
 			// we still want to loop in case the child
-			// belongs to multiple benefit classes
+			// belongs to multiple benefit age groups
 		}
 		child.AgeMonths++
 	}

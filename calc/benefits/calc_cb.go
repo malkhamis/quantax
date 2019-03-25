@@ -7,8 +7,8 @@ import (
 
 var _ calc.ChildBenefitCalculator = (*CBCalculator)(nil)
 
-// ConfigCCB are the parameters for creating a new child benefit calculator
-type ConfigCCB struct {
+// ConfigCB are the parameters for creating a new child benefit calculator
+type ConfigCB struct {
 	Finances calc.FamilyFinances
 	Formula  calc.ChildBenefitFormula
 }
@@ -22,7 +22,7 @@ type CBCalculator struct {
 }
 
 // NewCBCalculator returns a new child benefit calculator
-func NewCBCalculator(cfg ConfigCCB, child calc.Person, others ...calc.Person) (*CBCalculator, error) {
+func NewCBCalculator(cfg ConfigCB, child calc.Person, others ...calc.Person) (*CBCalculator, error) {
 
 	cbc := &CBCalculator{}
 	cbc.UpdateFinances(cfg.Finances)
@@ -34,8 +34,10 @@ func NewCBCalculator(cfg ConfigCCB, child calc.Person, others ...calc.Person) (*
 // Calc returns the recievable amount of child benefits
 func (c *CBCalculator) Calc() float64 {
 
+	netIncome := c.finances.Income() - c.finances.Deductions()
+
 	benefits := c.formula.Apply(
-		c.finances.NetIncome(),
+		netIncome,
 		c.children[0], // calc has at least one child
 		c.children[1:]...,
 	)
