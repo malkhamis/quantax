@@ -22,6 +22,7 @@ func TestCalculator_Calc(t *testing.T) {
 
 	cases := []struct {
 		finances    calc.IndividualFinances
+		credits     []float64
 		formula     calc.TaxFormula
 		expectedTax float64
 		errMargin   float64
@@ -56,6 +57,19 @@ func TestCalculator_Calc(t *testing.T) {
 			expectedTax: 13090,
 			errMargin:   1e-9,
 		},
+		{
+			finances:    calc.IndividualFinances{Income: 85000},
+			formula:     formulaCanada2018,
+			expectedTax: 13090,
+			errMargin:   1e-9,
+		},
+		{
+			finances:    calc.IndividualFinances{Income: 85000},
+			credits:     []float64{30, 60},
+			formula:     formulaCanada2018,
+			expectedTax: 13000,
+			errMargin:   1e-9,
+		},
 	}
 
 	for i, c := range cases {
@@ -67,7 +81,7 @@ func TestCalculator_Calc(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			actualTax := calculator.Calc()
+			actualTax := calculator.Calc(c.credits...)
 			if !areEqual(actualTax, c.expectedTax, c.errMargin) {
 				t.Errorf(
 					"difference between actual and expected total "+
@@ -113,5 +127,13 @@ func TestCalculator_Setters(t *testing.T) {
 	}
 	if c.finances.Deductions != 30 {
 		t.Error("expected Update() to mutate the calculator")
+	}
+}
+
+func TestCalculator_UpdateFormual_Error(t *testing.T) {
+
+	err := (&Calculator{}).UpdateFormula(nil)
+	if errors.Cause(err) != calc.ErrNoFormula {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
 	}
 }
