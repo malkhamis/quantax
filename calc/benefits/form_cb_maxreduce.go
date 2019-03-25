@@ -5,10 +5,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-var _ calc.ChildBenefitFormula = (*CCBFormula)(nil)
+var _ calc.ChildBenefitFormula = (*MaxReducerFormula)(nil)
 
-// CCBFormula computes Canada Child Benefits amounts for child(ren)
-type CCBFormula struct {
+// MaxReducerFormula computes Canada Child Benefits amounts for child(ren)
+type MaxReducerFormula struct {
 	// the [min, max] dollar amounts for given age groups
 	BenefitClasses []AgeGroupBenefits
 	// the sub-formulas to reduce the maximum benefits. Step numbers
@@ -16,21 +16,21 @@ type CCBFormula struct {
 	BenefitReducer Reducer
 }
 
-// Apply returns a 12-month payment schedule for the children given the income
-func (cbf *CCBFormula) Apply(income float64, first calc.Person, others ...calc.Person) float64 {
+// Apply returns the total annual benefits for the children given the income
+func (mrf *MaxReducerFormula) Apply(income float64, first calc.Person, others ...calc.Person) float64 {
 
-	maxBenefits := cbf.maxAnnualAmount(first)
+	maxBenefits := mrf.maxAnnualAmount(first)
 	for _, child := range others {
-		maxBenefits += cbf.maxAnnualAmount(child)
+		maxBenefits += mrf.maxAnnualAmount(child)
 	}
 
-	minBenefits := cbf.minAnnualAmount(first)
+	minBenefits := mrf.minAnnualAmount(first)
 	for _, child := range others {
-		minBenefits += cbf.minAnnualAmount(child)
+		minBenefits += mrf.minAnnualAmount(child)
 	}
 
 	childCount := float64(len(others) + 1)
-	reduction := cbf.BenefitReducer.Reduce(income, childCount)
+	reduction := mrf.BenefitReducer.Reduce(income, childCount)
 
 	reducedBenefits := maxBenefits - reduction
 	if reducedBenefits < minBenefits {
@@ -40,15 +40,17 @@ func (cbf *CCBFormula) Apply(income float64, first calc.Person, others ...calc.P
 	return reducedBenefits
 }
 
-func (cbf *CCBFormula) Validate() error {
+// Validate ensures that this instance is valid for use. Users need to call this
+// method before use only if the instance was manually created/modified
+func (mrf *MaxReducerFormula) Validate() error {
 
-	for _, ageGroupBenefit := range cbf.BenefitClasses {
+	for _, ageGroupBenefit := range mrf.BenefitClasses {
 		if err := ageGroupBenefit.Validate(); err != nil {
 			return errors.Wrap(err, "invalid age group benefits")
 		}
 	}
 
-	if err := cbf.BenefitReducer.Validate(); err != nil {
+	if err := mrf.BenefitReducer.Validate(); err != nil {
 		return errors.Wrap(err, "invalid step reducers")
 	}
 
@@ -56,13 +58,13 @@ func (cbf *CCBFormula) Validate() error {
 }
 
 // maxAnnualAmount returns the maximum annual benefits for the given child
-func (cbf *CCBFormula) maxAnnualAmount(c calc.Person) float64 {
+func (mrf *MaxReducerFormula) maxAnnualAmount(c calc.Person) float64 {
 
 	child := c.Clone()
 	maxPayments := make(payments, 12)
 
 	for month := range maxPayments {
-		for _, ageGroup := range cbf.BenefitClasses {
+		for _, ageGroup := range mrf.BenefitClasses {
 
 			if ageGroup.IsInAgeGroup(child) {
 				maxPayments[month] += ageGroup.AmountsPerMonth.Upper()
@@ -77,13 +79,13 @@ func (cbf *CCBFormula) maxAnnualAmount(c calc.Person) float64 {
 }
 
 // minAnnualAmount returns the minimum annual benefits for the given child
-func (cbf *CCBFormula) minAnnualAmount(c calc.Person) float64 {
+func (mrf *MaxReducerFormula) minAnnualAmount(c calc.Person) float64 {
 
 	child := c.Clone()
 	minPayments := make(payments, 12)
 
 	for month := range minPayments {
-		for _, ageGroup := range cbf.BenefitClasses {
+		for _, ageGroup := range mrf.BenefitClasses {
 
 			if ageGroup.IsInAgeGroup(child) {
 				minPayments[month] += ageGroup.AmountsPerMonth.Lower()
