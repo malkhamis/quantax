@@ -55,7 +55,8 @@ func (sr *StepReducer) Reduce(amount float64, step float64) (reduction float64) 
 	return sr.StepFormulas[santizedStep].Apply(amount)
 }
 
-// Validate ensures this step reducer is valid for use
+// Validate ensures this step reducer is valid for use. Users need to call this
+// method before use only if the instance was manually created/modified
 func (sr *StepReducer) Validate() error {
 
 	if sr.AboveMaxStepFormula == nil {
