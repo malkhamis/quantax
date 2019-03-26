@@ -19,6 +19,7 @@ type StepReducer struct {
 	AboveMaxStepFormula calc.WeightedBracketFormula
 }
 
+// TODO the last step should be the infinitiy step ??
 // NewStepReducerFormula returns a step reducer instance. The above-max step
 // indicates that this formula is used for steps above the maximum available
 func NewStepReducer(aboveMaxStep, firstStep calc.WeightedBracketFormula, extraSteps ...calc.WeightedBracketFormula) (*StepReducer, error) {

@@ -34,7 +34,7 @@ var cbFormulaBC2018 = &benefits.MaxReducerFormula{
 			AmountsPerMonth: calc.Bracket{0, 55},
 		},
 	},
-	BenefitReducer: &benefits.AmplifiedReducer{
+	BenefitReducer: benefits.AmplifiedReducer{
 		0.0132: calc.Bracket{100000, math.Inf(1)},
 	},
 }
