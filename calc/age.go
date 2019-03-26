@@ -4,8 +4,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// AgeRange represents a range of age in months, e.g. [12, 36] to indicate
-// one to three years old
+// AgeRange represents a range of age
 type AgeRange [2]uint
 
 // NewAgeRange returns a new age range from the given min/max ages
@@ -18,18 +17,10 @@ func NewAgeRange(min, max uint) (AgeRange, error) {
 // call this method before use only if the instance was manually created/modified
 func (ar AgeRange) Validate() error {
 
-	switch {
-
-	case ar[0] < 0 || ar[1] < 0:
-		return errors.Wrap(ErrValNeg, "invalid min/max amounts")
-
-	case ar[0] > ar[1]:
+	if ar[0] > ar[1] {
 		return errors.Wrap(ErrBoundsReversed, "invalid age range")
-
-	default:
-		return nil
 	}
-
+	return nil
 }
 
 // Min returns the lower limit/bound of this age
