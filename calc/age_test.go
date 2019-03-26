@@ -32,16 +32,3 @@ func TestAgeRange_Invalid(t *testing.T) {
 	}
 
 }
-
-func TestAgeRange_Clone(t *testing.T) {
-
-	ar, err := NewAgeRange(1, 5)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	clone := ar.Clone()
-	if ar[0] != clone[0] || ar[1] != clone[1] {
-		t.Errorf("unexpected results\nwant: %v\n got: %v", ar, clone)
-	}
-}

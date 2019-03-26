@@ -11,13 +11,14 @@ type AgeGroupBenefits struct {
 	AmountsPerMonth calc.Bracket
 }
 
-// NewAgeGroupBenefits returns a new age group benefit instance. If the given
-// arguments are invalid, an error is returned
+// NewAgeGroupBenefits returns a new age group benefit instance. The age range
+// is expected to be in months (not years). If the given arguments are invalid,
+// an error is returned
 func NewAgeGroupBenefits(ages calc.AgeRange, minmaxAmnts calc.Bracket) (AgeGroupBenefits, error) {
 
 	benf := AgeGroupBenefits{
-		AgesMonths:      ages.Clone(),
-		AmountsPerMonth: minmaxAmnts.Clone(),
+		AgesMonths:      ages,
+		AmountsPerMonth: minmaxAmnts,
 	}
 
 	return benf, benf.Validate()
@@ -47,13 +48,4 @@ func (g AgeGroupBenefits) Validate() error {
 	}
 
 	return nil
-}
-
-// Clone returns a copy of this instance
-func (g AgeGroupBenefits) Clone() AgeGroupBenefits {
-
-	return AgeGroupBenefits{
-		AgesMonths:      g.AgesMonths.Clone(),
-		AmountsPerMonth: g.AmountsPerMonth.Clone(),
-	}
 }

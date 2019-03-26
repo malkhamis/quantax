@@ -37,11 +37,6 @@ func (b Bracket) Upper() float64 {
 	return b[1]
 }
 
-// Clone returns a copy of this bracket
-func (b Bracket) Clone() Bracket {
-	return Bracket{b[0], b[1]}
-}
-
 // WeightedBracketFormula maps weights (rates) to numeric ranges, e.g. brackets
 type WeightedBracketFormula map[float64]Bracket
 
@@ -98,7 +93,7 @@ func (wb WeightedBracketFormula) Clone() WeightedBracketFormula {
 	}
 
 	for rate, bracket := range wb {
-		clone[rate] = bracket.Clone()
+		clone[rate] = bracket
 	}
 
 	return clone

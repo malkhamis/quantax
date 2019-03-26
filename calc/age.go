@@ -1,9 +1,5 @@
 package calc
 
-import (
-	"github.com/pkg/errors"
-)
-
 // AgeRange represents a range of age
 type AgeRange [2]uint
 
@@ -18,7 +14,7 @@ func NewAgeRange(min, max uint) (AgeRange, error) {
 func (ar AgeRange) Validate() error {
 
 	if ar[0] > ar[1] {
-		return errors.Wrap(ErrBoundsReversed, "invalid age range")
+		return ErrBoundsReversed
 	}
 	return nil
 }
@@ -31,9 +27,4 @@ func (ar AgeRange) Min() uint {
 // Max returns the upper limit/bound of this age
 func (ar AgeRange) Max() uint {
 	return ar[1]
-}
-
-// Clone returns a copy of this bracket
-func (ar AgeRange) Clone() AgeRange {
-	return AgeRange{ar[0], ar[1]}
 }

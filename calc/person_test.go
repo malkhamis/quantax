@@ -1,20 +1,5 @@
 package calc
 
-import "testing"
-
-func TestPerson_Clone(t *testing.T) {
-
-	p := Person{
-		Name:      "John",
-		AgeMonths: 10,
-	}
-
-	clone := p.Clone()
-	if clone.Name != p.Name || clone.AgeMonths != p.AgeMonths {
-		t.Errorf("unexpected results\nwant: %v\n got: %v", p, clone)
-	}
-}
-
 // func TestPerson_IsOlderThan_Error(t *testing.T) {
 //
 // 	p := NewPerson("John", Date{1980, time.February, 1})

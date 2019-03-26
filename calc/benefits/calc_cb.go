@@ -65,8 +65,8 @@ func (c *CBCalculator) UpdateFinances(newFinances calc.FamilyFinances) {
 // to anything other than what the calculator was initialized with
 func (c *CBCalculator) UpdateBeneficiaries(child calc.Person, others ...calc.Person) {
 
-	c.children = []calc.Person{child.Clone()}
+	c.children = []calc.Person{child}
 	for _, otherChild := range others {
-		c.children = append(c.children, otherChild.Clone())
+		c.children = append(c.children, otherChild)
 	}
 }

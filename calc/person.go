@@ -5,11 +5,6 @@ type Person struct {
 	AgeMonths uint
 }
 
-// Clone returns a copy of this person
-func (p Person) Clone() Person {
-	return Person{Name: p.Name, AgeMonths: p.AgeMonths}
-}
-
 // Person represents a dependent child for tax purposes
 // type Person struct {
 // 	name      string

@@ -58,9 +58,8 @@ func (mrf *MaxReducerFormula) Validate() error {
 }
 
 // maxAnnualAmount returns the maximum annual benefits for the given child
-func (mrf *MaxReducerFormula) maxAnnualAmount(c calc.Person) float64 {
+func (mrf *MaxReducerFormula) maxAnnualAmount(child calc.Person) float64 {
 
-	child := c.Clone()
 	maxPayments := make(payments, 12)
 
 	for month := range maxPayments {
@@ -79,9 +78,8 @@ func (mrf *MaxReducerFormula) maxAnnualAmount(c calc.Person) float64 {
 }
 
 // minAnnualAmount returns the minimum annual benefits for the given child
-func (mrf *MaxReducerFormula) minAnnualAmount(c calc.Person) float64 {
+func (mrf *MaxReducerFormula) minAnnualAmount(child calc.Person) float64 {
 
-	child := c.Clone()
 	minPayments := make(payments, 12)
 
 	for month := range minPayments {
