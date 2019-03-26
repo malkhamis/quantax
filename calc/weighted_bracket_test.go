@@ -5,6 +5,25 @@ import (
 	"testing"
 )
 
+func TestWeightedBracketFormula_Apply(t *testing.T) {
+
+	formula := WeightedBracketFormula{
+		0.10: Bracket{0, 100},
+		0.20: Bracket{100, 200},
+		0.50: Bracket{200, math.Inf(1)},
+	}
+
+	param := 150.00
+	expected := (0.10 * 100) + (0.20 * 50) + (0.50 * 0)
+	actual := formula.Apply(param)
+	if actual != expected {
+		t.Errorf(
+			"actual does not match expected\nwant: %.2f\n got: %.2f",
+			expected, actual,
+		)
+	}
+}
+
 func TestWeightedBracketFormula_Clone(t *testing.T) {
 
 	originalBracket := Bracket{100, 200}
