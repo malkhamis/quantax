@@ -9,7 +9,7 @@ var _ calc.ChildBenefitFormula = (*MaxReducerFormula)(nil)
 
 // MaxReducerFormula computes Canada Child Benefits amounts for child(ren)
 type MaxReducerFormula struct {
-	// the [min, max] dollar amounts for given age groups
+	// the [min, max] dollar amounts for given age groups (bound-inclusive)
 	BenefitClasses []AgeGroupBenefits
 	// the sub-formulas to reduce the maximum benefits. Step numbers
 	// indicate the number of children, where zero means no children
