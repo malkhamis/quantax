@@ -66,7 +66,5 @@ func (c *CBCalculator) UpdateFinances(newFinances calc.FamilyFinances) {
 func (c *CBCalculator) UpdateBeneficiaries(child calc.Person, others ...calc.Person) {
 
 	c.children = []calc.Person{child}
-	for _, otherChild := range others {
-		c.children = append(c.children, otherChild)
-	}
+	c.children = append(c.children, others...)
 }
