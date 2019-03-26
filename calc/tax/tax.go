@@ -21,10 +21,18 @@ type Calculator struct {
 // and tax brackets.
 func NewCalculator(finances calc.IndividualFinances, formula calc.TaxFormula) (*Calculator, error) {
 
-	c := &Calculator{}
+	if formula == nil {
+		return nil, calc.ErrNoFormula
+	}
+
+	err := formula.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid formula")
+	}
+
+	c := &Calculator{formula: formula}
 	c.UpdateFinances(finances)
-	err := c.UpdateFormula(formula)
-	return c, err
+	return c, nil
 }
 
 // Calc computes the tax on the taxable amount set in this calculator
@@ -43,21 +51,4 @@ func (c *Calculator) Calc(taxCredits ...float64) float64 {
 // Update sets the financial numbers which the tax will be calculated for
 func (c *Calculator) UpdateFinances(newFinances calc.IndividualFinances) {
 	c.finances = newFinances
-}
-
-// UpdateFormula sets this calculator up with the given formula. If the new
-// formula is nil, the formula is not changed
-func (c *Calculator) UpdateFormula(newFormula calc.TaxFormula) error {
-
-	if newFormula == nil {
-		return calc.ErrNoFormula
-	}
-
-	err := newFormula.Validate()
-	if err != nil {
-		return errors.Wrap(err, "invalid formula")
-	}
-
-	c.formula = newFormula
-	return nil
 }

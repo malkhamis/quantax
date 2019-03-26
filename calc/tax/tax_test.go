@@ -28,7 +28,7 @@ func TestCalculator_Calc(t *testing.T) {
 		errMargin   float64
 	}{
 		{
-			finances:    calc.IndividualFinances{Income: 300000},
+			finances:    calc.IndividualFinances{Income: 400000, Deductions: 100000},
 			formula:     formulaCanada2018,
 			expectedTax: 76969,
 			errMargin:   1e-9,
@@ -64,7 +64,7 @@ func TestCalculator_Calc(t *testing.T) {
 			errMargin:   1e-9,
 		},
 		{
-			finances:    calc.IndividualFinances{Income: 85000},
+			finances:    calc.IndividualFinances{Income: 90000, Deductions: 5000},
 			credits:     []float64{30, 60},
 			formula:     formulaCanada2018,
 			expectedTax: 13000,
@@ -95,7 +95,7 @@ func TestCalculator_Calc(t *testing.T) {
 	}
 }
 
-func TestNewCalculator_Error(t *testing.T) {
+func TestNewCalculator_InvalidFormula(t *testing.T) {
 
 	invalidTaxParams := calc.WeightedBracketFormula{0.10: calc.Bracket{300, 200}}
 	_, err := NewCalculator(calc.IndividualFinances{}, invalidTaxParams)
@@ -130,9 +130,9 @@ func TestCalculator_Setters(t *testing.T) {
 	}
 }
 
-func TestCalculator_UpdateFormual_Error(t *testing.T) {
+func TestCalculator_NilFormula(t *testing.T) {
 
-	err := (&Calculator{}).UpdateFormula(nil)
+	_, err := NewCalculator(calc.IndividualFinances{}, nil)
 	if errors.Cause(err) != calc.ErrNoFormula {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
 	}

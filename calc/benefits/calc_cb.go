@@ -24,11 +24,19 @@ type CBCalculator struct {
 // NewCBCalculator returns a new child benefit calculator
 func NewCBCalculator(cfg ConfigCB, child calc.Person, others ...calc.Person) (*CBCalculator, error) {
 
-	cbc := &CBCalculator{}
+	if cfg.Formula == nil {
+		return nil, calc.ErrNoFormula
+	}
+
+	err := cfg.Formula.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid formula")
+	}
+
+	cbc := &CBCalculator{formula: cfg.Formula}
 	cbc.UpdateFinances(cfg.Finances)
 	cbc.UpdateBeneficiaries(child, others...)
-	err := cbc.UpdateForumla(cfg.Formula)
-	return cbc, err
+	return cbc, nil
 }
 
 // Calc returns the recievable amount of child benefits
@@ -61,22 +69,4 @@ func (c *CBCalculator) UpdateBeneficiaries(child calc.Person, others ...calc.Per
 	for _, otherChild := range others {
 		c.children = append(c.children, otherChild.Clone())
 	}
-}
-
-// UpdateForumla sets the formula for calculating the amount of benefits for
-// children given family finances. Users may call this method to set the
-// formula to anything other than what the calculator was initialized with
-func (c *CBCalculator) UpdateForumla(newFormula calc.ChildBenefitFormula) error {
-
-	if newFormula == nil {
-		return calc.ErrNoFormula
-	}
-
-	err := newFormula.Validate()
-	if err != nil {
-		return errors.Wrap(err, "invalid formula")
-	}
-
-	c.formula = newFormula
-	return nil
 }
