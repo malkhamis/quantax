@@ -50,6 +50,10 @@ func (mrf *MaxReducerFormula) Validate() error {
 		}
 	}
 
+	if mrf.BenefitReducer == nil {
+		return calc.ErrNoFormula
+	}
+
 	if err := mrf.BenefitReducer.Validate(); err != nil {
 		return errors.Wrap(err, "invalid step reducers")
 	}
