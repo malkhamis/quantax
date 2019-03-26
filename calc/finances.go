@@ -8,42 +8,19 @@ type IndividualFinances struct {
 	Deductions float64 `json:"deductions"`
 }
 
-// NetIncome calculate the total income of +/- adjustments. The income is
-// calculated as the sum of taxable amounts less the sum of deductions,
-// plus/minus the given adjustments (if any)
-// TODO: this might not be the responsibility of this type?
-func (f IndividualFinances) NetIncome(adjustments ...float64) float64 {
-
-	total := f.Income - f.Deductions
-	for _, adj := range adjustments {
-		total += adj
-	}
-	return total
-}
-
-// FamilyFinances is used by types implementing the ChildBenefitCalculator
-// interface to recieve input needed to calculate benefits
+// FamilyFinances represents financial data for a couple
 type FamilyFinances [2]IndividualFinances
 
-// Income calculate the the income sum of the family +/- adjustments. The
-// calculation is based on taxable amounts only without subtracting deductions
-func (f FamilyFinances) Income(adjustments ...float64) float64 {
-
-	total := f[0].Income + f[1].Income
-	for _, adj := range adjustments {
-		total += adj
-	}
-	return total
+// Income calculate the the total income of the couple. The calculation is
+// only based on adding the income components of the couple
+func (f FamilyFinances) Income() float64 {
+	return f[0].Income + f[1].Income
 }
 
-// Deductions calculate the the total deductions of the family +/- adjustments.
-func (f FamilyFinances) Deductions(adjustments ...float64) float64 {
-
-	total := f[0].Deductions + f[1].Deductions
-	for _, adj := range adjustments {
-		total += adj
-	}
-	return total
+// Deductions calculate the the total deductions of the couple. The calculation
+// is only based on adding the deduction components of the couple
+func (f FamilyFinances) Deductions() float64 {
+	return f[0].Deductions + f[1].Deductions
 }
 
 // Split returns the individual finances that jointly represent this object
