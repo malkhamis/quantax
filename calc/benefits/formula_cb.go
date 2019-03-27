@@ -5,7 +5,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var _ calc.ChildBenefitFormula = (*MaxReducerFormula)(nil)
+var _ ChildBenefitFormula = (*MaxReducerFormula)(nil)
 
 // MaxReducerFormula computes Canada Child Benefits amounts for child(ren)
 type MaxReducerFormula struct {

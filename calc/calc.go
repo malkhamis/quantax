@@ -22,15 +22,6 @@ type TaxFormula interface {
 	BasicFormula
 }
 
-// ChildBenefitFormula represents a method for calculating child benefits
-type ChildBenefitFormula interface {
-	// Apply returns the sum of benefits for all beneficiaries
-	Apply(income float64, first Person, others ...Person) float64
-	// Validate checks if the formula is valid for use
-	Validate() error
-	// TODO: embed Formula
-}
-
 // TaxCalculator is used to calculate payable tax.
 type TaxCalculator interface {
 	// Calc returns the payable amount of tax on the income in this calculator

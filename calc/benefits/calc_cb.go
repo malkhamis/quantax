@@ -10,14 +10,14 @@ var _ calc.ChildBenefitCalculator = (*CBCalculator)(nil)
 // ConfigCB are the parameters for creating a new child benefit calculator
 type ConfigCB struct {
 	Finances calc.FamilyFinances
-	Formula  calc.ChildBenefitFormula
+	Formula  ChildBenefitFormula
 }
 
 // CBCalculator is used to calculate recievable child benefits for families
 // with dependent children. This type implements 'calc.ChildBenefitCalculator'
 type CBCalculator struct {
 	children []calc.Person
-	formula  calc.ChildBenefitFormula
+	formula  ChildBenefitFormula
 	finances calc.FamilyFinances
 }
 

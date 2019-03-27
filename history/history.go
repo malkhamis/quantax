@@ -3,11 +3,12 @@ package history
 
 import (
 	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/benefits"
 )
 
 type (
 	yearlyTaxFormulas = map[uint]calc.TaxFormula
-	yearlyCBFormulas  = map[uint]calc.ChildBenefitFormula
+	yearlyCBFormulas  = map[uint]benefits.ChildBenefitFormula
 )
 
 const MonthsInYear = 12
@@ -40,7 +41,7 @@ func GetTaxFormula(year uint, region Jurisdiction) (calc.TaxFormula, error) {
 
 // GetChildBenefitFormula returns the child benefit formula for the given year
 // and region
-func GetChildBenefitFormula(year uint, region Jurisdiction) (calc.ChildBenefitFormula, error) {
+func GetChildBenefitFormula(year uint, region Jurisdiction) (benefits.ChildBenefitFormula, error) {
 
 	jurisdictionFormulas, ok := cbFormulasAll[region]
 	if !ok {
