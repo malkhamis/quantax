@@ -45,7 +45,7 @@ func NewChildBenefitCalculator(finances calc.FamilyFinances, cfg CBCalculatorCon
 		return nil, err
 	}
 
-	calcCfg := benefits.ConfigCCB{
+	calcCfg := benefits.ConfigCB{
 		Finances: finances,
 		Formula:  formula,
 	}

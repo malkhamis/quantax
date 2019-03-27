@@ -11,7 +11,8 @@ var _ BasicFormula = (WeightedBracketFormula)(nil)
 // Bracket represents a float number range, e.g. [47630.51, 95259.32]
 type Bracket [2]float64
 
-// Validate ensures that this bracket is within [0, +Inf]
+// Validate ensures that this bracket is within [0, +Inf]. Users need to call
+// this method before use only if the instance was manually created/modified
 func (b Bracket) Validate() error {
 
 	if b.Lower() > b.Upper() {
@@ -34,11 +35,6 @@ func (b Bracket) Lower() float64 {
 // Upper returns the upper limit/bound of this bracket
 func (b Bracket) Upper() float64 {
 	return b[1]
-}
-
-// Clone returns a copy of this bracket
-func (b Bracket) Clone() Bracket {
-	return Bracket{b[0], b[1]}
 }
 
 // WeightedBracketFormula maps weights (rates) to numeric ranges, e.g. brackets
@@ -97,7 +93,7 @@ func (wb WeightedBracketFormula) Clone() WeightedBracketFormula {
 	}
 
 	for rate, bracket := range wb {
-		clone[rate] = bracket.Clone()
+		clone[rate] = bracket
 	}
 
 	return clone

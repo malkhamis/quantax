@@ -26,15 +26,15 @@ var taxFormulaCanada2018 = calc.WeightedBracketFormula{
 	0.330:  calc.Bracket{205842, math.Inf(1)},
 }
 
-var cbFormulaCanada2017 = &benefits.CCBFormula{
+var cbFormulaCanada2017 = &benefits.MaxReducerFormula{
 	BenefitClasses: []benefits.AgeGroupBenefits{
 		benefits.AgeGroupBenefits{
-			Ages:    calc.AgeRange{0, (MonthsInYear * 6) - 1},
-			Amounts: calc.Bracket{0, 541.33},
+			AgesMonths:      calc.AgeRange{0, (MonthsInYear * 6) - 1},
+			AmountsPerMonth: calc.Bracket{0, 541.33},
 		},
 		benefits.AgeGroupBenefits{
-			Ages:    calc.AgeRange{MonthsInYear * 6, MonthsInYear * 17},
-			Amounts: calc.Bracket{0, 456.75},
+			AgesMonths:      calc.AgeRange{MonthsInYear * 6, MonthsInYear * 17},
+			AmountsPerMonth: calc.Bracket{0, 456.75},
 		},
 	},
 	BenefitReducer: &benefits.StepReducer{

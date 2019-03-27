@@ -25,7 +25,8 @@ func (ar AmplifiedReducer) Clone() Reducer {
 	return AmplifiedReducer(clone)
 }
 
-// Validate ensures that this amplified reducer is valid for user
+// Validate ensures that this instance is valid for use. Users need to call
+// this method before use only if the instance was manually created/modified
 func (ar AmplifiedReducer) Validate() error {
 	return calc.WeightedBracketFormula(ar).Validate()
 }
