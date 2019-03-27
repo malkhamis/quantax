@@ -7,9 +7,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TestMaxReducer_MinAnnualAmount(t *testing.T) {
+func TestCCBMaxReducer_MinAnnualAmount(t *testing.T) {
 
-	formula := MaxReducerFormula{
+	formula := &CCBMaxReducer{
 		BenefitClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      calc.AgeRange{0, 10},
@@ -35,7 +35,7 @@ func TestMaxReducer_MinAnnualAmount(t *testing.T) {
 
 func TestMaxReducer_MaxAnnualAmount(t *testing.T) {
 
-	formula := MaxReducerFormula{
+	formula := CCBMaxReducer{
 		BenefitClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      calc.AgeRange{0, 10},
@@ -59,9 +59,9 @@ func TestMaxReducer_MaxAnnualAmount(t *testing.T) {
 
 }
 
-func TestMaxReducerFormula_Validate_InvalidAgeRanges(t *testing.T) {
+func TestCCBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 
-	formula := MaxReducerFormula{
+	formula := CCBMaxReducer{
 		BenefitClasses: []AgeGroupBenefits{
 			AgeGroupBenefits{
 				AgesMonths:      calc.AgeRange{10, 0},
@@ -76,11 +76,11 @@ func TestMaxReducerFormula_Validate_InvalidAgeRanges(t *testing.T) {
 	}
 }
 
-func TestMaxReducerFormula_Validate_NilFormula(t *testing.T) {
+func TestCCBMaxReducer_Validate_NilFormula(t *testing.T) {
 
-	formula := MaxReducerFormula{
+	formula := CCBMaxReducer{
 		BenefitClasses: nil,
-		BenefitReducer: nil,
+		Reducers:       nil,
 	}
 
 	err := formula.Validate()
@@ -89,11 +89,11 @@ func TestMaxReducerFormula_Validate_NilFormula(t *testing.T) {
 	}
 }
 
-func TestMaxReducerFormula_Validate_InvalidFormula(t *testing.T) {
+func TestCCBMaxReducer_Validate_InvalidFormula(t *testing.T) {
 
-	formula := MaxReducerFormula{
-		BenefitReducer: AmplifiedReducer{
-			0.0132: calc.Bracket{100000, 1},
+	formula := CCBMaxReducer{
+		Reducers: []calc.WeightedBracketFormula{
+			{0.0132: calc.Bracket{100000, 1}},
 		},
 	}
 

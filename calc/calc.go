@@ -45,5 +45,5 @@ type ChildBenefitCalculator interface {
 	// UpdateBeneficiary sets the child which the calculator will use in
 	// subsequent calls to Calc(). Users may call this method to set beneficiary
 	// to anything other than what the calculator was initialized with
-	UpdateBeneficiaries(Person, ...Person)
+	UpdateBeneficiaries(...Person)
 }
