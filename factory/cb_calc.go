@@ -1,8 +1,6 @@
 package factory
 
 import (
-	"errors"
-
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/benefits"
 	"github.com/malkhamis/quantax/history"
@@ -23,7 +21,7 @@ func NewChildBenefitCalcFactory(opts Options, children ...calc.Person) (*ChildBe
 
 	region, ok := knownRegions[opts.Region]
 	if !ok {
-		return nil, errors.New("unkown region")
+		return nil, ErrRegionNotExist
 	}
 
 	foundFormula, err := history.GetChildBenefitFormula(opts.Year, region)

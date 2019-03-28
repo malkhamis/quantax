@@ -2,8 +2,6 @@
 package factory
 
 import (
-	"errors"
-
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/tax"
 	"github.com/malkhamis/quantax/history"
@@ -21,7 +19,7 @@ func NewTaxCalcFactory(opts Options) (*TaxCalcFactory, error) {
 
 	region, ok := knownRegions[opts.Region]
 	if !ok {
-		return nil, errors.New("unkown region")
+		return nil, ErrRegionNotExist
 	}
 
 	foundFormula, err := history.GetTaxFormula(opts.Year, region)
