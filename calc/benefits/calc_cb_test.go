@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/malkhamis/quantax/calc"
+	"github.com/pkg/errors"
 )
 
 func TestNewCBCalculator_Full(t *testing.T) {
@@ -60,6 +61,26 @@ func TestNewCBCalculator_Full(t *testing.T) {
 	expected = 55 * 12
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
+	}
+
+}
+
+func TestNewCBCalculator_Errors(t *testing.T) {
+
+	bracket := calc.WeightedBracketFormula{
+		0.0132: calc.Bracket{math.Inf(1), 100000},
+	}
+	formulaBC := &BCECTBMaxReducer{ReducerFormula: bracket}
+	finances := calc.FamilyFinances{{}, {}}
+
+	_, err := NewCBCalculator(formulaBC, finances)
+	if errors.Cause(err) != calc.ErrBoundsReversed {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrBoundsReversed, err)
+	}
+
+	_, err = NewCBCalculator(nil, finances)
+	if errors.Cause(err) != calc.ErrNoFormula {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
 	}
 
 }
