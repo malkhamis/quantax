@@ -4,11 +4,12 @@ package benefits
 
 import "github.com/malkhamis/quantax/calc"
 
-type IncomeType string
+//go:generate stringer -type=IncomeType -output=incometype_gen.go
+type IncomeType uint
 
 const (
-	REGU IncomeType = "regular"
-	AFNI IncomeType = "adjusted family net income"
+	REGU IncomeType = iota // regular income (income - deductions)
+	AFNI                   // adjusted family net income (income - deductions - UCCB - RDSP)
 )
 
 // Calc calculates the income according to the underlying method
