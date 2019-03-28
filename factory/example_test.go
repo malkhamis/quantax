@@ -6,7 +6,7 @@ import (
 	"github.com/malkhamis/quantax/calc"
 )
 
-func ExampleNewIncomeTaxCalculator_Calc() {
+func ExampleNewTaxCalcFactory() {
 
 	calcFactoryFed, err := NewTaxCalcFactory(Options{Year: 2018, Region: Canada})
 	if err != nil {
@@ -36,17 +36,21 @@ func ExampleNewIncomeTaxCalculator_Calc() {
 	fmt.Printf("%.2f", aggTax) // Output: 52821.09
 }
 
-func ExampleNewChildBenefitCalculatorForBC() {
+func ExampleNewChildBenefitCalcFactory() {
 
-	opts := Options{
-		Year:   2017,
-		Region: BC,
-	}
 	children := []calc.Person{
 		{Name: "A", AgeMonths: 3},
 		{Name: "B", AgeMonths: 3},
 	}
 
+	opts := Options{Year: 2017, Region: Canada}
+	calcFactoryCanada, err := NewChildBenefitCalcFactory(opts, children...)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	opts = Options{Year: 2017, Region: BC}
 	calcFactoryBC, err := NewChildBenefitCalcFactory(opts, children...)
 	if err != nil {
 		fmt.Println(err)
@@ -58,46 +62,19 @@ func ExampleNewChildBenefitCalculatorForBC() {
 		calc.IndividualFinances{Income: 0},
 	}
 
-	calculator, err := calcFactoryBC.NewCalculator(finances)
+	calcCanada, err := calcFactoryCanada.NewCalculator(finances)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	total := calculator.Calc()
-	fmt.Printf("%.2f", total) // Output: 1056.00
-
-}
-
-func ExampleNewChildBenefitCalculatorForCanada() {
-
-	opts := Options{
-		Year:   2017,
-		Region: Canada,
-	}
-	children := []calc.Person{
-		{Name: "A", AgeMonths: 3},
-		{Name: "B", AgeMonths: 3},
-	}
-
-	calcFactoryBC, err := NewChildBenefitCalcFactory(opts, children...)
+	calcBC, err := calcFactoryBC.NewCalculator(finances)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	finances := calc.FamilyFinances{
-		calc.IndividualFinances{Income: 110000},
-		calc.IndividualFinances{Income: 0},
-	}
-
-	calculator, err := calcFactoryBC.NewCalculator(finances)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	total := calculator.Calc()
-	fmt.Printf("%.2f", total) // Output: 5686.54
+	total := calcCanada.Calc() + calcBC.Calc()
+	fmt.Printf("%.2f", total) // Output: 6742.54
 
 }
