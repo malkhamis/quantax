@@ -20,11 +20,7 @@ func (p payments) Clone() payments {
 	if p == nil {
 		return nil
 	}
-
 	clone := make(payments, len(p))
-	for i, payment := range p {
-		clone[i] = payment
-	}
-
+	copy(clone, p)
 	return clone
 }
