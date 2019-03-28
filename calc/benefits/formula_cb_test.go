@@ -58,17 +58,6 @@ func TestStepReducer_Apply(t *testing.T) {
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
 	}
-	// actualReduction = sr.Reduce(100000, -1.0)
-	// expectedReduction = 0.070*(65976-30450) + 0.032*(100000-65976)
-	// if actualReduction != expectedReduction {
-	// 	t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expectedReduction, actualReduction)
-	// }
-	//
-	// actualReduction = sr.Reduce(100000, 100.0)
-	// expectedReduction = 0.230*(65976-30450) + 0.095*(100000-65976)
-	// if actualReduction != expectedReduction {
-	// 	t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expectedReduction, actualReduction)
-	// }
 }
 
 func TestCCBMaxReducer_MinAnnualAmount(t *testing.T) {
@@ -167,32 +156,44 @@ func TestCCBMaxReducer_Validate_InvalidFormula(t *testing.T) {
 	}
 }
 
-//
-// func TestCCBMaxReducer_Clone(t *testing.T) {
-//
-// 	formula := &CCBMaxReducer{
-// 		BenefitClasses: []AgeGroupBenefits{
-// 			{
-// 				AgesMonths:      calc.AgeRange{0, 10},
-// 				AmountsPerMonth: calc.Bracket{50, 100},
-// 			},
-// 			{
-// 				AgesMonths:      calc.AgeRange{11, 20},
-// 				AmountsPerMonth: calc.Bracket{25, 50},
-// 			},
-// 		},
-// 	}
-//
-// 	originalResults := formula.Apply(50000, children)(calc.Person{AgeMonths: 5})
-//
-// 	clone := formula.Clone()
-// 	formula.BenefitClasses = nil
-// 	formula.Reducers = nil
-//
-// 	clone.Apply(income, children)
-// 	if actual != expected {
-// 		t.Errorf(
-// 			"expected a 5 month old child to be entitled to %.2f, got %.2f",
-// 			expected, actual,
-// 		)
-// 	}
+func TestStepReducer_Clone(t *testing.T) {
+
+	childCount1 := calc.WeightedBracketFormula{
+		0.000: calc.Bracket{0, 10000},
+		0.030: calc.Bracket{10000, 50000},
+		0.070: calc.Bracket{50000, math.Inf(1)},
+	}
+	childCount2 := calc.WeightedBracketFormula{
+		0.000: calc.Bracket{0, 10000},
+		0.050: calc.Bracket{10000, 50000},
+		0.100: calc.Bracket{50000, math.Inf(1)},
+	}
+
+	originalFormula := &CCBMaxReducer{
+		Reducers: []calc.WeightedBracketFormula{childCount1, childCount2},
+		BenefitClasses: []AgeGroupBenefits{
+			{
+				AgesMonths:      calc.AgeRange{0, 11},
+				AmountsPerMonth: calc.Bracket{0, 500},
+			},
+			{
+				AgesMonths:      calc.AgeRange{12, 23},
+				AmountsPerMonth: calc.Bracket{0, 250},
+			},
+		},
+	}
+
+	income := 100000.0
+	child1, child2 := calc.Person{AgeMonths: 0}, calc.Person{AgeMonths: 6}
+	originalResults := originalFormula.Apply(income, child1, child2)
+
+	clone := originalFormula.Clone()
+	originalFormula.BenefitClasses = nil
+	originalFormula.Reducers = nil
+
+	actualResults := clone.Apply(income, child1, child2)
+	if actualResults != originalResults {
+		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", originalResults, actualResults)
+	}
+
+}
