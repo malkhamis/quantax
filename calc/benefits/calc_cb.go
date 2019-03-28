@@ -52,5 +52,6 @@ func (c *CBCalculator) UpdateFinances(newFinances calc.FamilyFinances) {
 // subsequent calls to Calc(). Users may call this method to set beneficiary
 // to anything other than what the calculator was initialized with
 func (c *CBCalculator) UpdateBeneficiaries(children ...calc.Person) {
-	c.children = append(c.children, children...)
+	c.children = make([]calc.Person, len(children))
+	copy(c.children, children)
 }
