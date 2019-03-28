@@ -6,8 +6,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var _ BasicFormula = (WeightedBracketFormula)(nil)
-
 // Bracket represents a float number range, e.g. [47630.51, 95259.32]
 type Bracket [2]float64
 

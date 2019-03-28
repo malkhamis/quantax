@@ -2,12 +2,12 @@
 package history
 
 import (
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/benefits"
+	"github.com/malkhamis/quantax/calc/tax"
 )
 
 type (
-	yearlyTaxFormulas = map[uint]calc.TaxFormula
+	yearlyTaxFormulas = map[uint]tax.Formula
 	yearlyCBFormulas  = map[uint]benefits.ChildBenefitFormula
 )
 
@@ -24,7 +24,7 @@ var cbFormulasAll = map[Jurisdiction]yearlyCBFormulas{
 }
 
 // GetTaxFormula returns the tax formula for the given year and region
-func GetTaxFormula(year uint, region Jurisdiction) (calc.TaxFormula, error) {
+func GetTaxFormula(year uint, region Jurisdiction) (tax.Formula, error) {
 
 	jurisdictionFormulas, ok := taxFormulasAll[region]
 	if !ok {
@@ -53,5 +53,5 @@ func GetChildBenefitFormula(year uint, region Jurisdiction) (benefits.ChildBenef
 		return nil, ErrFormulaNotExist
 	}
 
-	return formula, nil
+	return formula.Clone(), nil
 }

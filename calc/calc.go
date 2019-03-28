@@ -1,27 +1,6 @@
 // Package calc defines interfaces for various tax-related calculators
 package calc
 
-type Formula interface {
-	// Name returns the name of this formula
-	Name() string
-	// Validate checks if the formula is valid for use
-	Validate() error
-}
-
-// BasicFormula takes a single numeric input and produces a numeric output
-type BasicFormula interface {
-	// Apply applies the formula on the given numeric parameter
-	Apply(param float64) float64
-	// Validate checks if the formula is valid for use
-	Validate() error
-	// TODO: embed Formula
-}
-
-// TaxFormula computes payable taxes on individual income
-type TaxFormula interface {
-	BasicFormula
-}
-
 // TaxCalculator is used to calculate payable tax.
 type TaxCalculator interface {
 	// Calc returns the payable amount of tax on the income in this calculator

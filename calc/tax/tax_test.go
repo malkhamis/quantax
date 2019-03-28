@@ -23,7 +23,7 @@ func TestCalculator_Calc(t *testing.T) {
 	cases := []struct {
 		finances    calc.IndividualFinances
 		credits     []float64
-		formula     calc.TaxFormula
+		formula     Formula
 		expectedTax float64
 		errMargin   float64
 	}{

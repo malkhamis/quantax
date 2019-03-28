@@ -13,13 +13,13 @@ var (
 
 // Calculator is used to calculate payable tax for individuals
 type Calculator struct {
-	formula  calc.TaxFormula
+	formula  Formula
 	finances calc.IndividualFinances
 }
 
 // NewCalculator returns a new calculator for the given financial numbers
 // and tax brackets.
-func NewCalculator(finances calc.IndividualFinances, formula calc.TaxFormula) (*Calculator, error) {
+func NewCalculator(finances calc.IndividualFinances, formula Formula) (*Calculator, error) {
 
 	if formula == nil {
 		return nil, calc.ErrNoFormula
