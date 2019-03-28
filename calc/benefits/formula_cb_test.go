@@ -35,6 +35,11 @@ func TestStepReducer_Apply(t *testing.T) {
 		},
 	}
 
+	err := mr.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	child1, child2 := calc.Person{AgeMonths: 0}, calc.Person{AgeMonths: 6}
 	max := (12.0 * 500) + (6.0*500 + 6.0*250)
 
@@ -140,6 +145,17 @@ func TestCCBMaxReducer_Validate_NilFormula(t *testing.T) {
 	if errors.Cause(err) != calc.ErrNoFormula {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
 	}
+
+	formula = CCBMaxReducer{
+		BenefitClasses: nil,
+		Reducers:       []calc.WeightedBracketFormula{nil},
+	}
+
+	err = formula.Validate()
+	if errors.Cause(err) != calc.ErrNoFormula {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
+	}
+
 }
 
 func TestCCBMaxReducer_Validate_InvalidFormula(t *testing.T) {
@@ -183,6 +199,11 @@ func TestStepReducer_Clone(t *testing.T) {
 		},
 	}
 
+	err := originalFormula.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	income := 100000.0
 	child1, child2 := calc.Person{AgeMonths: 0}, calc.Person{AgeMonths: 6}
 	originalResults := originalFormula.Apply(income, child1, child2)
@@ -196,4 +217,12 @@ func TestStepReducer_Clone(t *testing.T) {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", originalResults, actualResults)
 	}
 
+}
+
+func TestCCBMaxReducer_IncomeCalcMethod(t *testing.T) {
+
+	incomeType := (&CCBMaxReducer{}).IncomeCalcMethod()
+	if incomeType != AFNI {
+		t.Errorf("unexpected income type\nwant: %s\n got: %s", AFNI, incomeType)
+	}
 }
