@@ -26,7 +26,7 @@ var taxFormulaCanada2018 = calc.WeightedBracketFormula{
 	0.330:  calc.Bracket{205842, math.Inf(1)},
 }
 
-var cbFormulaCanada2017 = &benefits.MaxReducerFormula{
+var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
 	BenefitClasses: []benefits.AgeGroupBenefits{
 		benefits.AgeGroupBenefits{
 			AgesMonths:      calc.AgeRange{0, (MonthsInYear * 6) - 1},
@@ -37,26 +37,23 @@ var cbFormulaCanada2017 = &benefits.MaxReducerFormula{
 			AmountsPerMonth: calc.Bracket{0, 456.75},
 		},
 	},
-	BenefitReducer: &benefits.StepReducer{
-		StepFormulas: []calc.WeightedBracketFormula{
-			calc.WeightedBracketFormula{}, // 0 child
-			calc.WeightedBracketFormula{ // 1 child
-				0.000: calc.Bracket{0, 30450},
-				0.070: calc.Bracket{30450, 65976},
-				0.032: calc.Bracket{65976, math.Inf(1)},
-			},
-			calc.WeightedBracketFormula{ // 2 children
-				0.000: calc.Bracket{0, 30450},
-				0.135: calc.Bracket{30450, 65976},
-				0.057: calc.Bracket{65976, math.Inf(1)},
-			},
-			calc.WeightedBracketFormula{ // 3 children
-				0.000: calc.Bracket{0, 30450},
-				0.190: calc.Bracket{30450, 65976},
-				0.080: calc.Bracket{65976, math.Inf(1)},
-			},
+	Reducers: []calc.WeightedBracketFormula{
+		calc.WeightedBracketFormula{ // 1 child
+			0.000: calc.Bracket{0, 30450},
+			0.070: calc.Bracket{30450, 65976},
+			0.032: calc.Bracket{65976, math.Inf(1)},
 		},
-		AboveMaxStepFormula: calc.WeightedBracketFormula{ // 4+ children
+		calc.WeightedBracketFormula{ // 2 children
+			0.000: calc.Bracket{0, 30450},
+			0.135: calc.Bracket{30450, 65976},
+			0.057: calc.Bracket{65976, math.Inf(1)},
+		},
+		calc.WeightedBracketFormula{ // 3 children
+			0.000: calc.Bracket{0, 30450},
+			0.190: calc.Bracket{30450, 65976},
+			0.080: calc.Bracket{65976, math.Inf(1)},
+		},
+		calc.WeightedBracketFormula{ // 4+ children
 			0.000: calc.Bracket{0, 30450},
 			0.230: calc.Bracket{30450, 65976},
 			0.095: calc.Bracket{65976, math.Inf(1)},
