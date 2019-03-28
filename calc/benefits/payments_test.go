@@ -24,4 +24,9 @@ func TestPayments_Clone(t *testing.T) {
 		t.Errorf("expected changes to clone to not affect original payments")
 	}
 
+	p = nil
+	clone = p.Clone()
+	if clone != nil {
+		t.Error("expected cloned nil paymeny to also be nil")
+	}
 }

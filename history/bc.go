@@ -27,14 +27,14 @@ var taxFormulaBC2018 = calc.WeightedBracketFormula{
 	0.1680:  calc.Bracket{150000, math.Inf(1)},
 }
 
-var cbFormulaBC2018 = &benefits.MaxReducerFormula{
+var cbFormulaBC2018 = &benefits.BCECTBMaxReducer{
 	BenefitClasses: []benefits.AgeGroupBenefits{
 		benefits.AgeGroupBenefits{
 			AgesMonths:      calc.AgeRange{0, (MonthsInYear * 6) - 1},
 			AmountsPerMonth: calc.Bracket{0, 55},
 		},
 	},
-	BenefitReducer: benefits.AmplifiedReducer{
+	ReducerFormula: calc.WeightedBracketFormula{
 		0.0132: calc.Bracket{100000, math.Inf(1)},
 	},
 }
