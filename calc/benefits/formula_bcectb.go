@@ -49,7 +49,8 @@ func (mr *BCECTBMaxReducer) Apply(income float64, children ...calc.Person) float
 
 // IncomeCalcMethod returns the type of income this formula expects
 func (mr *BCECTBMaxReducer) IncomeCalcMethod() IncomeType {
-	return REGU
+	// TODO: legislation is not explicit about it
+	return AFNI
 }
 
 // Validate ensures that this instance is valid for use. Users need to call this
@@ -81,9 +82,7 @@ func (mr *BCECTBMaxReducer) Clone() ChildBenefitFormula {
 		ReducerFormula: mr.ReducerFormula.Clone(),
 	}
 
-	for i, ag := range mr.BenefitClasses {
-		clone.BenefitClasses[i] = ag
-	}
+	copy(clone.BenefitClasses, mr.BenefitClasses)
 
 	return clone
 }
