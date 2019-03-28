@@ -4,99 +4,77 @@ import (
 	"fmt"
 
 	"github.com/malkhamis/quantax/calc"
-	"github.com/malkhamis/quantax/history"
 )
 
-func ExampleNewIncomeTaxCalculator_Calc() {
+func ExampleNewTaxCalcFactory() {
 
-	cfgFed := CalculatorConfig{
-		Year:   2018,
-		Region: history.Canada,
+	calcFactoryFed, err := NewTaxCalcFactory(Options{Year: 2018, Region: Canada})
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-
-	cfgBC := CalculatorConfig{
-		Year:   2018,
-		Region: history.BC,
-	}
-
-	finances := calc.IndividualFinances{Income: 170000.0}
-
-	calcFed, err := NewIncomeTaxCalculator(finances, cfgFed)
+	calcFactoryBC, err := NewTaxCalcFactory(Options{Year: 2018, Region: BC})
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	calcBC, err := NewIncomeTaxCalculator(finances, cfgBC)
+	finances := calc.IndividualFinances{Income: 170000.0}
+
+	calcFed, err := calcFactoryFed.NewCalculator(finances)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	calcBC, err := calcFactoryBC.NewCalculator(finances)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	aggTax := calcFed.Calc() + calcBC.Calc()
-	fmt.Printf("%.2f", aggTax) // Output: 52819.71
+	fmt.Printf("%.2f", aggTax) // Output: 52821.09
 }
 
-func ExampleNewIncomeTaxCalculator_UpdateFinances() {
+func ExampleNewChildBenefitCalcFactory() {
 
-	cfgFed := CalculatorConfig{
-		Year:   2018,
-		Region: history.Canada,
+	children := []calc.Person{
+		{Name: "A", AgeMonths: 3},
+		{Name: "B", AgeMonths: 3},
 	}
 
-	cfgBC := CalculatorConfig{
-		Year:   2018,
-		Region: history.BC,
-	}
-
-	finances := calc.IndividualFinances{Income: 170000.0}
-
-	calcFed, err := NewIncomeTaxCalculator(finances, cfgFed)
+	opts := Options{Year: 2017, Region: Canada}
+	calcFactoryCanada, err := NewChildBenefitCalcFactory(opts, children...)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	calcBC, err := NewIncomeTaxCalculator(finances, cfgBC)
+	opts = Options{Year: 2017, Region: BC}
+	calcFactoryBC, err := NewChildBenefitCalcFactory(opts, children...)
 	if err != nil {
 		fmt.Println(err)
 		return
-	}
-
-	newFinNums := calc.IndividualFinances{Income: 20000.0}
-	calcFed.UpdateFinances(newFinNums)
-	calcBC.UpdateFinances(newFinNums)
-
-	aggTax := calcFed.Calc() + calcBC.Calc()
-	fmt.Printf("%.2f", aggTax) // Output: 1713.80
-
-}
-
-func ExampleNewChildBenefitCalculator() {
-
-	cfg := CBCalculatorConfig{
-		CalculatorConfig: CalculatorConfig{
-			Year:   2018,
-			Region: history.Canada,
-		},
-		Children: []calc.Person{
-			{Name: "Hafedh", AgeMonths: 12*6 - 2},
-			{Name: "Zaid", AgeMonths: 12 * 3},
-		},
 	}
 
 	finances := calc.FamilyFinances{
-		calc.IndividualFinances{Income: 83000},
+		calc.IndividualFinances{Income: 110000},
 		calc.IndividualFinances{Income: 0},
 	}
 
-	ccb, err := NewChildBenefitCalculator(finances, cfg)
+	calcCanada, err := calcFactoryCanada.NewCalculator(finances)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	total := ccb.Calc()
-	fmt.Printf("%.2f", total) // Output: 8809.20
+	calcBC, err := calcFactoryBC.NewCalculator(finances)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	total := calcCanada.Calc() + calcBC.Calc()
+	fmt.Printf("%.2f", total) // Output: 6742.54
 
 }
