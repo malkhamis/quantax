@@ -13,7 +13,6 @@ var (
 // Calculator is used to calculate payable tax for individuals
 type CalculatorAgg struct {
 	calculators []*Calculator
-	finances    calc.IndividualFinances
 }
 
 // NewCalculatorAgg returns a new tax calculator for the given financial numbers
