@@ -14,7 +14,7 @@ var _ ChildBenefitFormula = (*BCECTBMaxReducer)(nil)
 // to a single rated-bracket and is amplified by the number of children
 type BCECTBMaxReducer struct {
 	// the [min, max] dollar amounts for given age groups (bound-inclusive)
-	BenefitClasses []AgeGroupBenefits
+	BeneficiaryClasses []AgeGroupBenefits
 	// Reducer is the sub-formula used to reduce the maximum benefits
 	ReducerFormula calc.WeightedBracketFormula
 }
@@ -29,7 +29,7 @@ func (mr *BCECTBMaxReducer) Apply(income float64, children ...calc.Person) float
 	var maxBenefits float64
 	for _, child := range children {
 		maxBenefits += multiAgeGroupBenefits(
-			mr.BenefitClasses,
+			mr.BeneficiaryClasses,
 		).MaxAnnualAmount(
 			child,
 		)
@@ -38,7 +38,7 @@ func (mr *BCECTBMaxReducer) Apply(income float64, children ...calc.Person) float
 	var minBenefits float64
 	for _, child := range children {
 		minBenefits += multiAgeGroupBenefits(
-			mr.BenefitClasses,
+			mr.BeneficiaryClasses,
 		).MinAnnualAmount(
 			child,
 		)
@@ -65,7 +65,7 @@ func (mr *BCECTBMaxReducer) IncomeCalcMethod() IncomeType {
 // method before use only if the instance was manually created/modified
 func (mr *BCECTBMaxReducer) Validate() error {
 
-	for _, ageGroupBenefit := range mr.BenefitClasses {
+	for _, ageGroupBenefit := range mr.BeneficiaryClasses {
 		if err := ageGroupBenefit.Validate(); err != nil {
 			return errors.Wrap(err, "invalid age group benefits")
 		}
@@ -86,11 +86,11 @@ func (mr *BCECTBMaxReducer) Validate() error {
 func (mr *BCECTBMaxReducer) Clone() ChildBenefitFormula {
 
 	clone := &BCECTBMaxReducer{
-		BenefitClasses: make([]AgeGroupBenefits, len(mr.BenefitClasses)),
-		ReducerFormula: mr.ReducerFormula.Clone(),
+		BeneficiaryClasses: make([]AgeGroupBenefits, len(mr.BeneficiaryClasses)),
+		ReducerFormula:     mr.ReducerFormula.Clone(),
 	}
 
-	copy(clone.BenefitClasses, mr.BenefitClasses)
+	copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
 
 	return clone
 }

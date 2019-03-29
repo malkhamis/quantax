@@ -23,7 +23,7 @@ func TestCCBMaxReducer_Apply(t *testing.T) {
 
 	mr := &CCBMaxReducer{
 		Reducers: []calc.WeightedBracketFormula{childCount1, childCount2},
-		BenefitClasses: []AgeGroupBenefits{
+		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      calc.AgeRange{0, 11},
 				AmountsPerMonth: calc.Bracket{0, 500},
@@ -68,7 +68,7 @@ func TestCCBMaxReducer_Apply(t *testing.T) {
 func TestCCBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 
 	formula := CCBMaxReducer{
-		BenefitClasses: []AgeGroupBenefits{
+		BeneficiaryClasses: []AgeGroupBenefits{
 			AgeGroupBenefits{
 				AgesMonths:      calc.AgeRange{10, 0},
 				AmountsPerMonth: calc.Bracket{0, 55},
@@ -85,8 +85,8 @@ func TestCCBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 func TestCCBMaxReducer_Validate_NilFormula(t *testing.T) {
 
 	formula := CCBMaxReducer{
-		BenefitClasses: nil,
-		Reducers:       nil,
+		BeneficiaryClasses: nil,
+		Reducers:           nil,
 	}
 
 	err := formula.Validate()
@@ -95,8 +95,8 @@ func TestCCBMaxReducer_Validate_NilFormula(t *testing.T) {
 	}
 
 	formula = CCBMaxReducer{
-		BenefitClasses: nil,
-		Reducers:       []calc.WeightedBracketFormula{nil},
+		BeneficiaryClasses: nil,
+		Reducers:           []calc.WeightedBracketFormula{nil},
 	}
 
 	err = formula.Validate()
@@ -135,7 +135,7 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 
 	originalFormula := &CCBMaxReducer{
 		Reducers: []calc.WeightedBracketFormula{childCount1, childCount2},
-		BenefitClasses: []AgeGroupBenefits{
+		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      calc.AgeRange{0, 11},
 				AmountsPerMonth: calc.Bracket{0, 500},
@@ -157,7 +157,7 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 	originalResults := originalFormula.Apply(income, child1, child2)
 
 	clone := originalFormula.Clone()
-	originalFormula.BenefitClasses = nil
+	originalFormula.BeneficiaryClasses = nil
 	originalFormula.Reducers = nil
 
 	actualResults := clone.Apply(income, child1, child2)

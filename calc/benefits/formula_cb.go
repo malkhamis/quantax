@@ -14,7 +14,7 @@ var _ ChildBenefitFormula = (*CCBMaxReducer)(nil)
 // multi-tier, rated brackets
 type CCBMaxReducer struct {
 	// the [min, max] dollar amounts for given age groups (bound-inclusive)
-	BenefitClasses []AgeGroupBenefits
+	BeneficiaryClasses []AgeGroupBenefits
 	// Reducers are used to map amount-reducing formulas to child count,
 	// where the index of the formula represents the number of children.
 	// If the number of children is greater than the number of formulas,
@@ -32,7 +32,7 @@ func (mr *CCBMaxReducer) Apply(income float64, children ...calc.Person) float64 
 	var maxBenefits float64
 	for _, child := range children {
 		maxBenefits += multiAgeGroupBenefits(
-			mr.BenefitClasses,
+			mr.BeneficiaryClasses,
 		).MaxAnnualAmount(
 			child,
 		)
@@ -41,7 +41,7 @@ func (mr *CCBMaxReducer) Apply(income float64, children ...calc.Person) float64 
 	var minBenefits float64
 	for _, child := range children {
 		minBenefits += multiAgeGroupBenefits(
-			mr.BenefitClasses,
+			mr.BeneficiaryClasses,
 		).MinAnnualAmount(
 			child,
 		)
@@ -67,7 +67,7 @@ func (mr *CCBMaxReducer) IncomeCalcMethod() IncomeType {
 // method before use only if the instance was manually created/modified
 func (mr *CCBMaxReducer) Validate() error {
 
-	for _, ageGroupBenefit := range mr.BenefitClasses {
+	for _, ageGroupBenefit := range mr.BeneficiaryClasses {
 		if err := ageGroupBenefit.Validate(); err != nil {
 			return errors.Wrap(err, "invalid age group benefits")
 		}
@@ -96,11 +96,11 @@ func (mr *CCBMaxReducer) Validate() error {
 func (mr *CCBMaxReducer) Clone() ChildBenefitFormula {
 
 	clone := &CCBMaxReducer{
-		BenefitClasses: make([]AgeGroupBenefits, len(mr.BenefitClasses)),
-		Reducers:       make([]calc.WeightedBracketFormula, len(mr.Reducers)),
+		BeneficiaryClasses: make([]AgeGroupBenefits, len(mr.BeneficiaryClasses)),
+		Reducers:           make([]calc.WeightedBracketFormula, len(mr.Reducers)),
 	}
 
-	copy(clone.BenefitClasses, mr.BenefitClasses)
+	copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
 
 	for i, reducer := range mr.Reducers {
 		clone.Reducers[i] = reducer.Clone()

@@ -16,7 +16,7 @@ func TestNewCBCalculator_Full(t *testing.T) {
 
 	formulaBC := &BCECTBMaxReducer{
 		ReducerFormula: bracket,
-		BenefitClasses: []AgeGroupBenefits{
+		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      calc.AgeRange{0, 6*12 - 1},
 				AmountsPerMonth: calc.Bracket{0, 55},
