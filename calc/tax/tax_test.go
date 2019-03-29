@@ -11,7 +11,7 @@ import (
 
 func TestCalculator_Calc(t *testing.T) {
 
-	formulaCanada2018 := calc.WeightedBracketFormula{
+	formulaCanada2018 := CanadianFormula{
 		-0.150: calc.Bracket{0, 11809},
 		0.150:  calc.Bracket{0, 46605},
 		0.205:  calc.Bracket{46606, 93208},
@@ -22,7 +22,6 @@ func TestCalculator_Calc(t *testing.T) {
 
 	cases := []struct {
 		finances    calc.IndividualFinances
-		credits     []float64
 		formula     Formula
 		expectedTax float64
 		errMargin   float64
@@ -65,9 +64,8 @@ func TestCalculator_Calc(t *testing.T) {
 		},
 		{
 			finances:    calc.IndividualFinances{Income: 90000, Deductions: 5000},
-			credits:     []float64{30, 60},
 			formula:     formulaCanada2018,
-			expectedTax: 13000,
+			expectedTax: 13090,
 			errMargin:   1e-9,
 		},
 	}
@@ -81,7 +79,7 @@ func TestCalculator_Calc(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			actualTax := calculator.Calc(c.credits...)
+			actualTax := calculator.Calc()
 			if !areEqual(actualTax, c.expectedTax, c.errMargin) {
 				t.Errorf(
 					"difference between actual and expected total "+
@@ -97,7 +95,7 @@ func TestCalculator_Calc(t *testing.T) {
 
 func TestNewCalculator_InvalidFormula(t *testing.T) {
 
-	invalidTaxParams := calc.WeightedBracketFormula{0.10: calc.Bracket{300, 200}}
+	invalidTaxParams := CanadianFormula{0.10: calc.Bracket{300, 200}}
 	_, err := NewCalculator(calc.IndividualFinances{}, invalidTaxParams)
 	cause := errors.Cause(err)
 	if cause != calc.ErrBoundsReversed {

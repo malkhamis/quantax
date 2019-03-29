@@ -5,6 +5,7 @@ import (
 
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/benefits"
+	"github.com/malkhamis/quantax/calc/tax"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 	}
 )
 
-var taxFormulaCanada2018 = calc.WeightedBracketFormula{
+var taxFormulaCanada2018 = tax.CanadianFormula{
 	-0.150: calc.Bracket{0, 11809},
 	0.150:  calc.Bracket{0, 46605},
 	0.205:  calc.Bracket{46605, 93208},
