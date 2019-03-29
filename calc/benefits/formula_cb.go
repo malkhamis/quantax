@@ -31,12 +31,20 @@ func (mr *CCBMaxReducer) Apply(income float64, children ...calc.Person) float64 
 
 	var maxBenefits float64
 	for _, child := range children {
-		maxBenefits += mr.maxAnnualAmount(child)
+		maxBenefits += multiAgeGroupBenefits(
+			mr.BenefitClasses,
+		).MaxAnnualAmount(
+			child,
+		)
 	}
 
 	var minBenefits float64
 	for _, child := range children {
-		minBenefits += mr.minAnnualAmount(child)
+		minBenefits += multiAgeGroupBenefits(
+			mr.BenefitClasses,
+		).MinAnnualAmount(
+			child,
+		)
 	}
 
 	childCount := len(children)
@@ -99,46 +107,6 @@ func (mr *CCBMaxReducer) Clone() ChildBenefitFormula {
 	}
 
 	return clone
-}
-
-// maxAnnualAmount returns the maximum annual benefits for the given child
-func (mr *CCBMaxReducer) maxAnnualAmount(child calc.Person) float64 {
-
-	maxPayments := make(payments, 12)
-
-	for month := range maxPayments {
-		for _, ageGroup := range mr.BenefitClasses {
-
-			if ageGroup.IsInAgeGroup(child) {
-				maxPayments[month] += ageGroup.AmountsPerMonth.Upper()
-			}
-			// we still want to loop in case the child
-			// belongs to multiple benefit classes
-		}
-		child.AgeMonths++
-	}
-
-	return maxPayments.Total()
-}
-
-// minAnnualAmount returns the minimum annual benefits for the given child
-func (mr *CCBMaxReducer) minAnnualAmount(child calc.Person) float64 {
-
-	minPayments := make(payments, 12)
-
-	for month := range minPayments {
-		for _, ageGroup := range mr.BenefitClasses {
-
-			if ageGroup.IsInAgeGroup(child) {
-				minPayments[month] += ageGroup.AmountsPerMonth.Lower()
-			}
-			// we still want to loop in case the child
-			// belongs to multiple benefit age groups
-		}
-		child.AgeMonths++
-	}
-
-	return minPayments.Total()
 }
 
 // reducerFormula returns the reduction formula based on the child count

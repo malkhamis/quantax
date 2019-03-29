@@ -54,58 +54,6 @@ func TestBCECTBMaxReducer_Apply(t *testing.T) {
 	}
 }
 
-func TestBCECTBMaxReducer_MinAnnualAmount(t *testing.T) {
-
-	formula := &BCECTBMaxReducer{
-		BenefitClasses: []AgeGroupBenefits{
-			{
-				AgesMonths:      calc.AgeRange{0, 10},
-				AmountsPerMonth: calc.Bracket{50, 100},
-			},
-			{
-				AgesMonths:      calc.AgeRange{11, 20},
-				AmountsPerMonth: calc.Bracket{25, 50},
-			},
-		},
-	}
-
-	expected := float64(50*6) + float64(25*6)
-	actual := formula.minAnnualAmount(calc.Person{AgeMonths: 5})
-	if actual != expected {
-		t.Errorf(
-			"expected a 5 month old child to be entitled to %.2f, got %.2f",
-			expected, actual,
-		)
-	}
-
-}
-
-func TestBCECTBMaxReducer_MaxAnnualAmount(t *testing.T) {
-
-	formula := BCECTBMaxReducer{
-		BenefitClasses: []AgeGroupBenefits{
-			{
-				AgesMonths:      calc.AgeRange{0, 10},
-				AmountsPerMonth: calc.Bracket{50, 100},
-			},
-			{
-				AgesMonths:      calc.AgeRange{11, 20},
-				AmountsPerMonth: calc.Bracket{25, 50},
-			},
-		},
-	}
-
-	expected := float64(100*6) + float64(50*6)
-	actual := formula.maxAnnualAmount(calc.Person{AgeMonths: 5})
-	if actual != expected {
-		t.Errorf(
-			"expected a 5 month old child to be entitled to %.2f, got %.2f",
-			expected, actual,
-		)
-	}
-
-}
-
 func TestBCECTBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 
 	formula := BCECTBMaxReducer{

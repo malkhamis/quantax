@@ -11,6 +11,48 @@ type AgeGroupBenefits struct {
 	AmountsPerMonth calc.Bracket
 }
 
+type multiAgeGroupBenefits []AgeGroupBenefits
+
+func (ma multiAgeGroupBenefits) MaxAnnualAmount(child calc.Person) float64 {
+
+	var max float64
+
+	for range make([]struct{}, 12) {
+		for _, ageGroup := range ma {
+
+			if ageGroup.IsInAgeGroup(child) {
+				max += ageGroup.AmountsPerMonth.Upper()
+			}
+			// we still want to loop in case the child
+			// belongs to multiple benefit classes
+		}
+		child.AgeMonths++
+	}
+
+	return max
+
+}
+
+func (ma multiAgeGroupBenefits) MinAnnualAmount(child calc.Person) float64 {
+
+	var min float64
+
+	for range make([]struct{}, 12) {
+		for _, ageGroup := range ma {
+
+			if ageGroup.IsInAgeGroup(child) {
+				min += ageGroup.AmountsPerMonth.Lower()
+			}
+			// we still want to loop in case the child
+			// belongs to multiple benefit classes
+		}
+		child.AgeMonths++
+	}
+
+	return min
+
+}
+
 // NewAgeGroupBenefits returns a new age group benefit instance. The age range
 // is expected to be in months (not years). If the given arguments are invalid,
 // an error is returned
