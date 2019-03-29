@@ -17,8 +17,8 @@ type Calculator struct {
 	finances calc.IndividualFinances
 }
 
-// NewCalculator returns a new calculator for the given financial numbers
-// and tax brackets.
+// NewCalculator returns a new tax calculator for the given financial numbers
+// and tax formula.
 func NewCalculator(finances calc.IndividualFinances, formula Formula) (*Calculator, error) {
 
 	if formula == nil {
@@ -36,15 +36,10 @@ func NewCalculator(finances calc.IndividualFinances, formula Formula) (*Calculat
 }
 
 // Calc computes the tax on the taxable amount set in this calculator
-func (c *Calculator) Calc(taxCredits ...float64) float64 {
+func (c *Calculator) Calc() float64 {
 
 	netIncome := c.finances.Income - c.finances.Deductions
 	payableTax := c.formula.Apply(netIncome)
-
-	for _, credit := range taxCredits {
-		payableTax -= credit
-	}
-
 	return payableTax
 }
 

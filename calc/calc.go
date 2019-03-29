@@ -4,7 +4,7 @@ package calc
 // TaxCalculator is used to calculate payable tax.
 type TaxCalculator interface {
 	// Calc returns the payable amount of tax on the income in this calculator
-	Calc(taxCredits ...float64) float64
+	Calc() float64
 	// UpdateFinances sets the financial numbers which the tax will be calculated
 	// for in subsequent calls to Calc(). Users may call this method to set the
 	// financial numbers to anything other than what the calculator was
