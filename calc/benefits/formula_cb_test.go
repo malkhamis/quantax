@@ -34,6 +34,7 @@ func TestCCBMaxReducer_Apply(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
+		IncomeType: finance.AFNI,
 	}
 
 	err := mr.Validate()
@@ -75,6 +76,7 @@ func TestCCBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
+		IncomeType: finance.AFNI,
 	}
 
 	err := formula.Validate()
@@ -146,6 +148,7 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
+		IncomeType: finance.AFNI,
 	}
 
 	err := originalFormula.Validate()

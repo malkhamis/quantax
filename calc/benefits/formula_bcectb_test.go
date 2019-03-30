@@ -23,6 +23,7 @@ func TestBCECTBMaxReducer_Apply(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
+		IncomeType: finance.AFNI,
 	}
 
 	err := mr.Validate()
@@ -77,6 +78,7 @@ func TestBCECTBMaxReducer_Validate_NilFormula(t *testing.T) {
 	formula := BCECTBMaxReducer{
 		BeneficiaryClasses: nil,
 		ReducerFormula:     nil,
+		IncomeType:         finance.AFNI,
 	}
 
 	err := formula.Validate()
@@ -114,6 +116,7 @@ func TestBCECTBMaxReducer_Clone(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
+		IncomeType: finance.AFNI,
 	}
 
 	err := originalFormula.Validate()
