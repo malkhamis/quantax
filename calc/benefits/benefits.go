@@ -1,3 +1,5 @@
+// Package benefits implements benefit calculators' interfaces defined by
+// package calc
 package benefits
 
 import "github.com/malkhamis/quantax/calc"
