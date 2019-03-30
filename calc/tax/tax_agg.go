@@ -3,6 +3,7 @@ package tax
 
 import (
 	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
 )
 
 // compile-time check for interface implementation
@@ -35,7 +36,7 @@ func NewAggregator(formula1, formula2 Formula, extras ...Formula) (*Aggregator, 
 }
 
 // Calc computes the tax on the taxable amount set in this calculator
-func (agg *Aggregator) Calc(finances calc.IndividualFinances) float64 {
+func (agg *Aggregator) Calc(finances finance.IndividualFinances) float64 {
 
 	var payableTax float64
 	for _, c := range agg.calculators {
