@@ -2,6 +2,7 @@ package benefits
 
 import (
 	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/pkg/errors"
 )
 
@@ -19,7 +20,7 @@ type CCBMaxReducer struct {
 	// where the index of the formula represents the number of children.
 	// If the number of children is greater than the number of formulas,
 	// the last formula is used
-	Reducers []calc.WeightedBracketFormula
+	Reducers []finance.WeightedBrackets
 }
 
 // Apply returns the total annual benefits for the children given the income
@@ -59,8 +60,8 @@ func (mr *CCBMaxReducer) Apply(income float64, children ...calc.Person) float64 
 }
 
 // IncomeCalcMethod returns the type of income this formula expects
-func (mr *CCBMaxReducer) IncomeCalcMethod() IncomeType {
-	return AFNI
+func (mr *CCBMaxReducer) IncomeCalcMethod() finance.IncomeType {
+	return finance.AFNI
 }
 
 // Validate ensures that this instance is valid for use. Users need to call this
@@ -74,13 +75,13 @@ func (mr *CCBMaxReducer) Validate() error {
 	}
 
 	if len(mr.Reducers) < 1 {
-		return calc.ErrNoFormula
+		return ErrNoFormula
 	}
 
 	for _, formula := range mr.Reducers {
 
 		if formula == nil {
-			return calc.ErrNoFormula
+			return ErrNoFormula
 		}
 
 		if err := formula.Validate(); err != nil {
@@ -97,7 +98,7 @@ func (mr *CCBMaxReducer) Clone() ChildBenefitFormula {
 
 	clone := &CCBMaxReducer{
 		BeneficiaryClasses: make([]AgeGroupBenefits, len(mr.BeneficiaryClasses)),
-		Reducers:           make([]calc.WeightedBracketFormula, len(mr.Reducers)),
+		Reducers:           make([]finance.WeightedBrackets, len(mr.Reducers)),
 	}
 
 	copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
@@ -110,7 +111,7 @@ func (mr *CCBMaxReducer) Clone() ChildBenefitFormula {
 }
 
 // reducerFormula returns the reduction formula based on the child count
-func (mr *CCBMaxReducer) reducerFormula(childCount int) calc.WeightedBracketFormula {
+func (mr *CCBMaxReducer) reducerFormula(childCount int) finance.WeightedBrackets {
 
 	var reducerIndex int
 

@@ -5,13 +5,14 @@ import (
 	"testing"
 
 	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/pkg/errors"
 )
 
 func TestNewChildBenefitCalculator_Full(t *testing.T) {
 
-	bracket := calc.WeightedBracketFormula{
-		0.0132: calc.Bracket{100000, math.Inf(1)},
+	bracket := finance.WeightedBrackets{
+		0.0132: finance.Bracket{100000, math.Inf(1)},
 	}
 
 	formulaBC := &BCECTBMaxReducer{
@@ -19,12 +20,12 @@ func TestNewChildBenefitCalculator_Full(t *testing.T) {
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      calc.AgeRange{0, 6*12 - 1},
-				AmountsPerMonth: calc.Bracket{0, 55},
+				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
 	}
 
-	finances := calc.FamilyFinances{
+	finances := finance.FamilyFinances{
 		{Income: 120000.0, Deductions: 10000},
 		{Income: 20000, Deductions: 20000},
 	}
@@ -57,7 +58,7 @@ func TestNewChildBenefitCalculator_Full(t *testing.T) {
 	}
 
 	calculator.SetBeneficiaries(calc.Person{AgeMonths: 0})
-	actual = calculator.Calc(calc.FamilyFinances{{}, {}})
+	actual = calculator.Calc(finance.FamilyFinances{{}, {}})
 	expected = 55 * 12
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
@@ -67,19 +68,19 @@ func TestNewChildBenefitCalculator_Full(t *testing.T) {
 
 func TestNewChildBenefitCalculator_Errors(t *testing.T) {
 
-	bracket := calc.WeightedBracketFormula{
-		0.0132: calc.Bracket{math.Inf(1), 100000},
+	bracket := finance.WeightedBrackets{
+		0.0132: finance.Bracket{math.Inf(1), 100000},
 	}
 	formulaBC := &BCECTBMaxReducer{ReducerFormula: bracket}
 
 	_, err := NewChildBenefitCalculator(formulaBC)
-	if errors.Cause(err) != calc.ErrBoundsReversed {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrBoundsReversed, err)
+	if errors.Cause(err) != finance.ErrBoundsReversed {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", finance.ErrBoundsReversed, err)
 	}
 
 	_, err = NewChildBenefitCalculator(nil)
-	if errors.Cause(err) != calc.ErrNoFormula {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
+	if errors.Cause(err) != ErrNoFormula {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
 
 }

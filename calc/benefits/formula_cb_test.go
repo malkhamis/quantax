@@ -5,32 +5,33 @@ import (
 	"testing"
 
 	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/pkg/errors"
 )
 
 func TestCCBMaxReducer_Apply(t *testing.T) {
 
-	childCount1 := calc.WeightedBracketFormula{
-		0.000: calc.Bracket{0, 10000},
-		0.030: calc.Bracket{10000, 50000},
-		0.070: calc.Bracket{50000, math.Inf(1)},
+	childCount1 := finance.WeightedBrackets{
+		0.000: finance.Bracket{0, 10000},
+		0.030: finance.Bracket{10000, 50000},
+		0.070: finance.Bracket{50000, math.Inf(1)},
 	}
-	childCount2 := calc.WeightedBracketFormula{
-		0.000: calc.Bracket{0, 10000},
-		0.050: calc.Bracket{10000, 50000},
-		0.100: calc.Bracket{50000, math.Inf(1)},
+	childCount2 := finance.WeightedBrackets{
+		0.000: finance.Bracket{0, 10000},
+		0.050: finance.Bracket{10000, 50000},
+		0.100: finance.Bracket{50000, math.Inf(1)},
 	}
 
 	mr := &CCBMaxReducer{
-		Reducers: []calc.WeightedBracketFormula{childCount1, childCount2},
+		Reducers: []finance.WeightedBrackets{childCount1, childCount2},
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      calc.AgeRange{0, 11},
-				AmountsPerMonth: calc.Bracket{0, 500},
+				AmountsPerMonth: finance.Bracket{0, 500},
 			},
 			{
 				AgesMonths:      calc.AgeRange{12, 23},
-				AmountsPerMonth: calc.Bracket{0, 250},
+				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
 	}
@@ -71,14 +72,14 @@ func TestCCBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 		BeneficiaryClasses: []AgeGroupBenefits{
 			AgeGroupBenefits{
 				AgesMonths:      calc.AgeRange{10, 0},
-				AmountsPerMonth: calc.Bracket{0, 55},
+				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
 	}
 
 	err := formula.Validate()
-	if errors.Cause(err) != calc.ErrBoundsReversed {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrBoundsReversed, err)
+	if errors.Cause(err) != calc.ErrInvalidAgeRange {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrInvalidAgeRange, err)
 	}
 }
 
@@ -90,18 +91,18 @@ func TestCCBMaxReducer_Validate_NilFormula(t *testing.T) {
 	}
 
 	err := formula.Validate()
-	if errors.Cause(err) != calc.ErrNoFormula {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
+	if errors.Cause(err) != ErrNoFormula {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
 
 	formula = CCBMaxReducer{
 		BeneficiaryClasses: nil,
-		Reducers:           []calc.WeightedBracketFormula{nil},
+		Reducers:           []finance.WeightedBrackets{nil},
 	}
 
 	err = formula.Validate()
-	if errors.Cause(err) != calc.ErrNoFormula {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
+	if errors.Cause(err) != ErrNoFormula {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
 
 }
@@ -109,40 +110,40 @@ func TestCCBMaxReducer_Validate_NilFormula(t *testing.T) {
 func TestCCBMaxReducer_Validate_InvalidFormula(t *testing.T) {
 
 	formula := CCBMaxReducer{
-		Reducers: []calc.WeightedBracketFormula{
-			{0.0132: calc.Bracket{100000, 1}},
+		Reducers: []finance.WeightedBrackets{
+			{0.0132: finance.Bracket{100000, 1}},
 		},
 	}
 
 	err := formula.Validate()
-	if errors.Cause(err) != calc.ErrBoundsReversed {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrBoundsReversed, err)
+	if errors.Cause(err) != finance.ErrBoundsReversed {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", finance.ErrBoundsReversed, err)
 	}
 }
 
 func TestBCECTBReducer_Clone(t *testing.T) {
 
-	childCount1 := calc.WeightedBracketFormula{
-		0.000: calc.Bracket{0, 10000},
-		0.030: calc.Bracket{10000, 50000},
-		0.070: calc.Bracket{50000, math.Inf(1)},
+	childCount1 := finance.WeightedBrackets{
+		0.000: finance.Bracket{0, 10000},
+		0.030: finance.Bracket{10000, 50000},
+		0.070: finance.Bracket{50000, math.Inf(1)},
 	}
-	childCount2 := calc.WeightedBracketFormula{
-		0.000: calc.Bracket{0, 10000},
-		0.050: calc.Bracket{10000, 50000},
-		0.100: calc.Bracket{50000, math.Inf(1)},
+	childCount2 := finance.WeightedBrackets{
+		0.000: finance.Bracket{0, 10000},
+		0.050: finance.Bracket{10000, 50000},
+		0.100: finance.Bracket{50000, math.Inf(1)},
 	}
 
 	originalFormula := &CCBMaxReducer{
-		Reducers: []calc.WeightedBracketFormula{childCount1, childCount2},
+		Reducers: []finance.WeightedBrackets{childCount1, childCount2},
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      calc.AgeRange{0, 11},
-				AmountsPerMonth: calc.Bracket{0, 500},
+				AmountsPerMonth: finance.Bracket{0, 500},
 			},
 			{
 				AgesMonths:      calc.AgeRange{12, 23},
-				AmountsPerMonth: calc.Bracket{0, 250},
+				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
 	}
@@ -170,7 +171,7 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 func TestCCBMaxReducer_IncomeCalcMethod(t *testing.T) {
 
 	incomeType := (&CCBMaxReducer{}).IncomeCalcMethod()
-	if incomeType != AFNI {
-		t.Errorf("unexpected income type\nwant: %s\n got: %s", AFNI, incomeType)
+	if incomeType != finance.AFNI {
+		t.Errorf("unexpected income type\nwant: %s\n got: %s", finance.AFNI, incomeType)
 	}
 }

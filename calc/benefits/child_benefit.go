@@ -2,6 +2,7 @@ package benefits
 
 import (
 	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/pkg/errors"
 )
 
@@ -21,7 +22,7 @@ var _ calc.ChildBenefitCalculator = (*ChildBenfitCalculator)(nil)
 func NewChildBenefitCalculator(formula ChildBenefitFormula) (*ChildBenfitCalculator, error) {
 
 	if formula == nil {
-		return nil, calc.ErrNoFormula
+		return nil, ErrNoFormula
 	}
 
 	err := formula.Validate()
@@ -33,7 +34,7 @@ func NewChildBenefitCalculator(formula ChildBenefitFormula) (*ChildBenfitCalcula
 }
 
 // Calc returns the recievable amount of child benefits
-func (c *ChildBenfitCalculator) Calc(finances calc.FamilyFinances) float64 {
+func (c *ChildBenfitCalculator) Calc(finances finance.FamilyFinances) float64 {
 
 	netIncome := c.formula.IncomeCalcMethod().Calc(finances)
 	benefits := c.formula.Apply(netIncome, c.children...)

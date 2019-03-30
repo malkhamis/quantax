@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/pkg/errors"
 )
 
 func TestAgeGroupBenefits_IsInAgeGroup(t *testing.T) {
 
-	agb, err := NewAgeGroupBenefits(calc.AgeRange{10, 20}, calc.Bracket{0, 100})
+	agb, err := NewAgeGroupBenefits(calc.AgeRange{10, 20}, finance.Bracket{0, 100})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,11 +38,11 @@ func TestMultiAgeGroupBenefits_MinAnnualAmount(t *testing.T) {
 	agb := multiAgeGroupBenefits{
 		{
 			AgesMonths:      calc.AgeRange{0, 10},
-			AmountsPerMonth: calc.Bracket{50, 100},
+			AmountsPerMonth: finance.Bracket{50, 100},
 		},
 		{
 			AgesMonths:      calc.AgeRange{11, 20},
-			AmountsPerMonth: calc.Bracket{25, 50},
+			AmountsPerMonth: finance.Bracket{25, 50},
 		},
 	}
 
@@ -61,11 +62,11 @@ func TestMultiAgeGroupBenefits_MaxAnnualAmount(t *testing.T) {
 	agb := multiAgeGroupBenefits{
 		{
 			AgesMonths:      calc.AgeRange{0, 10},
-			AmountsPerMonth: calc.Bracket{50, 100},
+			AmountsPerMonth: finance.Bracket{50, 100},
 		},
 		{
 			AgesMonths:      calc.AgeRange{11, 20},
-			AmountsPerMonth: calc.Bracket{25, 50},
+			AmountsPerMonth: finance.Bracket{25, 50},
 		},
 	}
 
@@ -84,21 +85,21 @@ func TestAgeGroupBenefits_Validate(t *testing.T) {
 
 	agb := AgeGroupBenefits{
 		AgesMonths:      calc.AgeRange{20, 10},
-		AmountsPerMonth: calc.Bracket{0, 100},
+		AmountsPerMonth: finance.Bracket{0, 100},
 	}
 
 	err := agb.Validate()
-	if errors.Cause(err) != calc.ErrBoundsReversed {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrBoundsReversed, err)
+	if errors.Cause(err) != calc.ErrInvalidAgeRange {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrInvalidAgeRange, err)
 	}
 
 	agb = AgeGroupBenefits{
 		AgesMonths:      calc.AgeRange{0, 10},
-		AmountsPerMonth: calc.Bracket{200, 100},
+		AmountsPerMonth: finance.Bracket{200, 100},
 	}
 
 	err = agb.Validate()
-	if errors.Cause(err) != calc.ErrBoundsReversed {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrBoundsReversed, err)
+	if errors.Cause(err) != finance.ErrBoundsReversed {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", finance.ErrBoundsReversed, err)
 	}
 }
