@@ -14,15 +14,14 @@ func ExampleNewTaxCalcFactory() {
 		return
 	}
 
-	finances := calc.IndividualFinances{Income: 170000.0}
-
-	calculator, err := f.NewCalculator(finances)
+	calculator, err := f.NewCalculator()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	aggTax := calculator.Calc()
+	finances := calc.IndividualFinances{Income: 170000.0}
+	aggTax := calculator.Calc(finances)
 	fmt.Printf("%.2f", aggTax) // Output: 52821.09
 }
 

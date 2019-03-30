@@ -44,15 +44,15 @@ func NewTaxCalcFactory(year uint, region Region, extras ...Region) (*TaxCalcFact
 
 // NewCalculator creates a new tax calculator that is configured with the the
 // parameters/options set in this factory
-func (f *TaxCalcFactory) NewCalculator(finances calc.IndividualFinances) (calc.TaxCalculator, error) {
+func (f *TaxCalcFactory) NewCalculator() (calc.TaxCalculator, error) {
 
 	if len(f.formulas) == 0 {
 		return nil, ErrFactoryNotInit
 	}
 
 	if len(f.formulas) == 1 {
-		return tax.NewCalculator(finances, f.formulas[0])
+		return tax.NewCalculator(f.formulas[0])
 	}
 
-	return tax.NewCalculatorAgg(finances, f.formulas)
+	return tax.NewCalculatorAgg(f.formulas[0], f.formulas[1], f.formulas[2:]...)
 }

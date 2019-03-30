@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/tax"
 	"github.com/malkhamis/quantax/history"
 	"github.com/pkg/errors"
@@ -17,7 +16,7 @@ func TestNewTaxCalculatorFactory_NewCalculator_SingleFormula(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c, err := f.NewCalculator(calc.IndividualFinances{})
+	c, err := f.NewCalculator()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +30,7 @@ func TestNewTaxCalculatorFactory_NewCalculator_SingleFormula(t *testing.T) {
 
 func TestTaxCalcFactory_NewCalculator_Errors(t *testing.T) {
 
-	_, err := (&TaxCalcFactory{}).NewCalculator(calc.IndividualFinances{})
+	_, err := (&TaxCalcFactory{}).NewCalculator()
 	if err != ErrFactoryNotInit {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrFactoryNotInit, err)
 	}
