@@ -47,7 +47,7 @@ func (wb WeightedBracketFormula) Apply(param float64) float64 {
 
 	for rate, bracket := range wb {
 
-		if param < bracket.Lower() {
+		if param <= bracket.Lower() {
 			continue
 		}
 

@@ -122,5 +122,4 @@ func (mr *CCBMaxReducer) reducerFormula(childCount int) calc.WeightedBracketForm
 
 	reducerIndex--
 	return mr.Reducers[reducerIndex]
-
 }
