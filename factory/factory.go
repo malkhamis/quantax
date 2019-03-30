@@ -8,9 +8,3 @@ var (
 	ErrRegionNotExist = errors.New("unkown region")
 	ErrFactoryNotInit = errors.New("factory is improperly initialized")
 )
-
-// Options is used to pass options to factory constructors
-type Options struct {
-	Year   uint
-	Region Region
-}

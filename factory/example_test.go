@@ -27,43 +27,26 @@ func ExampleNewTaxCalcFactory() {
 
 func ExampleNewChildBenefitCalcFactory() {
 
-	children := []calc.Person{
-		{Name: "A", AgeMonths: 3},
-		{Name: "B", AgeMonths: 3},
-	}
-
-	opts := Options{Year: 2017, Region: Canada}
-	calcFactoryCanada, err := NewChildBenefitCalcFactory(opts, children...)
+	f, err := NewChildBenefitCalcFactory(2017, Canada, BC)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	opts = Options{Year: 2017, Region: BC}
-	calcFactoryBC, err := NewChildBenefitCalcFactory(opts, children...)
+	calculator, err := f.NewCalculator()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+
+	children := []calc.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
+	calculator.SetBeneficiaries(children...)
 
 	finances := calc.FamilyFinances{
 		calc.IndividualFinances{Income: 110000},
 		calc.IndividualFinances{Income: 0},
 	}
+	total := calculator.Calc(finances)
 
-	calcCanada, err := calcFactoryCanada.NewCalculator(finances)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	calcBC, err := calcFactoryBC.NewCalculator(finances)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	total := calcCanada.Calc() + calcBC.Calc()
 	fmt.Printf("%.2f", total) // Output: 6742.54
-
 }

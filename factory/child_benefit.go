@@ -1,3 +1,4 @@
+// Package factory provides functions that creates financial calculators
 package factory
 
 import (
@@ -9,31 +10,34 @@ import (
 // ChildBenefitCalcFactory is a type used to conveniently create child benefit
 // calculators
 type ChildBenefitCalcFactory struct {
-	year     uint
-	region   history.Jurisdiction
-	children []calc.Person
-	formula  benefits.ChildBenefitFormula
+	formulas []benefits.ChildBenefitFormula
 }
 
-// NewChildBenefitCalcFactoryreturns a new child benefit calculator factory
-// from the given options for the given children
-func NewChildBenefitCalcFactory(opts Options, children ...calc.Person) (*ChildBenefitCalcFactory, error) {
+// NewChildBenefitCalcFactory returns a new child benefit calculator factory
+// from the given params. If extra regions are specified, the returned
+// calculator aggregates the benefits for all beneficiaries
+func NewChildBenefitCalcFactory(year uint, region Region, extras ...Region) (*ChildBenefitCalcFactory, error) {
 
-	region, ok := knownRegions[opts.Region]
-	if !ok {
-		return nil, ErrRegionNotExist
-	}
-
-	foundFormula, err := history.GetChildBenefitFormula(opts.Year, region)
-	if err != nil {
-		return nil, err
-	}
+	allRegions := []Region{region}
+	allRegions = append(allRegions, extras...)
 
 	c := &ChildBenefitCalcFactory{
-		year:     opts.Year,
-		region:   region,
-		children: children,
-		formula:  foundFormula,
+		formulas: make([]benefits.ChildBenefitFormula, len(extras)+1),
+	}
+
+	for i, r := range allRegions {
+
+		convertedRegion, ok := knownRegions[r]
+		if !ok {
+			return nil, ErrRegionNotExist
+		}
+
+		foundFormula, err := history.GetChildBenefitFormula(year, convertedRegion)
+		if err != nil {
+			return nil, err
+		}
+
+		c.formulas[i] = foundFormula
 	}
 
 	return c, nil
@@ -41,6 +45,15 @@ func NewChildBenefitCalcFactory(opts Options, children ...calc.Person) (*ChildBe
 
 // NewCalculator creates a new child benefit calculator that is configured with
 // the the parameters/options set in this factory
-func (f *ChildBenefitCalcFactory) NewCalculator(finances calc.FamilyFinances) (calc.ChildBenefitCalculator, error) {
-	return benefits.NewCBCalculator(f.formula, finances, f.children...)
+func (f *ChildBenefitCalcFactory) NewCalculator() (calc.ChildBenefitCalculator, error) {
+
+	if len(f.formulas) == 0 {
+		return nil, ErrFactoryNotInit
+	}
+
+	if len(f.formulas) == 1 {
+		return benefits.NewCalculator(f.formulas[0])
+	}
+
+	return benefits.NewCalculatorAgg(f.formulas[0], f.formulas[1], f.formulas[2:]...)
 }
