@@ -6,19 +6,20 @@ import (
 )
 
 // compile-time check for interface implementation
-var _ calc.TaxCalculator = (*CalculatorAgg)(nil)
+var _ calc.TaxCalculator = (*Aggregator)(nil)
 
-// Calculator is used to calculate payable tax for individuals
-type CalculatorAgg struct {
+// Aggregator is used to aggregate payable tax for individuals from multiple
+// tax formulas
+type Aggregator struct {
 	calculators []*Calculator
 }
 
-// NewCalculatorAgg returns a new tax calculator for the given financial numbers
-// and tax formulas. The returned calculator will calculate the sum of taxes for
+// NewAggregator returns a new tax calculator for the given financial numbers
+// and tax formulas. The returned calculator will calculate the sum of taxes
 // using the given formulas for the given finances
-func NewCalculatorAgg(formula1, formula2 Formula, extras ...Formula) (*CalculatorAgg, error) {
+func NewAggregator(formula1, formula2 Formula, extras ...Formula) (*Aggregator, error) {
 
-	cAgg := &CalculatorAgg{
+	cAgg := &Aggregator{
 		calculators: make([]*Calculator, len(extras)+2),
 	}
 
@@ -34,7 +35,7 @@ func NewCalculatorAgg(formula1, formula2 Formula, extras ...Formula) (*Calculato
 }
 
 // Calc computes the tax on the taxable amount set in this calculator
-func (agg *CalculatorAgg) Calc(finances calc.IndividualFinances) float64 {
+func (agg *Aggregator) Calc(finances calc.IndividualFinances) float64 {
 
 	var payableTax float64
 	for _, c := range agg.calculators {

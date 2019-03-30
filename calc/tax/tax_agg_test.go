@@ -28,7 +28,7 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 		0.1680:  calc.Bracket{150000, math.Inf(1)},
 	}
 
-	agg, err := NewCalculatorAgg(canada2018, bc2018)
+	agg, err := NewAggregator(canada2018, bc2018)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,9 +45,9 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 
 }
 
-func TestNewCalculatorAgg_Error(t *testing.T) {
+func TestNewAggregator_Error(t *testing.T) {
 
-	_, err := NewCalculatorAgg(nil, nil)
+	_, err := NewAggregator(nil, nil)
 	if err != calc.ErrNoFormula {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
 	}

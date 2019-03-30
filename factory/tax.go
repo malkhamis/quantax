@@ -54,5 +54,5 @@ func (f *TaxCalcFactory) NewCalculator() (calc.TaxCalculator, error) {
 		return tax.NewCalculator(f.formulas[0])
 	}
 
-	return tax.NewCalculatorAgg(f.formulas[0], f.formulas[1], f.formulas[2:]...)
+	return tax.NewAggregator(f.formulas[0], f.formulas[1], f.formulas[2:]...)
 }
