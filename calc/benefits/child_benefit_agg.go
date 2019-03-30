@@ -2,6 +2,8 @@ package benefits
 
 import (
 	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 )
 
 // ChildBenfitAggregator is used to calculate recievable child benefits for
@@ -35,7 +37,7 @@ func NewChildBenefitAggregator(formula1, formula2 ChildBenefitFormula, extras ..
 }
 
 // Calc returns the aggregate recievable amount of child benefits
-func (agg *ChildBenfitAggregator) Calc(finances calc.FamilyFinances) float64 {
+func (agg *ChildBenfitAggregator) Calc(finances finance.FamilyFinances) float64 {
 
 	var total float64
 	for _, c := range agg.calculators {
@@ -46,7 +48,7 @@ func (agg *ChildBenfitAggregator) Calc(finances calc.FamilyFinances) float64 {
 
 // SetBeneficiaries sets the children which the calculator will compute the
 // benefits for in subsequent calls to Calc()
-func (agg *ChildBenfitAggregator) SetBeneficiaries(children ...calc.Person) {
+func (agg *ChildBenfitAggregator) SetBeneficiaries(children ...human.Person) {
 	for _, c := range agg.calculators {
 		c.SetBeneficiaries(children...)
 	}

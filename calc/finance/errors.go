@@ -1,4 +1,4 @@
-package calc
+package finance
 
 import "errors"
 
@@ -10,7 +10,4 @@ var (
 	ErrValInfNeg      = errors.New("negative infinity value is not allowed")
 	ErrValInfPos      = errors.New("positive infinity value is not allowed")
 	ErrBoundsReversed = errors.New("lower-bound is greater than upper-bound")
-	ErrInvalidDate    = errors.New("invalid date")
-	ErrNoFormula      = errors.New("no formula given")
-	ErrInvalidAge     = errors.New("invalid age")
 )

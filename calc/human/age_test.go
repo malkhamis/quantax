@@ -1,4 +1,4 @@
-package calc
+package human
 
 import (
 	"testing"
@@ -27,8 +27,8 @@ func TestAgeRange_Invalid(t *testing.T) {
 
 	invalidAge := AgeRange{10, 0}
 	err := invalidAge.Validate()
-	if errors.Cause(err) != ErrBoundsReversed {
-		t.Errorf("unexpected error\nwant: %v\n got: %d", ErrBoundsReversed, err)
+	if errors.Cause(err) != ErrInvalidAgeRange {
+		t.Errorf("unexpected error\nwant: %v\n got: %d", ErrInvalidAgeRange, err)
 	}
 
 }

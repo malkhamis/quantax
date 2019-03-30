@@ -1,6 +1,4 @@
-package benefits
-
-import "github.com/malkhamis/quantax/calc"
+package finance
 
 //go:generate stringer -type=IncomeType -output=incometype_gen.go
 type IncomeType uint
@@ -12,7 +10,7 @@ const (
 
 // Calc calculates the income according to the underlying method
 // TODO fix this
-func (it IncomeType) Calc(finances calc.FamilyFinances) float64 {
+func (it IncomeType) Calc(finances FamilyFinances) float64 {
 
 	// this is not exactly right as we should incorporate
 	// UCCB and other shit that I don't care about for now

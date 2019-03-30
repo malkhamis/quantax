@@ -4,28 +4,29 @@ import (
 	"math"
 	"testing"
 
-	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/pkg/errors"
 )
 
 func TestNewChildBenefitAggregator_Error(t *testing.T) {
 
 	_, err := NewChildBenefitAggregator(&BCECTBMaxReducer{}, &BCECTBMaxReducer{}, nil)
-	if errors.Cause(err) != calc.ErrNoFormula {
-		t.Fatalf("unexpected errpr\nwant: %v\n got: %v", calc.ErrNoFormula, err)
+	if errors.Cause(err) != ErrNoFormula {
+		t.Fatalf("unexpected errpr\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
 }
 
 func TestNewChildBenefitAggregator_Full(t *testing.T) {
 
 	formulaBC := &BCECTBMaxReducer{
-		ReducerFormula: calc.WeightedBracketFormula{
-			0.0132: calc.Bracket{100000, math.Inf(1)},
+		ReducerFormula: finance.WeightedBrackets{
+			0.0132: finance.Bracket{100000, math.Inf(1)},
 		},
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
-				AgesMonths:      calc.AgeRange{0, 6*12 - 1},
-				AmountsPerMonth: calc.Bracket{0, 55},
+				AgesMonths:      human.AgeRange{0, 6*12 - 1},
+				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
 	}
@@ -33,30 +34,30 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 	formulaCanada := &CCBMaxReducer{
 		BeneficiaryClasses: []AgeGroupBenefits{
 			AgeGroupBenefits{
-				AgesMonths:      calc.AgeRange{0, (12 * 6) - 1},
-				AmountsPerMonth: calc.Bracket{0, 541.33},
+				AgesMonths:      human.AgeRange{0, (12 * 6) - 1},
+				AmountsPerMonth: finance.Bracket{0, 541.33},
 			},
 			AgeGroupBenefits{
-				AgesMonths:      calc.AgeRange{12 * 6, 12 * 17},
-				AmountsPerMonth: calc.Bracket{0, 456.75},
+				AgesMonths:      human.AgeRange{12 * 6, 12 * 17},
+				AmountsPerMonth: finance.Bracket{0, 456.75},
 			},
 		},
-		Reducers: []calc.WeightedBracketFormula{
-			calc.WeightedBracketFormula{ // 1 child
-				0.070: calc.Bracket{30450, 65976},
-				0.032: calc.Bracket{65976, math.Inf(1)},
+		Reducers: []finance.WeightedBrackets{
+			finance.WeightedBrackets{ // 1 child
+				0.070: finance.Bracket{30450, 65976},
+				0.032: finance.Bracket{65976, math.Inf(1)},
 			},
-			calc.WeightedBracketFormula{ // 2 children
-				0.135: calc.Bracket{30450, 65976},
-				0.057: calc.Bracket{65976, math.Inf(1)},
+			finance.WeightedBrackets{ // 2 children
+				0.135: finance.Bracket{30450, 65976},
+				0.057: finance.Bracket{65976, math.Inf(1)},
 			},
-			calc.WeightedBracketFormula{ // 3 children
-				0.190: calc.Bracket{30450, 65976},
-				0.080: calc.Bracket{65976, math.Inf(1)},
+			finance.WeightedBrackets{ // 3 children
+				0.190: finance.Bracket{30450, 65976},
+				0.080: finance.Bracket{65976, math.Inf(1)},
 			},
-			calc.WeightedBracketFormula{ // 4+ children
-				0.230: calc.Bracket{30450, 65976},
-				0.095: calc.Bracket{65976, math.Inf(1)},
+			finance.WeightedBrackets{ // 4+ children
+				0.230: finance.Bracket{30450, 65976},
+				0.095: finance.Bracket{65976, math.Inf(1)},
 			},
 		},
 	}
@@ -66,10 +67,10 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	children := []calc.Person{{AgeMonths: 0}, {AgeMonths: (17 * 12) - 2}}
+	children := []human.Person{{AgeMonths: 0}, {AgeMonths: (17 * 12) - 2}}
 	calculator.SetBeneficiaries(children...)
 
-	finances := calc.FamilyFinances{
+	finances := finance.FamilyFinances{
 		{Income: 180000.0, Deductions: 10000},
 		{Income: 20000, Deductions: 20000},
 	}
@@ -89,16 +90,16 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
 	}
 
-	calculator.SetBeneficiaries(calc.Person{AgeMonths: 0})
-	actual = calculator.Calc(calc.FamilyFinances{{}, {}})
+	calculator.SetBeneficiaries(human.Person{AgeMonths: 0})
+	actual = calculator.Calc(finance.FamilyFinances{{}, {}})
 	expected = (55 * 12) + (541.33 * 12)
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
 	}
 
-	children = []calc.Person{{AgeMonths: 0}, {AgeMonths: (6 * 12) - 2}}
+	children = []human.Person{{AgeMonths: 0}, {AgeMonths: (6 * 12) - 2}}
 	calculator.SetBeneficiaries(children...)
-	actual = calculator.Calc(calc.FamilyFinances{{Income: 100000}, {}})
+	actual = calculator.Calc(finance.FamilyFinances{{Income: 100000}, {}})
 	expectedCanada = (541.33*12 + 541.33*2 + 456.75*10) - (0.135 * (65976.0 - 30450.0)) - (0.057 * (100000.0 - 65976.0))
 	expectedBC = (55 * 12) + (55 * 2)
 	expected = expectedCanada + expectedBC

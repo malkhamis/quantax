@@ -3,8 +3,9 @@ package history
 import (
 	"math"
 
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/benefits"
+	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/malkhamis/quantax/calc/tax"
 )
 
@@ -19,45 +20,45 @@ var (
 )
 
 var taxFormulaCanada2018 = tax.CanadianFormula{
-	-0.150: calc.Bracket{0, 11809},
-	0.150:  calc.Bracket{0, 46605},
-	0.205:  calc.Bracket{46605, 93208},
-	0.260:  calc.Bracket{93208, 144489},
-	0.290:  calc.Bracket{144489, 205842},
-	0.330:  calc.Bracket{205842, math.Inf(1)},
+	-0.150: finance.Bracket{0, 11809},
+	0.150:  finance.Bracket{0, 46605},
+	0.205:  finance.Bracket{46605, 93208},
+	0.260:  finance.Bracket{93208, 144489},
+	0.290:  finance.Bracket{144489, 205842},
+	0.330:  finance.Bracket{205842, math.Inf(1)},
 }
 
 var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
 	BeneficiaryClasses: []benefits.AgeGroupBenefits{
 		benefits.AgeGroupBenefits{
-			AgesMonths:      calc.AgeRange{0, (MonthsInYear * 6) - 1},
-			AmountsPerMonth: calc.Bracket{0, 541.33},
+			AgesMonths:      human.AgeRange{0, (MonthsInYear * 6) - 1},
+			AmountsPerMonth: finance.Bracket{0, 541.33},
 		},
 		benefits.AgeGroupBenefits{
-			AgesMonths:      calc.AgeRange{MonthsInYear * 6, MonthsInYear * 17},
-			AmountsPerMonth: calc.Bracket{0, 456.75},
+			AgesMonths:      human.AgeRange{MonthsInYear * 6, MonthsInYear * 17},
+			AmountsPerMonth: finance.Bracket{0, 456.75},
 		},
 	},
-	Reducers: []calc.WeightedBracketFormula{
-		calc.WeightedBracketFormula{ // 1 child
-			0.000: calc.Bracket{0, 30450},
-			0.070: calc.Bracket{30450, 65976},
-			0.032: calc.Bracket{65976, math.Inf(1)},
+	Reducers: []finance.WeightedBrackets{
+		finance.WeightedBrackets{ // 1 child
+			0.000: finance.Bracket{0, 30450},
+			0.070: finance.Bracket{30450, 65976},
+			0.032: finance.Bracket{65976, math.Inf(1)},
 		},
-		calc.WeightedBracketFormula{ // 2 children
-			0.000: calc.Bracket{0, 30450},
-			0.135: calc.Bracket{30450, 65976},
-			0.057: calc.Bracket{65976, math.Inf(1)},
+		finance.WeightedBrackets{ // 2 children
+			0.000: finance.Bracket{0, 30450},
+			0.135: finance.Bracket{30450, 65976},
+			0.057: finance.Bracket{65976, math.Inf(1)},
 		},
-		calc.WeightedBracketFormula{ // 3 children
-			0.000: calc.Bracket{0, 30450},
-			0.190: calc.Bracket{30450, 65976},
-			0.080: calc.Bracket{65976, math.Inf(1)},
+		finance.WeightedBrackets{ // 3 children
+			0.000: finance.Bracket{0, 30450},
+			0.190: finance.Bracket{30450, 65976},
+			0.080: finance.Bracket{65976, math.Inf(1)},
 		},
-		calc.WeightedBracketFormula{ // 4+ children
-			0.000: calc.Bracket{0, 30450},
-			0.230: calc.Bracket{30450, 65976},
-			0.095: calc.Bracket{65976, math.Inf(1)},
+		finance.WeightedBrackets{ // 4+ children
+			0.000: finance.Bracket{0, 30450},
+			0.230: finance.Bracket{30450, 65976},
+			0.095: finance.Bracket{65976, math.Inf(1)},
 		},
 	},
 }

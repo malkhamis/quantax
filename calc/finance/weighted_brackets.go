@@ -1,4 +1,4 @@
-package calc
+package finance
 
 import (
 	"math"
@@ -35,13 +35,15 @@ func (b Bracket) Upper() float64 {
 	return b[1]
 }
 
-// WeightedBracketFormula maps weights (rates) to numeric ranges, e.g. brackets
-type WeightedBracketFormula map[float64]Bracket
+// WeightedBrackets maps weights (rates) to numeric ranges, e.g. brackets. This
+// type is the most basic formula used by the Canadian government in order to
+// compute taxes and benefits for families and individual tax payers
+type WeightedBrackets map[float64]Bracket
 
 // Apply slices the given param into this formula's brackets. Then, it applies
 // the rate asscoiated with the bracket to the sliced amounts and returns the
 // sum of applying the rates on all sliced amounts
-func (wb WeightedBracketFormula) Apply(param float64) float64 {
+func (wb WeightedBrackets) Apply(param float64) float64 {
 
 	var result float64
 
@@ -63,7 +65,7 @@ func (wb WeightedBracketFormula) Apply(param float64) float64 {
 }
 
 // Validate ensures that this weighted brackets object is valid for use
-func (wb WeightedBracketFormula) Validate() error {
+func (wb WeightedBrackets) Validate() error {
 
 	for rate, bracket := range wb {
 
@@ -82,12 +84,12 @@ func (wb WeightedBracketFormula) Validate() error {
 }
 
 // Clone returns a copy of this weighted bracket instance
-func (wb WeightedBracketFormula) Clone() WeightedBracketFormula {
+func (wb WeightedBrackets) Clone() WeightedBrackets {
 
-	var clone WeightedBracketFormula
+	var clone WeightedBrackets
 
 	if wb != nil {
-		clone = make(WeightedBracketFormula)
+		clone = make(WeightedBrackets)
 	}
 
 	for rate, bracket := range wb {

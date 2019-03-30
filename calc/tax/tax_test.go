@@ -5,65 +5,65 @@ import (
 	"math"
 	"testing"
 
-	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/pkg/errors"
 )
 
 func TestCalculator_Calc(t *testing.T) {
 
 	formulaCanada2018 := CanadianFormula{
-		-0.150: calc.Bracket{0, 11809},
-		0.150:  calc.Bracket{0, 46605},
-		0.205:  calc.Bracket{46606, 93208},
-		0.260:  calc.Bracket{93209, 144489},
-		0.290:  calc.Bracket{144490, 205842},
-		0.330:  calc.Bracket{205843, math.Inf(1)},
+		-0.150: finance.Bracket{0, 11809},
+		0.150:  finance.Bracket{0, 46605},
+		0.205:  finance.Bracket{46606, 93208},
+		0.260:  finance.Bracket{93209, 144489},
+		0.290:  finance.Bracket{144490, 205842},
+		0.330:  finance.Bracket{205843, math.Inf(1)},
 	}
 
 	cases := []struct {
-		finances    calc.IndividualFinances
+		finances    finance.IndividualFinances
 		formula     Formula
 		expectedTax float64
 		errMargin   float64
 	}{
 		{
-			finances:    calc.IndividualFinances{Income: 400000, Deductions: 100000},
+			finances:    finance.IndividualFinances{Income: 400000, Deductions: 100000},
 			formula:     formulaCanada2018,
 			expectedTax: 76969,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    calc.IndividualFinances{},
+			finances:    finance.IndividualFinances{},
 			formula:     formulaCanada2018,
 			expectedTax: 0,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    calc.IndividualFinances{Income: 9000},
+			finances:    finance.IndividualFinances{Income: 9000},
 			formula:     formulaCanada2018,
 			expectedTax: 0,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    calc.IndividualFinances{Income: 12000},
+			finances:    finance.IndividualFinances{Income: 12000},
 			formula:     formulaCanada2018,
 			expectedTax: 28.65,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    calc.IndividualFinances{Income: 85000},
+			finances:    finance.IndividualFinances{Income: 85000},
 			formula:     formulaCanada2018,
 			expectedTax: 13090,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    calc.IndividualFinances{Income: 85000},
+			finances:    finance.IndividualFinances{Income: 85000},
 			formula:     formulaCanada2018,
 			expectedTax: 13090,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    calc.IndividualFinances{Income: 90000, Deductions: 5000},
+			finances:    finance.IndividualFinances{Income: 90000, Deductions: 5000},
 			formula:     formulaCanada2018,
 			expectedTax: 13090,
 			errMargin:   1e-9,
@@ -95,11 +95,11 @@ func TestCalculator_Calc(t *testing.T) {
 
 func TestNewCalculator_InvalidFormula(t *testing.T) {
 
-	invalidTaxParams := CanadianFormula{0.10: calc.Bracket{300, 200}}
+	invalidTaxParams := CanadianFormula{0.10: finance.Bracket{300, 200}}
 	_, err := NewCalculator(invalidTaxParams)
 	cause := errors.Cause(err)
-	if cause != calc.ErrBoundsReversed {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrValNeg, err)
+	if cause != finance.ErrBoundsReversed {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", finance.ErrValNeg, err)
 	}
 
 }
@@ -107,7 +107,7 @@ func TestNewCalculator_InvalidFormula(t *testing.T) {
 func TestCalculator_NilFormula(t *testing.T) {
 
 	_, err := NewCalculator(nil)
-	if errors.Cause(err) != calc.ErrNoFormula {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
+	if errors.Cause(err) != ErrNoFormula {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
 }

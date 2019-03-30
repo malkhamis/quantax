@@ -3,7 +3,8 @@ package factory
 import (
 	"fmt"
 
-	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 )
 
 func ExampleNewTaxCalcFactory() {
@@ -20,7 +21,7 @@ func ExampleNewTaxCalcFactory() {
 		return
 	}
 
-	finances := calc.IndividualFinances{Income: 170000.0}
+	finances := finance.IndividualFinances{Income: 170000.0}
 	aggTax := calculator.Calc(finances)
 	fmt.Printf("%.2f", aggTax) // Output: 52821.09
 }
@@ -39,12 +40,12 @@ func ExampleNewChildBenefitCalcFactory() {
 		return
 	}
 
-	children := []calc.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
+	children := []human.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
 	calculator.SetBeneficiaries(children...)
 
-	finances := calc.FamilyFinances{
-		calc.IndividualFinances{Income: 110000},
-		calc.IndividualFinances{Income: 0},
+	finances := finance.FamilyFinances{
+		finance.IndividualFinances{Income: 110000},
+		finance.IndividualFinances{Income: 0},
 	}
 	total := calculator.Calc(finances)
 

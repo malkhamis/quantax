@@ -1,7 +1,8 @@
 package benefits
 
 import (
-	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/pkg/errors"
 )
 
@@ -16,11 +17,11 @@ type BCECTBMaxReducer struct {
 	// the [min, max] dollar amounts for given age groups (bound-inclusive)
 	BeneficiaryClasses []AgeGroupBenefits
 	// Reducer is the sub-formula used to reduce the maximum benefits
-	ReducerFormula calc.WeightedBracketFormula
+	ReducerFormula finance.WeightedBrackets
 }
 
 // Apply returns the total annual benefits for the children given the income
-func (mr *BCECTBMaxReducer) Apply(income float64, children ...calc.Person) float64 {
+func (mr *BCECTBMaxReducer) Apply(income float64, children ...human.Person) float64 {
 
 	if len(children) == 0 {
 		return 0.0
@@ -56,9 +57,9 @@ func (mr *BCECTBMaxReducer) Apply(income float64, children ...calc.Person) float
 }
 
 // IncomeCalcMethod returns the type of income this formula expects
-func (mr *BCECTBMaxReducer) IncomeCalcMethod() IncomeType {
+func (mr *BCECTBMaxReducer) IncomeCalcMethod() finance.IncomeType {
 	// TODO: legislation is not explicit about it
-	return AFNI
+	return finance.AFNI
 }
 
 // Validate ensures that this instance is valid for use. Users need to call this
@@ -72,7 +73,7 @@ func (mr *BCECTBMaxReducer) Validate() error {
 	}
 
 	if mr.ReducerFormula == nil {
-		return calc.ErrNoFormula
+		return ErrNoFormula
 	}
 
 	if err := mr.ReducerFormula.Validate(); err != nil {

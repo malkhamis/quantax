@@ -2,6 +2,8 @@ package benefits
 
 import (
 	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/pkg/errors"
 )
 
@@ -9,7 +11,7 @@ import (
 // families with dependent children. This type implements the following
 // interface: 'calc.ChildBenefitCalculator'
 type ChildBenfitCalculator struct {
-	children []calc.Person
+	children []human.Person
 	formula  ChildBenefitFormula
 }
 
@@ -21,7 +23,7 @@ var _ calc.ChildBenefitCalculator = (*ChildBenfitCalculator)(nil)
 func NewChildBenefitCalculator(formula ChildBenefitFormula) (*ChildBenfitCalculator, error) {
 
 	if formula == nil {
-		return nil, calc.ErrNoFormula
+		return nil, ErrNoFormula
 	}
 
 	err := formula.Validate()
@@ -33,7 +35,7 @@ func NewChildBenefitCalculator(formula ChildBenefitFormula) (*ChildBenfitCalcula
 }
 
 // Calc returns the recievable amount of child benefits
-func (c *ChildBenfitCalculator) Calc(finances calc.FamilyFinances) float64 {
+func (c *ChildBenfitCalculator) Calc(finances finance.FamilyFinances) float64 {
 
 	netIncome := c.formula.IncomeCalcMethod().Calc(finances)
 	benefits := c.formula.Apply(netIncome, c.children...)
@@ -42,7 +44,7 @@ func (c *ChildBenfitCalculator) Calc(finances calc.FamilyFinances) float64 {
 
 // SetBeneficiaries sets the children which the calculator will compute the
 // benefits for in subsequent calls to Calc()
-func (c *ChildBenfitCalculator) SetBeneficiaries(children ...calc.Person) {
-	c.children = make([]calc.Person, len(children))
+func (c *ChildBenfitCalculator) SetBeneficiaries(children ...human.Person) {
+	c.children = make([]human.Person, len(children))
 	copy(c.children, children)
 }

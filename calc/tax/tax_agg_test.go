@@ -4,28 +4,28 @@ import (
 	"math"
 	"testing"
 
-	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
 )
 
 func TestCalculatorAgg_Calc(t *testing.T) {
 
 	canada2018 := CanadianFormula{
-		-0.150: calc.Bracket{0, 11809},
-		0.150:  calc.Bracket{0, 46605},
-		0.205:  calc.Bracket{46606, 93208},
-		0.260:  calc.Bracket{93209, 144489},
-		0.290:  calc.Bracket{144490, 205842},
-		0.330:  calc.Bracket{205843, math.Inf(1)},
+		-0.150: finance.Bracket{0, 11809},
+		0.150:  finance.Bracket{0, 46605},
+		0.205:  finance.Bracket{46606, 93208},
+		0.260:  finance.Bracket{93209, 144489},
+		0.290:  finance.Bracket{144490, 205842},
+		0.330:  finance.Bracket{205843, math.Inf(1)},
 	}
 
 	bc2018 := CanadianFormula{
-		-0.0506: calc.Bracket{0, 10412},
-		0.0506:  calc.Bracket{0, 39676},
-		0.0770:  calc.Bracket{39676, 79353},
-		0.1050:  calc.Bracket{79353, 91107},
-		0.1229:  calc.Bracket{91107, 110630},
-		0.1470:  calc.Bracket{110630, 150000},
-		0.1680:  calc.Bracket{150000, math.Inf(1)},
+		-0.0506: finance.Bracket{0, 10412},
+		0.0506:  finance.Bracket{0, 39676},
+		0.0770:  finance.Bracket{39676, 79353},
+		0.1050:  finance.Bracket{79353, 91107},
+		0.1229:  finance.Bracket{91107, 110630},
+		0.1470:  finance.Bracket{110630, 150000},
+		0.1680:  finance.Bracket{150000, math.Inf(1)},
 	}
 
 	agg, err := NewAggregator(canada2018, bc2018)
@@ -34,7 +34,7 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 	}
 
 	expectedTax := 91226.32
-	actualTax := agg.Calc(calc.IndividualFinances{Income: 250000.0})
+	actualTax := agg.Calc(finance.IndividualFinances{Income: 250000.0})
 	if !areEqual(actualTax, expectedTax, 1e-6) {
 		t.Errorf(
 			"difference between actual and expected total "+
@@ -48,8 +48,8 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 func TestNewAggregator_Error(t *testing.T) {
 
 	_, err := NewAggregator(nil, nil)
-	if err != calc.ErrNoFormula {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
+	if err != ErrNoFormula {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
 
 }

@@ -1,19 +1,20 @@
 package benefits
 
 import (
-	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/pkg/errors"
 )
 
 // AgeGroupBenefits represents the min/max benefit amounts for an age group
 type AgeGroupBenefits struct {
-	AgesMonths      calc.AgeRange
-	AmountsPerMonth calc.Bracket
+	AgesMonths      human.AgeRange
+	AmountsPerMonth finance.Bracket
 }
 
 type multiAgeGroupBenefits []AgeGroupBenefits
 
-func (ma multiAgeGroupBenefits) MaxAnnualAmount(child calc.Person) float64 {
+func (ma multiAgeGroupBenefits) MaxAnnualAmount(child human.Person) float64 {
 
 	var max float64
 
@@ -33,7 +34,7 @@ func (ma multiAgeGroupBenefits) MaxAnnualAmount(child calc.Person) float64 {
 
 }
 
-func (ma multiAgeGroupBenefits) MinAnnualAmount(child calc.Person) float64 {
+func (ma multiAgeGroupBenefits) MinAnnualAmount(child human.Person) float64 {
 
 	var min float64
 
@@ -56,7 +57,7 @@ func (ma multiAgeGroupBenefits) MinAnnualAmount(child calc.Person) float64 {
 // NewAgeGroupBenefits returns a new age group benefit instance. The age range
 // is expected to be in months (not years). If the given arguments are invalid,
 // an error is returned
-func NewAgeGroupBenefits(ages calc.AgeRange, minmaxAmnts calc.Bracket) (AgeGroupBenefits, error) {
+func NewAgeGroupBenefits(ages human.AgeRange, minmaxAmnts finance.Bracket) (AgeGroupBenefits, error) {
 
 	benf := AgeGroupBenefits{
 		AgesMonths:      ages,
@@ -68,7 +69,7 @@ func NewAgeGroupBenefits(ages calc.AgeRange, minmaxAmnts calc.Bracket) (AgeGroup
 
 // IsInAgeGroup returns true if the age of the given person is with the range
 // of this group's age range
-func (g AgeGroupBenefits) IsInAgeGroup(person calc.Person) bool {
+func (g AgeGroupBenefits) IsInAgeGroup(person human.Person) bool {
 
 	geqMinAge := person.AgeMonths >= g.AgesMonths.Min()
 	leqMaxAge := person.AgeMonths <= g.AgesMonths.Max()
