@@ -50,9 +50,9 @@ func TestNewChildBenefitCalculatorFactory_NewCalculator_SingleFormula(t *testing
 		t.Fatal(err)
 	}
 
-	_, ok := c.(*benefits.Calculator)
+	_, ok := c.(*benefits.ChildBenfitCalculator)
 	if !ok {
-		t.Fatalf("unexpected type\nwant: %T\n got: %T", (&benefits.Calculator{}), c)
+		t.Fatalf("unexpected type\nwant: %T\n got: %T", (&benefits.ChildBenfitCalculator{}), c)
 	}
 
 }

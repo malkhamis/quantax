@@ -8,15 +8,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TestNewCalculatorAgg_Error(t *testing.T) {
+func TestNewChildBenefitAggregator_Error(t *testing.T) {
 
-	_, err := NewCalculatorAgg(&BCECTBMaxReducer{}, &BCECTBMaxReducer{}, nil)
+	_, err := NewChildBenefitAggregator(&BCECTBMaxReducer{}, &BCECTBMaxReducer{}, nil)
 	if errors.Cause(err) != calc.ErrNoFormula {
 		t.Fatalf("unexpected errpr\nwant: %v\n got: %v", calc.ErrNoFormula, err)
 	}
 }
 
-func TestNewCalculatorAgg_Full(t *testing.T) {
+func TestNewChildBenefitAggregator_Full(t *testing.T) {
 
 	formulaBC := &BCECTBMaxReducer{
 		ReducerFormula: calc.WeightedBracketFormula{
@@ -61,7 +61,7 @@ func TestNewCalculatorAgg_Full(t *testing.T) {
 		},
 	}
 
-	calculator, err := NewCalculatorAgg(formulaCanada, formulaBC)
+	calculator, err := NewChildBenefitAggregator(formulaCanada, formulaBC)
 	if err != nil {
 		t.Fatal(err)
 	}

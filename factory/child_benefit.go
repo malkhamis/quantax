@@ -52,8 +52,8 @@ func (f *ChildBenefitCalcFactory) NewCalculator() (calc.ChildBenefitCalculator, 
 	}
 
 	if len(f.formulas) == 1 {
-		return benefits.NewCalculator(f.formulas[0])
+		return benefits.NewChildBenefitCalculator(f.formulas[0])
 	}
 
-	return benefits.NewCalculatorAgg(f.formulas[0], f.formulas[1], f.formulas[2:]...)
+	return benefits.NewChildBenefitAggregator(f.formulas[0], f.formulas[1], f.formulas[2:]...)
 }

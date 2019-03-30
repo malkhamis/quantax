@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TestNewCalculator_Full(t *testing.T) {
+func TestNewChildBenefitCalculator_Full(t *testing.T) {
 
 	bracket := calc.WeightedBracketFormula{
 		0.0132: calc.Bracket{100000, math.Inf(1)},
@@ -30,7 +30,7 @@ func TestNewCalculator_Full(t *testing.T) {
 	}
 
 	children := []calc.Person{{AgeMonths: 0}, {AgeMonths: 6*12 - 2}}
-	calculator, err := NewCalculator(formulaBC)
+	calculator, err := NewChildBenefitCalculator(formulaBC)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,19 +65,19 @@ func TestNewCalculator_Full(t *testing.T) {
 
 }
 
-func TestNewCalculator_Errors(t *testing.T) {
+func TestNewChildBenefitCalculator_Errors(t *testing.T) {
 
 	bracket := calc.WeightedBracketFormula{
 		0.0132: calc.Bracket{math.Inf(1), 100000},
 	}
 	formulaBC := &BCECTBMaxReducer{ReducerFormula: bracket}
 
-	_, err := NewCalculator(formulaBC)
+	_, err := NewChildBenefitCalculator(formulaBC)
 	if errors.Cause(err) != calc.ErrBoundsReversed {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrBoundsReversed, err)
 	}
 
-	_, err = NewCalculator(nil)
+	_, err = NewChildBenefitCalculator(nil)
 	if errors.Cause(err) != calc.ErrNoFormula {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
 	}
