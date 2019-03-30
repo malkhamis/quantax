@@ -3,8 +3,8 @@ package factory
 import (
 	"fmt"
 
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 )
 
 func ExampleNewTaxCalcFactory() {
@@ -40,7 +40,7 @@ func ExampleNewChildBenefitCalcFactory() {
 		return
 	}
 
-	children := []calc.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
+	children := []human.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
 	calculator.SetBeneficiaries(children...)
 
 	finances := finance.FamilyFinances{

@@ -3,9 +3,9 @@ package history
 import (
 	"math"
 
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/benefits"
 	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/malkhamis/quantax/calc/tax"
 )
 
@@ -31,11 +31,11 @@ var taxFormulaCanada2018 = tax.CanadianFormula{
 var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
 	BeneficiaryClasses: []benefits.AgeGroupBenefits{
 		benefits.AgeGroupBenefits{
-			AgesMonths:      calc.AgeRange{0, (MonthsInYear * 6) - 1},
+			AgesMonths:      human.AgeRange{0, (MonthsInYear * 6) - 1},
 			AmountsPerMonth: finance.Bracket{0, 541.33},
 		},
 		benefits.AgeGroupBenefits{
-			AgesMonths:      calc.AgeRange{MonthsInYear * 6, MonthsInYear * 17},
+			AgesMonths:      human.AgeRange{MonthsInYear * 6, MonthsInYear * 17},
 			AmountsPerMonth: finance.Bracket{0, 456.75},
 		},
 	},
