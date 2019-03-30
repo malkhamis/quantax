@@ -4,31 +4,65 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/tax"
 	"github.com/malkhamis/quantax/history"
 	"github.com/pkg/errors"
 )
 
+func TestNewTaxCalculatorFactory_NewCalculator_SingleFormula(t *testing.T) {
+
+	f, err := NewTaxCalcFactory(2018, BC)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c, err := f.NewCalculator(calc.IndividualFinances{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, ok := c.(*tax.Calculator)
+	if !ok {
+		t.Fatalf("unexpected type\nwant: %T\n got: %T", (&tax.Calculator{}), c)
+	}
+
+}
+
+func TestTaxCalcFactory_NewCalculator_Errors(t *testing.T) {
+
+	_, err := (&TaxCalcFactory{}).NewCalculator(calc.IndividualFinances{})
+	if err != ErrFactoryNotInit {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrFactoryNotInit, err)
+	}
+
+}
+
 func TestNewTaxCalculatorFactory_Errors(t *testing.T) {
 
 	cases := []struct {
-		name string
-		opts Options
-		err  error
+		name    string
+		year    uint
+		regions []Region
+		err     error
 	}{
 		{
-			name: "invalid-year",
-			opts: Options{Year: 1000, Region: BC},
-			err:  history.ErrFormulaNotExist,
+			name:    "invalid-year",
+			year:    1000,
+			regions: []Region{BC},
+			err:     history.ErrFormulaNotExist,
 		},
 		{
-			name: "invalid-region",
-			opts: Options{Year: 2018, Region: Region(1000)},
-			err:  ErrRegionNotExist,
+			name:    "invalid-region",
+			year:    1000,
+			regions: []Region{Region(1000)},
+			err:     ErrRegionNotExist,
 		},
 		{
-			name: "valid",
-			opts: Options{Year: 2018, Region: BC},
-			err:  nil,
+			name:    "valid",
+			year:    2018,
+			regions: []Region{BC},
+			err:     nil,
 		},
 	}
 
@@ -36,7 +70,7 @@ func TestNewTaxCalculatorFactory_Errors(t *testing.T) {
 		c := c
 		t.Run(fmt.Sprintf("case%d-%s", i, c.name), func(t *testing.T) {
 
-			_, err := NewTaxCalcFactory(c.opts)
+			_, err := NewTaxCalcFactory(c.year, c.regions[0], c.regions[1:]...)
 			cause := errors.Cause(err)
 			if cause != c.err {
 				t.Errorf("unexpected error\nwant: %v\n got: %v", c.err, err)

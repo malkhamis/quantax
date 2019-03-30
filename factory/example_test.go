@@ -8,12 +8,7 @@ import (
 
 func ExampleNewTaxCalcFactory() {
 
-	calcFactoryFed, err := NewTaxCalcFactory(Options{Year: 2018, Region: Canada})
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	calcFactoryBC, err := NewTaxCalcFactory(Options{Year: 2018, Region: BC})
+	f, err := NewTaxCalcFactory(2018, Canada, BC)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -21,18 +16,13 @@ func ExampleNewTaxCalcFactory() {
 
 	finances := calc.IndividualFinances{Income: 170000.0}
 
-	calcFed, err := calcFactoryFed.NewCalculator(finances)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	calcBC, err := calcFactoryBC.NewCalculator(finances)
+	calculator, err := f.NewCalculator(finances)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	aggTax := calcFed.Calc() + calcBC.Calc()
+	aggTax := calculator.Calc()
 	fmt.Printf("%.2f", aggTax) // Output: 52821.09
 }
 

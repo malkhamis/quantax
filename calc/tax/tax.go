@@ -18,7 +18,7 @@ type Calculator struct {
 }
 
 // NewCalculator returns a new tax calculator for the given financial numbers
-// and tax formula.
+// and tax formula
 func NewCalculator(finances calc.IndividualFinances, formula Formula) (*Calculator, error) {
 
 	if formula == nil {
@@ -30,7 +30,7 @@ func NewCalculator(finances calc.IndividualFinances, formula Formula) (*Calculat
 		return nil, errors.Wrap(err, "invalid formula")
 	}
 
-	c := &Calculator{formula: formula}
+	c := &Calculator{formula: formula.Clone()}
 	c.UpdateFinances(finances)
 	return c, nil
 }

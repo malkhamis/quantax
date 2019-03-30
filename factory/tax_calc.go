@@ -9,28 +9,34 @@ import (
 
 // TaxCalcFactory is a type used to conveniently create tax calculators
 type TaxCalcFactory struct {
-	year    uint
-	region  history.Jurisdiction
-	formula tax.Formula
+	formulas []tax.Formula
 }
 
-// NewTaxCalcFactory returns a new tax calculator factory from the given options
-func NewTaxCalcFactory(opts Options) (*TaxCalcFactory, error) {
+// NewTaxCalcFactory returns a new tax calculator factory from the given
+// params. If extra regions are specified, the returned calculator aggregates
+// the taxes for all the given regions
+func NewTaxCalcFactory(year uint, region Region, extras ...Region) (*TaxCalcFactory, error) {
 
-	region, ok := knownRegions[opts.Region]
-	if !ok {
-		return nil, ErrRegionNotExist
-	}
-
-	foundFormula, err := history.GetTaxFormula(opts.Year, region)
-	if err != nil {
-		return nil, err
-	}
+	allRegions := []Region{region}
+	allRegions = append(allRegions, extras...)
 
 	c := &TaxCalcFactory{
-		year:    opts.Year,
-		region:  region,
-		formula: foundFormula,
+		formulas: make([]tax.Formula, len(extras)+1),
+	}
+
+	for i, r := range allRegions {
+
+		convertedRegion, ok := knownRegions[r]
+		if !ok {
+			return nil, ErrRegionNotExist
+		}
+
+		foundFormula, err := history.GetTaxFormula(year, convertedRegion)
+		if err != nil {
+			return nil, err
+		}
+
+		c.formulas[i] = foundFormula
 	}
 
 	return c, nil
@@ -39,5 +45,14 @@ func NewTaxCalcFactory(opts Options) (*TaxCalcFactory, error) {
 // NewCalculator creates a new tax calculator that is configured with the the
 // parameters/options set in this factory
 func (f *TaxCalcFactory) NewCalculator(finances calc.IndividualFinances) (calc.TaxCalculator, error) {
-	return tax.NewCalculator(finances, f.formula)
+
+	if len(f.formulas) == 0 {
+		return nil, ErrFactoryNotInit
+	}
+
+	if len(f.formulas) == 1 {
+		return tax.NewCalculator(finances, f.formulas[0])
+	}
+
+	return tax.NewCalculatorAgg(finances, f.formulas)
 }
