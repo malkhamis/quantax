@@ -6,6 +6,7 @@ import (
 	"github.com/malkhamis/quantax/calc/benefits"
 	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/malkhamis/quantax/calc/human"
+	"github.com/malkhamis/quantax/calc/rrsp"
 	"github.com/malkhamis/quantax/calc/tax"
 )
 
@@ -17,7 +18,17 @@ var (
 	cbFormulasCanada = yearlyCBFormulas{
 		2017: cbFormulaCanada2017,
 	}
+
+	rrspFormulasCanada = yearlyRRSPFormulas{
+		2018: rrspFormulaCanada2018,
+	}
 )
+
+var rrspFormulaCanada2018 = &rrsp.MaxCapper{
+	Rate:       0.18,
+	Cap:        26230.00,
+	IncomeType: finance.EARNED,
+}
 
 var taxFormulaCanada2018 = tax.CanadianFormula{
 	-0.150: finance.Bracket{0, 11809},
