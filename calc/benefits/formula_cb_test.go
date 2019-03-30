@@ -170,7 +170,7 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 
 func TestCCBMaxReducer_IncomeCalcMethod(t *testing.T) {
 
-	incomeType := (&CCBMaxReducer{}).IncomeCalcMethod()
+	incomeType := (&CCBMaxReducer{IncomeType: finance.AFNI}).IncomeCalcMethod()
 	if incomeType != finance.AFNI {
 		t.Errorf("unexpected income type\nwant: %s\n got: %s", finance.AFNI, incomeType)
 	}

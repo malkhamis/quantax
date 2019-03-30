@@ -41,24 +41,21 @@ var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
 	},
 	Reducers: []finance.WeightedBrackets{
 		finance.WeightedBrackets{ // 1 child
-			0.000: finance.Bracket{0, 30450},
 			0.070: finance.Bracket{30450, 65976},
 			0.032: finance.Bracket{65976, math.Inf(1)},
 		},
 		finance.WeightedBrackets{ // 2 children
-			0.000: finance.Bracket{0, 30450},
 			0.135: finance.Bracket{30450, 65976},
 			0.057: finance.Bracket{65976, math.Inf(1)},
 		},
 		finance.WeightedBrackets{ // 3 children
-			0.000: finance.Bracket{0, 30450},
 			0.190: finance.Bracket{30450, 65976},
 			0.080: finance.Bracket{65976, math.Inf(1)},
 		},
 		finance.WeightedBrackets{ // 4+ children
-			0.000: finance.Bracket{0, 30450},
 			0.230: finance.Bracket{30450, 65976},
 			0.095: finance.Bracket{65976, math.Inf(1)},
 		},
 	},
+	IncomeType: finance.AFNI,
 }

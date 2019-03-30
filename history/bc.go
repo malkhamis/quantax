@@ -39,4 +39,5 @@ var cbFormulaBC2018 = &benefits.BCECTBMaxReducer{
 	ReducerFormula: finance.WeightedBrackets{
 		0.0132: finance.Bracket{100000, math.Inf(1)},
 	},
+	IncomeType: finance.AFNI,
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Sentinel errors that can ben wrapped and returned by this package
 var (
 	ErrNoFormula = errors.New("not formula given/set")
 )
