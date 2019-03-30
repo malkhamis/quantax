@@ -74,12 +74,12 @@ func TestCalculator_Calc(t *testing.T) {
 		i, c := i, c
 		t.Run(fmt.Sprintf("case-%d", i), func(t *testing.T) {
 
-			calculator, err := NewCalculator(c.finances, c.formula)
+			calculator, err := NewCalculator(c.formula)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			actualTax := calculator.Calc()
+			actualTax := calculator.Calc(c.finances)
 			if !areEqual(actualTax, c.expectedTax, c.errMargin) {
 				t.Errorf(
 					"difference between actual and expected total "+
@@ -96,7 +96,7 @@ func TestCalculator_Calc(t *testing.T) {
 func TestNewCalculator_InvalidFormula(t *testing.T) {
 
 	invalidTaxParams := CanadianFormula{0.10: calc.Bracket{300, 200}}
-	_, err := NewCalculator(calc.IndividualFinances{}, invalidTaxParams)
+	_, err := NewCalculator(invalidTaxParams)
 	cause := errors.Cause(err)
 	if cause != calc.ErrBoundsReversed {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrValNeg, err)
@@ -104,33 +104,9 @@ func TestNewCalculator_InvalidFormula(t *testing.T) {
 
 }
 
-func TestCalculator_Setters(t *testing.T) {
-
-	c := Calculator{
-		finances: calc.IndividualFinances{
-			Income:     0,
-			Deductions: 0,
-		},
-	}
-
-	newFinNums := calc.IndividualFinances{
-		Income:     10,
-		Deductions: 30,
-	}
-
-	c.UpdateFinances(newFinNums)
-
-	if c.finances.Income != 10 {
-		t.Error("expected Update() to mutate the calculator")
-	}
-	if c.finances.Deductions != 30 {
-		t.Error("expected Update() to mutate the calculator")
-	}
-}
-
 func TestCalculator_NilFormula(t *testing.T) {
 
-	_, err := NewCalculator(calc.IndividualFinances{}, nil)
+	_, err := NewCalculator(nil)
 	if errors.Cause(err) != calc.ErrNoFormula {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
 	}

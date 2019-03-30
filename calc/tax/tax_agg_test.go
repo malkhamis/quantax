@@ -28,16 +28,13 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 		0.1680:  calc.Bracket{150000, math.Inf(1)},
 	}
 
-	agg, err := NewCalculatorAgg(
-		calc.IndividualFinances{Income: 250000.0},
-		[]Formula{canada2018, bc2018},
-	)
+	agg, err := NewCalculatorAgg(canada2018, bc2018)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	expectedTax := 91226.32
-	actualTax := agg.Calc()
+	actualTax := agg.Calc(calc.IndividualFinances{Income: 250000.0})
 	if !areEqual(actualTax, expectedTax, 1e-6) {
 		t.Errorf(
 			"difference between actual and expected total "+
@@ -46,26 +43,11 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 		)
 	}
 
-	agg.UpdateFinances(calc.IndividualFinances{Income: 0})
-	actualTax = agg.Calc()
-	if actualTax != 0.0 {
-		t.Errorf(
-			"difference between actual and expected total "+
-				"tax exceeds error margin\nwant: %04f\n got: %04f",
-			0.0, actualTax,
-		)
-	}
-
 }
 
 func TestNewCalculatorAgg_Error(t *testing.T) {
 
-	_, err := NewCalculatorAgg(calc.IndividualFinances{}, nil)
-	if err != calc.ErrNoFormula {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
-	}
-
-	_, err = NewCalculatorAgg(calc.IndividualFinances{}, []Formula{nil})
+	_, err := NewCalculatorAgg(nil, nil)
 	if err != calc.ErrNoFormula {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
 	}
