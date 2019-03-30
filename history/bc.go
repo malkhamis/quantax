@@ -5,6 +5,7 @@ import (
 
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/benefits"
+	"github.com/malkhamis/quantax/calc/tax"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 	}
 )
 
-var taxFormulaBC2018 = calc.WeightedBracketFormula{
+var taxFormulaBC2018 = tax.CanadianFormula{
 	-0.0506: calc.Bracket{0, 10412},
 	0.0506:  calc.Bracket{0, 39676},
 	0.0770:  calc.Bracket{39676, 79353},
@@ -28,7 +29,7 @@ var taxFormulaBC2018 = calc.WeightedBracketFormula{
 }
 
 var cbFormulaBC2018 = &benefits.BCECTBMaxReducer{
-	BenefitClasses: []benefits.AgeGroupBenefits{
+	BeneficiaryClasses: []benefits.AgeGroupBenefits{
 		benefits.AgeGroupBenefits{
 			AgesMonths:      calc.AgeRange{0, (MonthsInYear * 6) - 1},
 			AmountsPerMonth: calc.Bracket{0, 55},

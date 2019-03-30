@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TestNewCBCalculator_Full(t *testing.T) {
+func TestNewChildBenefitCalculator_Full(t *testing.T) {
 
 	bracket := calc.WeightedBracketFormula{
 		0.0132: calc.Bracket{100000, math.Inf(1)},
@@ -16,7 +16,7 @@ func TestNewCBCalculator_Full(t *testing.T) {
 
 	formulaBC := &BCECTBMaxReducer{
 		ReducerFormula: bracket,
-		BenefitClasses: []AgeGroupBenefits{
+		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      calc.AgeRange{0, 6*12 - 1},
 				AmountsPerMonth: calc.Bracket{0, 55},
@@ -30,18 +30,19 @@ func TestNewCBCalculator_Full(t *testing.T) {
 	}
 
 	children := []calc.Person{{AgeMonths: 0}, {AgeMonths: 6*12 - 2}}
-	calculator, err := NewCBCalculator(formulaBC, finances, children...)
+	calculator, err := NewChildBenefitCalculator(formulaBC)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual := calculator.Calc()
+	calculator.SetBeneficiaries(children...)
+	actual := calculator.Calc(finances)
 	expected := (55*12 + 55*2) - (2 * 0.0132 * 10000)
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
 	}
 
-	calculator.UpdateBeneficiaries()
+	calculator.SetBeneficiaries()
 	if len(calculator.children) != 0 {
 		t.Errorf(
 			"expected length of children slice to be zero, got: %d",
@@ -49,15 +50,14 @@ func TestNewCBCalculator_Full(t *testing.T) {
 		)
 	}
 
-	actual = calculator.Calc()
+	actual = calculator.Calc(finances)
 	expected = 0.0
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
 	}
 
-	calculator.UpdateBeneficiaries(calc.Person{AgeMonths: 0})
-	calculator.UpdateFinances(calc.FamilyFinances{{}, {}})
-	actual = calculator.Calc()
+	calculator.SetBeneficiaries(calc.Person{AgeMonths: 0})
+	actual = calculator.Calc(calc.FamilyFinances{{}, {}})
 	expected = 55 * 12
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
@@ -65,20 +65,19 @@ func TestNewCBCalculator_Full(t *testing.T) {
 
 }
 
-func TestNewCBCalculator_Errors(t *testing.T) {
+func TestNewChildBenefitCalculator_Errors(t *testing.T) {
 
 	bracket := calc.WeightedBracketFormula{
 		0.0132: calc.Bracket{math.Inf(1), 100000},
 	}
 	formulaBC := &BCECTBMaxReducer{ReducerFormula: bracket}
-	finances := calc.FamilyFinances{{}, {}}
 
-	_, err := NewCBCalculator(formulaBC, finances)
+	_, err := NewChildBenefitCalculator(formulaBC)
 	if errors.Cause(err) != calc.ErrBoundsReversed {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrBoundsReversed, err)
 	}
 
-	_, err = NewCBCalculator(nil, finances)
+	_, err = NewChildBenefitCalculator(nil)
 	if errors.Cause(err) != calc.ErrNoFormula {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", calc.ErrNoFormula, err)
 	}

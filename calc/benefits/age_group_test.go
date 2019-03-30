@@ -32,6 +32,54 @@ func TestAgeGroupBenefits_IsInAgeGroup(t *testing.T) {
 	}
 }
 
+func TestMultiAgeGroupBenefits_MinAnnualAmount(t *testing.T) {
+
+	agb := multiAgeGroupBenefits{
+		{
+			AgesMonths:      calc.AgeRange{0, 10},
+			AmountsPerMonth: calc.Bracket{50, 100},
+		},
+		{
+			AgesMonths:      calc.AgeRange{11, 20},
+			AmountsPerMonth: calc.Bracket{25, 50},
+		},
+	}
+
+	expected := float64(50*6) + float64(25*6)
+	actual := agb.MinAnnualAmount(calc.Person{AgeMonths: 5})
+	if actual != expected {
+		t.Errorf(
+			"expected a 5 month old child to be entitled to %.2f, got %.2f",
+			expected, actual,
+		)
+	}
+
+}
+
+func TestMultiAgeGroupBenefits_MaxAnnualAmount(t *testing.T) {
+
+	agb := multiAgeGroupBenefits{
+		{
+			AgesMonths:      calc.AgeRange{0, 10},
+			AmountsPerMonth: calc.Bracket{50, 100},
+		},
+		{
+			AgesMonths:      calc.AgeRange{11, 20},
+			AmountsPerMonth: calc.Bracket{25, 50},
+		},
+	}
+
+	expected := float64(100*6) + float64(50*6)
+	actual := agb.MaxAnnualAmount(calc.Person{AgeMonths: 5})
+	if actual != expected {
+		t.Errorf(
+			"expected a 5 month old child to be entitled to %.2f, got %.2f",
+			expected, actual,
+		)
+	}
+
+}
+
 func TestAgeGroupBenefits_Validate(t *testing.T) {
 
 	agb := AgeGroupBenefits{

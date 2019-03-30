@@ -13,13 +13,12 @@ var (
 
 // Calculator is used to calculate payable tax for individuals
 type Calculator struct {
-	formula  Formula
-	finances calc.IndividualFinances
+	formula Formula
 }
 
-// NewCalculator returns a new calculator for the given financial numbers
-// and tax brackets.
-func NewCalculator(finances calc.IndividualFinances, formula Formula) (*Calculator, error) {
+// NewCalculator returns a new tax calculator for the given financial numbers
+// and tax formula
+func NewCalculator(formula Formula) (*Calculator, error) {
 
 	if formula == nil {
 		return nil, calc.ErrNoFormula
@@ -30,25 +29,13 @@ func NewCalculator(finances calc.IndividualFinances, formula Formula) (*Calculat
 		return nil, errors.Wrap(err, "invalid formula")
 	}
 
-	c := &Calculator{formula: formula}
-	c.UpdateFinances(finances)
-	return c, nil
+	return &Calculator{formula: formula.Clone()}, nil
 }
 
 // Calc computes the tax on the taxable amount set in this calculator
-func (c *Calculator) Calc(taxCredits ...float64) float64 {
+func (c *Calculator) Calc(finances calc.IndividualFinances) float64 {
 
-	netIncome := c.finances.Income - c.finances.Deductions
+	netIncome := finances.Income - finances.Deductions
 	payableTax := c.formula.Apply(netIncome)
-
-	for _, credit := range taxCredits {
-		payableTax -= credit
-	}
-
 	return payableTax
-}
-
-// Update sets the financial numbers which the tax will be calculated for
-func (c *Calculator) UpdateFinances(newFinances calc.IndividualFinances) {
-	c.finances = newFinances
 }

@@ -14,7 +14,7 @@ var _ ChildBenefitFormula = (*BCECTBMaxReducer)(nil)
 // to a single rated-bracket and is amplified by the number of children
 type BCECTBMaxReducer struct {
 	// the [min, max] dollar amounts for given age groups (bound-inclusive)
-	BenefitClasses []AgeGroupBenefits
+	BeneficiaryClasses []AgeGroupBenefits
 	// Reducer is the sub-formula used to reduce the maximum benefits
 	ReducerFormula calc.WeightedBracketFormula
 }
@@ -28,12 +28,20 @@ func (mr *BCECTBMaxReducer) Apply(income float64, children ...calc.Person) float
 
 	var maxBenefits float64
 	for _, child := range children {
-		maxBenefits += mr.maxAnnualAmount(child)
+		maxBenefits += multiAgeGroupBenefits(
+			mr.BeneficiaryClasses,
+		).MaxAnnualAmount(
+			child,
+		)
 	}
 
 	var minBenefits float64
 	for _, child := range children {
-		minBenefits += mr.minAnnualAmount(child)
+		minBenefits += multiAgeGroupBenefits(
+			mr.BeneficiaryClasses,
+		).MinAnnualAmount(
+			child,
+		)
 	}
 
 	childCount := len(children)
@@ -57,7 +65,7 @@ func (mr *BCECTBMaxReducer) IncomeCalcMethod() IncomeType {
 // method before use only if the instance was manually created/modified
 func (mr *BCECTBMaxReducer) Validate() error {
 
-	for _, ageGroupBenefit := range mr.BenefitClasses {
+	for _, ageGroupBenefit := range mr.BeneficiaryClasses {
 		if err := ageGroupBenefit.Validate(); err != nil {
 			return errors.Wrap(err, "invalid age group benefits")
 		}
@@ -78,51 +86,11 @@ func (mr *BCECTBMaxReducer) Validate() error {
 func (mr *BCECTBMaxReducer) Clone() ChildBenefitFormula {
 
 	clone := &BCECTBMaxReducer{
-		BenefitClasses: make([]AgeGroupBenefits, len(mr.BenefitClasses)),
-		ReducerFormula: mr.ReducerFormula.Clone(),
+		BeneficiaryClasses: make([]AgeGroupBenefits, len(mr.BeneficiaryClasses)),
+		ReducerFormula:     mr.ReducerFormula.Clone(),
 	}
 
-	copy(clone.BenefitClasses, mr.BenefitClasses)
+	copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
 
 	return clone
-}
-
-// maxAnnualAmount returns the maximum annual benefits for the given child
-func (mr *BCECTBMaxReducer) maxAnnualAmount(child calc.Person) float64 {
-
-	maxPayments := make(payments, 12)
-
-	for month := range maxPayments {
-		for _, ageGroup := range mr.BenefitClasses {
-
-			if ageGroup.IsInAgeGroup(child) {
-				maxPayments[month] += ageGroup.AmountsPerMonth.Upper()
-			}
-			// we still want to loop in case the child
-			// belongs to multiple benefit classes
-		}
-		child.AgeMonths++
-	}
-
-	return maxPayments.Total()
-}
-
-// minAnnualAmount returns the minimum annual benefits for the given child
-func (mr *BCECTBMaxReducer) minAnnualAmount(child calc.Person) float64 {
-
-	minPayments := make(payments, 12)
-
-	for month := range minPayments {
-		for _, ageGroup := range mr.BenefitClasses {
-
-			if ageGroup.IsInAgeGroup(child) {
-				minPayments[month] += ageGroup.AmountsPerMonth.Lower()
-			}
-			// we still want to loop in case the child
-			// belongs to multiple benefit age groups
-		}
-		child.AgeMonths++
-	}
-
-	return minPayments.Total()
 }
