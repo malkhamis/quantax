@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/pkg/errors"
 )
 
@@ -25,7 +25,7 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 		},
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
-				AgesMonths:      calc.AgeRange{0, 6*12 - 1},
+				AgesMonths:      human.AgeRange{0, 6*12 - 1},
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
@@ -34,11 +34,11 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 	formulaCanada := &CCBMaxReducer{
 		BeneficiaryClasses: []AgeGroupBenefits{
 			AgeGroupBenefits{
-				AgesMonths:      calc.AgeRange{0, (12 * 6) - 1},
+				AgesMonths:      human.AgeRange{0, (12 * 6) - 1},
 				AmountsPerMonth: finance.Bracket{0, 541.33},
 			},
 			AgeGroupBenefits{
-				AgesMonths:      calc.AgeRange{12 * 6, 12 * 17},
+				AgesMonths:      human.AgeRange{12 * 6, 12 * 17},
 				AmountsPerMonth: finance.Bracket{0, 456.75},
 			},
 		},
@@ -67,7 +67,7 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	children := []calc.Person{{AgeMonths: 0}, {AgeMonths: (17 * 12) - 2}}
+	children := []human.Person{{AgeMonths: 0}, {AgeMonths: (17 * 12) - 2}}
 	calculator.SetBeneficiaries(children...)
 
 	finances := finance.FamilyFinances{
@@ -90,14 +90,14 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
 	}
 
-	calculator.SetBeneficiaries(calc.Person{AgeMonths: 0})
+	calculator.SetBeneficiaries(human.Person{AgeMonths: 0})
 	actual = calculator.Calc(finance.FamilyFinances{{}, {}})
 	expected = (55 * 12) + (541.33 * 12)
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
 	}
 
-	children = []calc.Person{{AgeMonths: 0}, {AgeMonths: (6 * 12) - 2}}
+	children = []human.Person{{AgeMonths: 0}, {AgeMonths: (6 * 12) - 2}}
 	calculator.SetBeneficiaries(children...)
 	actual = calculator.Calc(finance.FamilyFinances{{Income: 100000}, {}})
 	expectedCanada = (541.33*12 + 541.33*2 + 456.75*10) - (0.135 * (65976.0 - 30450.0)) - (0.057 * (100000.0 - 65976.0))

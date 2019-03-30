@@ -3,6 +3,7 @@ package benefits
 import (
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/pkg/errors"
 )
 
@@ -10,7 +11,7 @@ import (
 // families with dependent children. This type implements the following
 // interface: 'calc.ChildBenefitCalculator'
 type ChildBenfitCalculator struct {
-	children []calc.Person
+	children []human.Person
 	formula  ChildBenefitFormula
 }
 
@@ -43,7 +44,7 @@ func (c *ChildBenfitCalculator) Calc(finances finance.FamilyFinances) float64 {
 
 // SetBeneficiaries sets the children which the calculator will compute the
 // benefits for in subsequent calls to Calc()
-func (c *ChildBenfitCalculator) SetBeneficiaries(children ...calc.Person) {
-	c.children = make([]calc.Person, len(children))
+func (c *ChildBenfitCalculator) SetBeneficiaries(children ...human.Person) {
+	c.children = make([]human.Person, len(children))
 	copy(c.children, children)
 }

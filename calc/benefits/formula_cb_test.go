@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/pkg/errors"
 )
 
@@ -26,11 +26,11 @@ func TestCCBMaxReducer_Apply(t *testing.T) {
 		Reducers: []finance.WeightedBrackets{childCount1, childCount2},
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
-				AgesMonths:      calc.AgeRange{0, 11},
+				AgesMonths:      human.AgeRange{0, 11},
 				AmountsPerMonth: finance.Bracket{0, 500},
 			},
 			{
-				AgesMonths:      calc.AgeRange{12, 23},
+				AgesMonths:      human.AgeRange{12, 23},
 				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
@@ -41,7 +41,7 @@ func TestCCBMaxReducer_Apply(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	child1, child2 := calc.Person{AgeMonths: 0}, calc.Person{AgeMonths: 6}
+	child1, child2 := human.Person{AgeMonths: 0}, human.Person{AgeMonths: 6}
 	max := (12.0 * 500) + (6.0*500 + 6.0*250)
 
 	income := 100000.0
@@ -71,15 +71,15 @@ func TestCCBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 	formula := CCBMaxReducer{
 		BeneficiaryClasses: []AgeGroupBenefits{
 			AgeGroupBenefits{
-				AgesMonths:      calc.AgeRange{10, 0},
+				AgesMonths:      human.AgeRange{10, 0},
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
 	}
 
 	err := formula.Validate()
-	if errors.Cause(err) != calc.ErrInvalidAgeRange {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", calc.ErrInvalidAgeRange, err)
+	if errors.Cause(err) != human.ErrInvalidAgeRange {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", human.ErrInvalidAgeRange, err)
 	}
 }
 
@@ -138,11 +138,11 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 		Reducers: []finance.WeightedBrackets{childCount1, childCount2},
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
-				AgesMonths:      calc.AgeRange{0, 11},
+				AgesMonths:      human.AgeRange{0, 11},
 				AmountsPerMonth: finance.Bracket{0, 500},
 			},
 			{
-				AgesMonths:      calc.AgeRange{12, 23},
+				AgesMonths:      human.AgeRange{12, 23},
 				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
@@ -154,7 +154,7 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 	}
 
 	income := 100000.0
-	child1, child2 := calc.Person{AgeMonths: 0}, calc.Person{AgeMonths: 6}
+	child1, child2 := human.Person{AgeMonths: 0}, human.Person{AgeMonths: 6}
 	originalResults := originalFormula.Apply(income, child1, child2)
 
 	clone := originalFormula.Clone()

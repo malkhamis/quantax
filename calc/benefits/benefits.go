@@ -5,8 +5,8 @@ package benefits
 import (
 	"errors"
 
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 )
 
 // Sentinel errors that can be wrapped and returned by this package
@@ -17,7 +17,7 @@ var (
 // ChildBenefitFormula represents a method for calculating child benefits
 type ChildBenefitFormula interface {
 	// Apply returns the sum of benefits for all beneficiaries
-	Apply(income float64, children ...calc.Person) float64
+	Apply(income float64, children ...human.Person) float64
 	// IncomeCalcMethod returns the method of calculating the income
 	IncomeCalcMethod() finance.IncomeType
 	// Validate checks if the formula is valid for use

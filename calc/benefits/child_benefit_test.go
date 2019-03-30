@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/pkg/errors"
 )
 
@@ -19,7 +19,7 @@ func TestNewChildBenefitCalculator_Full(t *testing.T) {
 		ReducerFormula: bracket,
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
-				AgesMonths:      calc.AgeRange{0, 6*12 - 1},
+				AgesMonths:      human.AgeRange{0, 6*12 - 1},
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
@@ -30,7 +30,7 @@ func TestNewChildBenefitCalculator_Full(t *testing.T) {
 		{Income: 20000, Deductions: 20000},
 	}
 
-	children := []calc.Person{{AgeMonths: 0}, {AgeMonths: 6*12 - 2}}
+	children := []human.Person{{AgeMonths: 0}, {AgeMonths: 6*12 - 2}}
 	calculator, err := NewChildBenefitCalculator(formulaBC)
 	if err != nil {
 		t.Fatal(err)
@@ -57,7 +57,7 @@ func TestNewChildBenefitCalculator_Full(t *testing.T) {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
 	}
 
-	calculator.SetBeneficiaries(calc.Person{AgeMonths: 0})
+	calculator.SetBeneficiaries(human.Person{AgeMonths: 0})
 	actual = calculator.Calc(finance.FamilyFinances{{}, {}})
 	expected = 55 * 12
 	if actual != expected {

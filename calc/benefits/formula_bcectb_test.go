@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/pkg/errors"
 )
 
@@ -19,7 +19,7 @@ func TestBCECTBMaxReducer_Apply(t *testing.T) {
 		ReducerFormula: bracket,
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
-				AgesMonths:      calc.AgeRange{0, 6*12 - 1},
+				AgesMonths:      human.AgeRange{0, 6*12 - 1},
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
@@ -30,7 +30,7 @@ func TestBCECTBMaxReducer_Apply(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	child1, child2 := calc.Person{AgeMonths: 0}, calc.Person{AgeMonths: 6}
+	child1, child2 := human.Person{AgeMonths: 0}, human.Person{AgeMonths: 6}
 	income := 110000.0
 	max := 2.0 * 12.0 * 55
 	expected := max - (2 * 0.0132 * 10000)
@@ -60,15 +60,15 @@ func TestBCECTBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 	formula := BCECTBMaxReducer{
 		BeneficiaryClasses: []AgeGroupBenefits{
 			AgeGroupBenefits{
-				AgesMonths:      calc.AgeRange{10, 0},
+				AgesMonths:      human.AgeRange{10, 0},
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
 	}
 
 	err := formula.Validate()
-	if errors.Cause(err) != calc.ErrInvalidAgeRange {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", finance.ErrBoundsReversed, err)
+	if errors.Cause(err) != human.ErrInvalidAgeRange {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", human.ErrInvalidAgeRange, err)
 	}
 }
 
@@ -110,7 +110,7 @@ func TestBCECTBMaxReducer_Clone(t *testing.T) {
 		ReducerFormula: bracket,
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
-				AgesMonths:      calc.AgeRange{0, 6*12 - 1},
+				AgesMonths:      human.AgeRange{0, 6*12 - 1},
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
@@ -122,7 +122,7 @@ func TestBCECTBMaxReducer_Clone(t *testing.T) {
 	}
 
 	income := 100000.0
-	child1, child2 := calc.Person{AgeMonths: 0}, calc.Person{AgeMonths: 6}
+	child1, child2 := human.Person{AgeMonths: 0}, human.Person{AgeMonths: 6}
 	originalResults := originalFormula.Apply(income, child1, child2)
 
 	clone := originalFormula.Clone()

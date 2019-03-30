@@ -1,8 +1,8 @@
 package benefits
 
 import (
-	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
 	"github.com/pkg/errors"
 )
 
@@ -21,7 +21,7 @@ type BCECTBMaxReducer struct {
 }
 
 // Apply returns the total annual benefits for the children given the income
-func (mr *BCECTBMaxReducer) Apply(income float64, children ...calc.Person) float64 {
+func (mr *BCECTBMaxReducer) Apply(income float64, children ...human.Person) float64 {
 
 	if len(children) == 0 {
 		return 0.0

@@ -1,7 +1,10 @@
-// Package calc defines interfaces for various tax-related calculators
+// package calc defines interfaces for various tax-related calculators
 package calc
 
-import "github.com/malkhamis/quantax/calc/finance"
+import (
+	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/calc/human"
+)
 
 // TaxCalculator is used to calculate payable tax.
 type TaxCalculator interface {
@@ -17,5 +20,5 @@ type ChildBenefitCalculator interface {
 	Calc(finance.FamilyFinances) float64
 	// SetBeneficiaries sets the children which the calculator will compute the
 	// benefits for in subsequent calls to Calc()
-	SetBeneficiaries(...Person)
+	SetBeneficiaries(...human.Person)
 }

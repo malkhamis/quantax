@@ -1,4 +1,4 @@
-package calc
+package human
 
 // func TestPerson_IsOlderThan_Error(t *testing.T) {
 //
