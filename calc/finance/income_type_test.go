@@ -1,4 +1,4 @@
-package benefits
+package finance
 
 import (
 	"strings"
@@ -19,4 +19,8 @@ func TestIncomeType_String(t *testing.T) {
 		)
 	}
 
+}
+
+func TestIncomeTypeAFNI(t *testing.T) {
+	t.Skip("TODO")
 }

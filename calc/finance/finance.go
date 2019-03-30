@@ -1,4 +1,6 @@
-package calc
+// Package finances provides the basic tools and data type needed to compute
+// Canadian taxes and benefits given financial information
+package finance
 
 // TODO: deductions should be a map[Type]float64 to allow for exclusion of
 // certain deductions under different criteria

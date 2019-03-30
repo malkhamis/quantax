@@ -1,13 +1,13 @@
-package calc
+package finance
 
 import (
 	"math"
 	"testing"
 )
 
-func TestWeightedBracketFormula_Apply(t *testing.T) {
+func TestWeightedBrackets_Apply(t *testing.T) {
 
-	formula := WeightedBracketFormula{
+	formula := WeightedBrackets{
 		0.10: Bracket{0, 100},
 		0.20: Bracket{100, 200},
 		0.50: Bracket{200, math.Inf(1)},
@@ -24,10 +24,10 @@ func TestWeightedBracketFormula_Apply(t *testing.T) {
 	}
 }
 
-func TestWeightedBracketFormula_Clone(t *testing.T) {
+func TestWeightedBrackets_Clone(t *testing.T) {
 
 	originalBracket := Bracket{100, 200}
-	original := WeightedBracketFormula{0.10: originalBracket}
+	original := WeightedBrackets{0.10: originalBracket}
 	err := original.Validate()
 	if err != nil {
 		t.Fatal(err)
@@ -61,16 +61,16 @@ func TestWeightedBracketFormula_Clone(t *testing.T) {
 
 }
 
-func TestWeightedBracketFormula_Validate(t *testing.T) {
+func TestWeightedBrackets_Validate(t *testing.T) {
 
-	rateMap := WeightedBracketFormula{0.10: Bracket{100, 200}}
+	rateMap := WeightedBrackets{0.10: Bracket{100, 200}}
 
 	err := rateMap.Validate()
 	if err != nil {
 		t.Fatalf("expected facts object to validate with no errors, got: %v", err)
 	}
 
-	invalid := WeightedBracketFormula{
+	invalid := WeightedBrackets{
 		math.Inf(-1): Bracket{10, 20},
 		math.Inf(1):  Bracket{10, 20},
 	}
@@ -80,7 +80,7 @@ func TestWeightedBracketFormula_Validate(t *testing.T) {
 		t.Fatal("expected an error validating an bracket rates with infinity rates")
 	}
 
-	invalid = WeightedBracketFormula{0.15: Bracket{20, 10}}
+	invalid = WeightedBrackets{0.15: Bracket{20, 10}}
 	err = invalid.Validate()
 	if err == nil {
 		t.Fatal("expected an error validating an bracket rates with invalid brackets")

@@ -1,5 +1,13 @@
 package calc
 
+import "errors"
+
+// Sentinel errors that can be wrapped and returned
+var (
+	ErrInvalidAge      = errors.New("invalid age")
+	ErrInvalidAgeRange = errors.New("invalid age range")
+)
+
 // AgeRange represents a range of age
 type AgeRange [2]uint
 
@@ -14,7 +22,7 @@ func NewAgeRange(min, max uint) (AgeRange, error) {
 func (ar AgeRange) Validate() error {
 
 	if ar[0] > ar[1] {
-		return ErrBoundsReversed
+		return ErrInvalidAgeRange
 	}
 	return nil
 }
