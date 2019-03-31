@@ -23,13 +23,17 @@ func NewTaxFactory(year uint, regions ...Region) *TaxFactory {
 
 		convertedRegion, ok := knownRegions[r]
 		if !ok {
-			calcFactory.setFailingConstructor(ErrRegionNotExist)
+			calcFactory.setFailingConstructor(
+				errors.Wrapf(ErrRegionNotExist, "tax region %q", r),
+			)
 			return calcFactory
 		}
 
 		foundFormula, err := history.GetTaxFormula(year, convertedRegion)
 		if err != nil {
-			calcFactory.setFailingConstructor(err)
+			calcFactory.setFailingConstructor(
+				errors.Wrapf(err, "tax formula for region %q", r),
+			)
 			return calcFactory
 		}
 
