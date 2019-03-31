@@ -3,6 +3,7 @@ package benefits
 import (
 	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/malkhamis/quantax/calc/human"
+
 	"github.com/pkg/errors"
 )
 

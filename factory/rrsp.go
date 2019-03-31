@@ -4,6 +4,7 @@ import (
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/rrsp"
 	"github.com/malkhamis/quantax/history"
+
 	"github.com/pkg/errors"
 )
 

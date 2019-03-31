@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/malkhamis/quantax/history"
+
 	"github.com/pkg/errors"
 )
 

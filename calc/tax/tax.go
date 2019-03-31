@@ -4,6 +4,7 @@ package tax
 import (
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+
 	"github.com/pkg/errors"
 )
 
