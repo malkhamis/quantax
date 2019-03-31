@@ -41,3 +41,32 @@ func ExampleNewChildBenefitFactory() {
 
 	fmt.Printf("%.2f", total) // Output: 6742.54
 }
+
+func ExampleNewRRSPFactory() {
+
+	config := RRSPFactoryConfig{
+		Year:       2018,
+		RRSPRegion: Canada,
+		TaxRegions: []Region{Canada, BC},
+	}
+
+	f := NewRRSPFactory(config)
+	calculator, err := f.NewCalculator()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	finances := finance.IndividualFinances{
+		Income:   100000.0,
+		RRSPRoom: 15000.0,
+	}
+	calculator.SetFinances(finances)
+	taxRecievable, err := calculator.TaxRefund(15000.0)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%.2f", taxRecievable) // Output: 5182.74
+}
