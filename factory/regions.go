@@ -2,6 +2,7 @@ package factory
 
 import "github.com/malkhamis/quantax/history"
 
+//go:generate stringer -type=Region -output=regions_gen.go
 type Region int
 
 const (
