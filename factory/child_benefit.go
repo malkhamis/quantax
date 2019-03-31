@@ -1,59 +1,85 @@
-// Package factory provides functions that creates financial calculators
 package factory
 
 import (
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/benefits"
 	"github.com/malkhamis/quantax/history"
+	"github.com/pkg/errors"
 )
 
-// ChildBenefitCalcFactory is a type used to conveniently create child benefit
+// ChildBenefitFactory is a type used to conveniently create child benefit
 // calculators
-type ChildBenefitCalcFactory struct {
-	formulas []benefits.ChildBenefitFormula
+type ChildBenefitFactory struct {
+	newCalculator func() (calc.ChildBenefitCalculator, error)
 }
 
-// NewChildBenefitCalcFactory returns a new child benefit calculator factory
-// from the given params. If extra regions are specified, the returned
+// NewChildBenefitFactory returns a new child benefit calculator factory
+// from the given params. If multiple regions are specified, the returned
 // calculator aggregates the benefits for all beneficiaries
-func NewChildBenefitCalcFactory(year uint, region Region, extras ...Region) (*ChildBenefitCalcFactory, error) {
+func NewChildBenefitFactory(year uint, regions ...Region) *ChildBenefitFactory {
 
-	allRegions := []Region{region}
-	allRegions = append(allRegions, extras...)
-
-	c := &ChildBenefitCalcFactory{
-		formulas: make([]benefits.ChildBenefitFormula, len(extras)+1),
-	}
-
-	for i, r := range allRegions {
+	calcFactory := &ChildBenefitFactory{}
+	formulas := make([]benefits.ChildBenefitFormula, len(regions))
+	for i, r := range regions {
 
 		convertedRegion, ok := knownRegions[r]
 		if !ok {
-			return nil, ErrRegionNotExist
+			calcFactory.setFailingConstructor(
+				errors.Wrapf(ErrRegionNotExist, "child benefit region %q", r),
+			)
+			return calcFactory
 		}
 
 		foundFormula, err := history.GetChildBenefitFormula(year, convertedRegion)
 		if err != nil {
-			return nil, err
+			calcFactory.setFailingConstructor(
+				errors.Wrapf(err, "child benefit formula for region %q", r),
+			)
+			return calcFactory
 		}
 
-		c.formulas[i] = foundFormula
+		formulas[i] = foundFormula
 	}
 
-	return c, nil
+	calcFactory.initConstructor(formulas...)
+	return calcFactory
 }
 
 // NewCalculator creates a new child benefit calculator that is configured with
-// the the parameters/options set in this factory
-func (f *ChildBenefitCalcFactory) NewCalculator() (calc.ChildBenefitCalculator, error) {
-
-	if len(f.formulas) == 0 {
+// the params set in this factory
+func (f *ChildBenefitFactory) NewCalculator() (calc.ChildBenefitCalculator, error) {
+	if f.newCalculator == nil {
 		return nil, ErrFactoryNotInit
 	}
+	return f.newCalculator()
+}
 
-	if len(f.formulas) == 1 {
-		return benefits.NewChildBenefitCalculator(f.formulas[0])
+// setFailingConstructor makes calls to NewCalculator returns nil, err
+func (f *ChildBenefitFactory) setFailingConstructor(err error) {
+	f.newCalculator = func() (calc.ChildBenefitCalculator, error) {
+		return nil, errors.Wrap(err, "child benefit factory error")
 	}
+}
 
-	return benefits.NewChildBenefitAggregator(f.formulas[0], f.formulas[1], f.formulas[2:]...)
+// initConstructor initializes this factory's 'newCalculator' function from the
+// given formulas
+func (f *ChildBenefitFactory) initConstructor(formulas ...benefits.ChildBenefitFormula) {
+
+	switch {
+
+	case len(formulas) == 0:
+		f.newCalculator = func() (calc.ChildBenefitCalculator, error) {
+			return benefits.NewChildBenefitCalculator(nil)
+		}
+
+	case len(formulas) == 1:
+		f.newCalculator = func() (calc.ChildBenefitCalculator, error) {
+			return benefits.NewChildBenefitCalculator(formulas[0])
+		}
+
+	default:
+		f.newCalculator = func() (calc.ChildBenefitCalculator, error) {
+			return benefits.NewChildBenefitAggregator(formulas[0], formulas[1], formulas[2:]...)
+		}
+	}
 }

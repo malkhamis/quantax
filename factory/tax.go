@@ -44,8 +44,8 @@ func NewTaxFactory(year uint, regions ...Region) *TaxFactory {
 	return calcFactory
 }
 
-// NewCalculator creates a new tax calculator that is configured with the the
-// parameters/options set in this factory
+// NewCalculator creates a new tax calculator that is configured with the params
+// set in this factory
 func (f *TaxFactory) NewCalculator() (calc.TaxCalculator, error) {
 	if f.newCalculator == nil {
 		return nil, ErrFactoryNotInit

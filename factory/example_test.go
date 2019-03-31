@@ -21,14 +21,9 @@ func ExampleNewTaxFactory() {
 	fmt.Printf("%.2f", aggTax) // Output: 52821.09
 }
 
-func ExampleNewChildBenefitCalcFactory() {
+func ExampleNewChildBenefitFactory() {
 
-	f, err := NewChildBenefitCalcFactory(2017, Canada, BC)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
+	f := NewChildBenefitFactory(2017, Canada, BC)
 	calculator, err := f.NewCalculator()
 	if err != nil {
 		fmt.Println(err)
