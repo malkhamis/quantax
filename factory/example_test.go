@@ -7,14 +7,9 @@ import (
 	"github.com/malkhamis/quantax/calc/human"
 )
 
-func ExampleNewTaxCalcFactory() {
+func ExampleNewTaxFactory() {
 
-	f, err := NewTaxCalcFactory(2018, Canada, BC)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
+	f := NewTaxFactory(2018, Canada, BC)
 	calculator, err := f.NewCalculator()
 	if err != nil {
 		fmt.Println(err)
