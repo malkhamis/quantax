@@ -8,13 +8,15 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[REGU-0]
-	_ = x[AFNI-1]
+	_ = x[UNKOWN-0]
+	_ = x[REGULAR-1]
+	_ = x[AFNI-2]
+	_ = x[EARNED-3]
 }
 
-const _IncomeType_name = "REGUAFNI"
+const _IncomeType_name = "UNKOWNREGULARAFNIEARNED"
 
-var _IncomeType_index = [...]uint8{0, 4, 8}
+var _IncomeType_index = [...]uint8{0, 6, 13, 17, 23}
 
 func (i IncomeType) String() string {
 	if i >= IncomeType(len(_IncomeType_index)-1) {

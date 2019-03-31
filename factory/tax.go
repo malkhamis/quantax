@@ -1,58 +1,84 @@
-// Package factory provides functions that creates financial calculators
 package factory
 
 import (
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/tax"
 	"github.com/malkhamis/quantax/history"
+
+	"github.com/pkg/errors"
 )
 
-// TaxCalcFactory is a type used to conveniently create tax calculators
-type TaxCalcFactory struct {
-	formulas []tax.Formula
+// TaxFactory is a type used to conveniently create tax calculators
+type TaxFactory struct {
+	newCalculator func() (calc.TaxCalculator, error)
 }
 
-// NewTaxCalcFactory returns a new tax calculator factory from the given
-// params. If extra regions are specified, the returned calculator aggregates
-// the taxes for all the given regions
-func NewTaxCalcFactory(year uint, region Region, extras ...Region) (*TaxCalcFactory, error) {
+// NewTaxFactory returns a new tax calculator factory from the given params. If
+// multiple regions are specified, the returned calculator aggregates the taxes
+// for all the given regions
+func NewTaxFactory(year uint, regions ...Region) *TaxFactory {
 
-	allRegions := []Region{region}
-	allRegions = append(allRegions, extras...)
-
-	c := &TaxCalcFactory{
-		formulas: make([]tax.Formula, len(extras)+1),
-	}
-
-	for i, r := range allRegions {
+	calcFactory := &TaxFactory{}
+	formulas := make([]tax.Formula, len(regions))
+	for i, r := range regions {
 
 		convertedRegion, ok := knownRegions[r]
 		if !ok {
-			return nil, ErrRegionNotExist
+			calcFactory.setFailingConstructor(
+				errors.Wrapf(ErrRegionNotExist, "tax region %q", r),
+			)
+			return calcFactory
 		}
 
 		foundFormula, err := history.GetTaxFormula(year, convertedRegion)
 		if err != nil {
-			return nil, err
+			calcFactory.setFailingConstructor(
+				errors.Wrapf(err, "tax formula for region %q", r),
+			)
+			return calcFactory
 		}
 
-		c.formulas[i] = foundFormula
+		formulas[i] = foundFormula
 	}
 
-	return c, nil
+	calcFactory.initConstructor(formulas...)
+	return calcFactory
 }
 
-// NewCalculator creates a new tax calculator that is configured with the the
-// parameters/options set in this factory
-func (f *TaxCalcFactory) NewCalculator() (calc.TaxCalculator, error) {
-
-	if len(f.formulas) == 0 {
+// NewCalculator creates a new tax calculator that is configured with the params
+// set in this factory
+func (f *TaxFactory) NewCalculator() (calc.TaxCalculator, error) {
+	if f.newCalculator == nil {
 		return nil, ErrFactoryNotInit
 	}
+	return f.newCalculator()
+}
 
-	if len(f.formulas) == 1 {
-		return tax.NewCalculator(f.formulas[0])
+// setFailingConstructor makes calls to NewCalculator returns nil, err
+func (f *TaxFactory) setFailingConstructor(err error) {
+	f.newCalculator = func() (calc.TaxCalculator, error) {
+		return nil, errors.Wrap(err, "tax factory error")
 	}
+}
 
-	return tax.NewAggregator(f.formulas[0], f.formulas[1], f.formulas[2:]...)
+// initConstructor initializes this factory's 'newCalculator' function from the
+// given formulas
+func (f *TaxFactory) initConstructor(formulas ...tax.Formula) {
+
+	switch len(formulas) {
+	case 0:
+		f.newCalculator = func() (calc.TaxCalculator, error) {
+			return tax.NewCalculator(nil)
+		}
+
+	case 1:
+		f.newCalculator = func() (calc.TaxCalculator, error) {
+			return tax.NewCalculator(formulas[0])
+		}
+
+	default:
+		f.newCalculator = func() (calc.TaxCalculator, error) {
+			return tax.NewAggregator(formulas[0], formulas[1], formulas[2:]...)
+		}
+	}
 }

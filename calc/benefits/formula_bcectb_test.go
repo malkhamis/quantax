@@ -6,6 +6,7 @@ import (
 
 	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/malkhamis/quantax/calc/human"
+
 	"github.com/pkg/errors"
 )
 
@@ -23,6 +24,7 @@ func TestBCECTBMaxReducer_Apply(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
+		IncomeType: finance.AFNI,
 	}
 
 	err := mr.Validate()
@@ -77,6 +79,7 @@ func TestBCECTBMaxReducer_Validate_NilFormula(t *testing.T) {
 	formula := BCECTBMaxReducer{
 		BeneficiaryClasses: nil,
 		ReducerFormula:     nil,
+		IncomeType:         finance.AFNI,
 	}
 
 	err := formula.Validate()
@@ -114,6 +117,7 @@ func TestBCECTBMaxReducer_Clone(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
+		IncomeType: finance.AFNI,
 	}
 
 	err := originalFormula.Validate()
@@ -138,7 +142,7 @@ func TestBCECTBMaxReducer_Clone(t *testing.T) {
 
 func TestBCECTBMaxReducer_IncomeCalcMethod(t *testing.T) {
 
-	incomeType := (&BCECTBMaxReducer{}).IncomeCalcMethod()
+	incomeType := (&BCECTBMaxReducer{IncomeType: finance.AFNI}).IncomeCalcMethod()
 	if incomeType != finance.AFNI {
 		t.Errorf("unexpected income type\nwant: %s\n got: %s", finance.AFNI, incomeType)
 	}

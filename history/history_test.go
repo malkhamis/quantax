@@ -28,6 +28,28 @@ func TestGetTaxFormula_Errors(t *testing.T) {
 
 }
 
+func TestGetRRSPFormula(t *testing.T) {
+
+	_, err := GetRRSPFormula(2018, Canada)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGetRRSPFormula_Errors(t *testing.T) {
+
+	_, err := GetRRSPFormula(2018, Jurisdiction("OhCanada"))
+	if errors.Cause(err) != ErrJurisdictionNotExist {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrJurisdictionNotExist, err)
+	}
+
+	_, err = GetRRSPFormula(2108, Canada)
+	if errors.Cause(err) != ErrFormulaNotExist {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrFormulaNotExist, err)
+	}
+
+}
+
 func TestGetChildBenefitFormula(t *testing.T) {
 
 	_, err := GetChildBenefitFormula(2017, Canada)

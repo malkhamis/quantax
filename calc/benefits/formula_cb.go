@@ -3,6 +3,7 @@ package benefits
 import (
 	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/malkhamis/quantax/calc/human"
+
 	"github.com/pkg/errors"
 )
 
@@ -21,6 +22,8 @@ type CCBMaxReducer struct {
 	// If the number of children is greater than the number of formulas,
 	// the last formula is used
 	Reducers []finance.WeightedBrackets
+	// IncomeType the income calculation method this formula expects
+	IncomeType finance.IncomeType
 }
 
 // Apply returns the total annual benefits for the children given the income
@@ -61,7 +64,7 @@ func (mr *CCBMaxReducer) Apply(income float64, children ...human.Person) float64
 
 // IncomeCalcMethod returns the type of income this formula expects
 func (mr *CCBMaxReducer) IncomeCalcMethod() finance.IncomeType {
-	return finance.AFNI
+	return mr.IncomeType
 }
 
 // Validate ensures that this instance is valid for use. Users need to call this

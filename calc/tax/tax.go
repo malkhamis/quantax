@@ -4,9 +4,11 @@ package tax
 import (
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+
 	"github.com/pkg/errors"
 )
 
+// Sentinel errors that can ben wrapped and returned by this package
 var (
 	ErrNoFormula = errors.New("not formula given/set")
 )

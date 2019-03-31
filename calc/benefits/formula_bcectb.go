@@ -3,9 +3,11 @@ package benefits
 import (
 	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/malkhamis/quantax/calc/human"
+
 	"github.com/pkg/errors"
 )
 
+// compile-time check for interface implementation
 var _ ChildBenefitFormula = (*BCECTBMaxReducer)(nil)
 
 // BCECTBMaxReducer computes British Columbia Early Childhood Tax Benefits
@@ -18,6 +20,8 @@ type BCECTBMaxReducer struct {
 	BeneficiaryClasses []AgeGroupBenefits
 	// Reducer is the sub-formula used to reduce the maximum benefits
 	ReducerFormula finance.WeightedBrackets
+	// IncomeType the income calculation method this formula expects
+	IncomeType finance.IncomeType
 }
 
 // Apply returns the total annual benefits for the children given the income
@@ -59,7 +63,7 @@ func (mr *BCECTBMaxReducer) Apply(income float64, children ...human.Person) floa
 // IncomeCalcMethod returns the type of income this formula expects
 func (mr *BCECTBMaxReducer) IncomeCalcMethod() finance.IncomeType {
 	// TODO: legislation is not explicit about it
-	return finance.AFNI
+	return mr.IncomeType
 }
 
 // Validate ensures that this instance is valid for use. Users need to call this

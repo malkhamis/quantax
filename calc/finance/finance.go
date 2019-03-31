@@ -8,6 +8,7 @@ package finance
 type IndividualFinances struct {
 	Income     float64 `json:"income"`
 	Deductions float64 `json:"deductions"`
+	RRSPRoom   float64 `json:"rrsp-room"`
 }
 
 // FamilyFinances represents financial data for a couple

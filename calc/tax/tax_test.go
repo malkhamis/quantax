@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/malkhamis/quantax/calc/finance"
+
 	"github.com/pkg/errors"
 )
 

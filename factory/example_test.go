@@ -7,14 +7,9 @@ import (
 	"github.com/malkhamis/quantax/calc/human"
 )
 
-func ExampleNewTaxCalcFactory() {
+func ExampleNewTaxFactory() {
 
-	f, err := NewTaxCalcFactory(2018, Canada, BC)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
+	f := NewTaxFactory(2018, Canada, BC)
 	calculator, err := f.NewCalculator()
 	if err != nil {
 		fmt.Println(err)
@@ -26,14 +21,9 @@ func ExampleNewTaxCalcFactory() {
 	fmt.Printf("%.2f", aggTax) // Output: 52821.09
 }
 
-func ExampleNewChildBenefitCalcFactory() {
+func ExampleNewChildBenefitFactory() {
 
-	f, err := NewChildBenefitCalcFactory(2017, Canada, BC)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
+	f := NewChildBenefitFactory(2017, Canada, BC)
 	calculator, err := f.NewCalculator()
 	if err != nil {
 		fmt.Println(err)
@@ -50,4 +40,33 @@ func ExampleNewChildBenefitCalcFactory() {
 	total := calculator.Calc(finances)
 
 	fmt.Printf("%.2f", total) // Output: 6742.54
+}
+
+func ExampleNewRRSPFactory() {
+
+	config := RRSPFactoryConfig{
+		Year:       2018,
+		RRSPRegion: Canada,
+		TaxRegions: []Region{Canada, BC},
+	}
+
+	f := NewRRSPFactory(config)
+	calculator, err := f.NewCalculator()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	finances := finance.IndividualFinances{
+		Income:   100000.0,
+		RRSPRoom: 15000.0,
+	}
+	calculator.SetFinances(finances)
+	taxRecievable, err := calculator.TaxRefund(15000.0)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%.2f", taxRecievable) // Output: 5182.74
 }
