@@ -2,31 +2,79 @@
 // Canadian taxes and benefits given financial information
 package finance
 
-// TODO: deductions should be a map[Type]float64 to allow for exclusion of
-// certain deductions under different criteria
 // IndividualFinances represents the financial data of an individual
 type IndividualFinances struct {
-	Income     float64 `json:"income"`
-	Deductions float64 `json:"deductions"`
-	RRSPRoom   float64 `json:"rrsp-room"`
+	EndOfYear uint
+	Cash      float64
+	Income    IncomeBySource
+	Deduction DeductionBySource
+	RRSP      struct {
+		ContributionRoom    float64
+		UnclaimedDeductions float64
+	}
 }
 
-// FamilyFinances represents financial data for a couple
-type FamilyFinances [2]IndividualFinances
-
-// Income calculate the the total income of the couple. The calculation is
-// only based on adding the income components of the couple
-func (f FamilyFinances) Income() float64 {
-	return f[0].Income + f[1].Income
+func NewEmptyIndividialFinances(endOfYear uint) *IndividualFinances {
+	return &IndividualFinances{
+		EndOfYear: endOfYear,
+		Income:    make(IncomeBySource),
+		Deduction: make(DeductionBySource),
+	}
 }
 
-// Deductions calculate the the total deductions of the couple. The calculation
-// is only based on adding the deduction components of the couple
-func (f FamilyFinances) Deductions() float64 {
-	return f[0].Deductions + f[1].Deductions
+// HouseholdFinances represents financial data for a couple, family etc
+type HouseholdFinances []IndividualFinances
+
+// Income calculate the the total income of the household from the given income
+// sources. if no sources are given, the sum of all income sources is returned
+func (hf HouseholdFinances) Income(sources ...IncomeSource) float64 {
+
+	var total float64
+
+	if len(sources) == 0 {
+		for _, individualFinances := range hf {
+			total += individualFinances.Income.Sum()
+		}
+		return total
+	}
+
+	for _, individualFinances := range hf {
+		for _, source := range sources {
+			total += individualFinances.Income[source]
+		}
+	}
+
+	return total
 }
 
-// Split returns the individual finances that jointly represent this object
-func (f FamilyFinances) Split() (IndividualFinances, IndividualFinances) {
-	return f[0], f[1]
+// Deductions calculate the the total deduciton of the household from the given
+// deduction sources. if no sources are given, the sum of all deduction sources
+// is returned
+func (hf HouseholdFinances) Deductions(sources ...DeductionSource) float64 {
+
+	var total float64
+
+	if len(sources) == 0 {
+		for _, individualFinances := range hf {
+			total += individualFinances.Deduction.Sum()
+		}
+		return total
+	}
+
+	for _, individualFinances := range hf {
+		for _, source := range sources {
+			total += individualFinances.Deduction[source]
+		}
+	}
+
+	return total
+}
+
+// Cash returns the total cash balanace of this household
+func (hf HouseholdFinances) Cash() float64 {
+	var total float64
+	for _, f := range hf {
+		total += f.Cash
+	}
+	return total
 }
