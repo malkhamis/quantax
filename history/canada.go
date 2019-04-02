@@ -25,9 +25,8 @@ var (
 )
 
 var rrspFormulaCanada2018 = &rrsp.MaxCapper{
-	Rate:       0.18,
-	Cap:        26230.00,
-	IncomeType: finance.EARNED,
+	Rate: 0.18,
+	Cap:  26230.00,
 }
 
 var taxFormulaCanada2018 = tax.CanadianFormula{
@@ -68,5 +67,4 @@ var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
 			0.095: finance.Bracket{65976, math.Inf(1)},
 		},
 	},
-	IncomeType: finance.AFNI,
 }
