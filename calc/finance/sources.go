@@ -3,19 +3,15 @@ package finance
 // IncomeSource represents the source type of income
 type IncomeSource int
 
-// Recognized sources of income
 const (
 	IncSrcUnknown IncomeSource = iota
-
-	IncSrcEarned              // e.g. employment and labour income
-	IncSrcRRSP                // registered retirement saving plan
-	IncSrcTFSA                // tax-free saving account
-	IncSrcUCCB                // universal child care benefits
-	IncSrcRDSP                // registered disability saving plan
-	IncSrcInterest            // e.g. saving account interest
-	IncSrcDividendsRegular    // regular Canadian corp dividens
-	IncSrcDividendsNonRegular // non-regular Canadian corp dividens
-	IncSrcCapitalGain         // e.g. capital gain on sale of assets
+	// Recognized sources of income
+	IncSrcEarned   // employment and labour income
+	IncSrcInterest // e.g. saving account interest
+	IncSrcRRSP     // withdrawal from RRSP
+	IncSrcUCCB     // universal child care benefits
+	IncSrcRDSP     // registered disability saving plan
+	IncSrcTFSA     // tax-free saving account
 )
 
 // DeductionBySource represents deduction amounts according to their sources
@@ -37,7 +33,8 @@ type DeductionSource int
 const (
 	DeducSrcUnknown DeductionSource = iota
 	// Recognized sources of deduction
-	DeducSrcRRSP // registered retirement saving plan
+	DeducSrcRRSP    // contribution to RRSP
+	DeducSrcMedical // medical expenses
 )
 
 // DeductionBySource represents deduction amounts according to their sources
