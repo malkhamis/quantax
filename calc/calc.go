@@ -17,7 +17,7 @@ type TaxCalculator interface {
 type ChildBenefitCalculator interface {
 	// Calc returns the recievable amount of child benefits given family finances
 	// and the children set in the calculator
-	Calc(finance.FamilyFinances) float64
+	Calc(finance.IncomeDeductor) float64
 	// SetBeneficiaries sets the children which the calculator will compute the
 	// benefits for in subsequent calls to Calc()
 	SetBeneficiaries(...human.Person)
