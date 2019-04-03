@@ -24,7 +24,7 @@ var _ calc.RRSPCalculator = (*Calculator)(nil)
 type Calculator struct {
 	taxCalculator calc.TaxCalculator
 	formula       Formula
-	finances      finance.IndividualFinances
+	finances      *finance.IndividualFinances
 }
 
 // NewCalculator returns a new RRSP calculator from the given formula and tax
@@ -54,14 +54,16 @@ func NewCalculator(taxCalc calc.TaxCalculator, formula Formula) (*Calculator, er
 // calculator for the given withdrawal amount
 func (c *Calculator) TaxPaid(withdrawal float64) float64 {
 
-	oldFinances := c.finances
-	taxOnOldFinances := c.taxCalculator.Calc(oldFinances)
+	original := c.finances.Income[finance.IncSrcRRSP]
+	defer func(v float64) {
+		c.finances.Income[finance.IncSrcRRSP] = v
+	}(original)
 
-	newFinances := c.finances
-	newFinances.Income += withdrawal
-	taxOnNewFinances := c.taxCalculator.Calc(newFinances)
+	taxBeforeWithdrawal := c.taxCalculator.Calc(c.finances)
+	c.finances.Income[finance.IncSrcRRSP] = original + withdrawal
+	taxAfterWithdrawal := c.taxCalculator.Calc(c.finances)
 
-	diff := taxOnNewFinances - taxOnOldFinances
+	diff := taxAfterWithdrawal - taxBeforeWithdrawal
 	return diff
 }
 
@@ -69,29 +71,31 @@ func (c *Calculator) TaxPaid(withdrawal float64) float64 {
 // given the finances set in this calculator
 func (c *Calculator) TaxRefund(contribution float64) (float64, error) {
 
-	if contribution > c.finances.RRSPRoom {
+	if contribution > c.finances.RRSPContributionRoom {
 		return 0.0, ErrNoRRSPRoom
 	}
 
-	oldFinances := c.finances
-	taxOnOldFinances := c.taxCalculator.Calc(oldFinances)
+	original := c.finances.Deductions[finance.DeducSrcRRSP]
+	defer func(v float64) {
+		c.finances.Deductions[finance.DeducSrcRRSP] = v
+	}(original)
 
-	newFinances := c.finances
-	newFinances.Income -= contribution
-	taxOnNewFinances := c.taxCalculator.Calc(newFinances)
+	taxBeforeContribution := c.taxCalculator.Calc(c.finances)
+	c.finances.Deductions[finance.DeducSrcRRSP] = original + contribution
+	taxAfterContribution := c.taxCalculator.Calc(c.finances)
 
-	diff := taxOnOldFinances - taxOnNewFinances
+	diff := taxBeforeContribution - taxAfterContribution
 	return diff, nil
 }
 
 // ContributionEarned calculates the newly acquired contribution room
 func (c *Calculator) ContributionEarned() float64 {
 
-	income := c.formula.IncomeCalcMethod().CalcForIndividials(c.finances)
+	income := c.finances.TotalIncome(c.formula.AllowedIncomeSources()...)
 	return c.formula.Contribution(income)
 }
 
 // SetFinances makes subsequent calculations based on the given finances
-func (c *Calculator) SetFinances(newFinances finance.IndividualFinances) {
-	c.finances = newFinances
+func (c *Calculator) SetFinances(newFinances *finance.IndividualFinances) {
+	c.finances = newFinances.Clone()
 }
