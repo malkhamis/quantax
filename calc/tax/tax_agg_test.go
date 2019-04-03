@@ -38,7 +38,7 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 	}
 
 	expectedTax := 91226.32
-	finances := finance.IndividualFinances{
+	finances := &finance.IndividualFinances{
 		Income: finance.IncomeBySource{finance.IncSrcEarned: 250000.0},
 	}
 	actualTax := agg.Calc(finances)

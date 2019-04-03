@@ -103,7 +103,7 @@ func TestCalculator_Calc(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			actualTax := calculator.Calc(c.finances)
+			actualTax := calculator.Calc(&c.finances)
 			if !areEqual(actualTax, c.expectedTax, c.errMargin) {
 				t.Errorf(
 					"difference between actual and expected total "+
