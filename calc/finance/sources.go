@@ -26,6 +26,19 @@ func (s IncomeBySource) Sum() float64 {
 	return total
 }
 
+func (s IncomeBySource) Clone() IncomeBySource {
+
+	if s == nil {
+		return nil
+	}
+
+	clone := make(IncomeBySource)
+	for source, income := range s {
+		clone[source] = income
+	}
+	return clone
+}
+
 // DeductionSource represents the source type of deduction
 type DeductionSource int
 
@@ -47,4 +60,17 @@ func (s DeductionBySource) Sum() float64 {
 		total += deduction
 	}
 	return total
+}
+
+func (s DeductionBySource) Clone() DeductionBySource {
+
+	if s == nil {
+		return nil
+	}
+
+	clone := make(DeductionBySource)
+	for source, deduction := range s {
+		clone[source] = deduction
+	}
+	return clone
 }
