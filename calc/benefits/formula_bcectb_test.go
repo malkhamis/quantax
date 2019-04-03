@@ -2,6 +2,7 @@ package benefits
 
 import (
 	"math"
+	"reflect"
 	"testing"
 
 	"github.com/malkhamis/quantax/calc/finance"
@@ -135,4 +136,17 @@ func TestBCECTBMaxReducer_Clone(t *testing.T) {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", originalResults, actualResults)
 	}
 
+}
+
+func TestBCECTBReducer_NumFieldsUnchanged(t *testing.T) {
+
+	dummy := BCECTBMaxReducer{}
+	s := reflect.ValueOf(&dummy).Elem()
+	if s.NumField() != 4 {
+		t.Fatal(
+			"number of struct fields changed. Please update the constructor and the " +
+				"clone method of this type. Next, update this test with the new " +
+				"number of fields",
+		)
+	}
 }

@@ -23,9 +23,9 @@ type CCBMaxReducer struct {
 	// the last formula is used
 	Reducers []finance.WeightedBrackets
 	// TODO
-	IncomeSources []finance.IncomeSource
+	ExcludedIncome []finance.IncomeSource
 	// TODO
-	DeductionSources []finance.DeductionSource
+	ExcludedDeductions []finance.DeductionSource
 }
 
 // Apply returns the total annual benefits for the children given the income
@@ -65,8 +65,8 @@ func (mr *CCBMaxReducer) Apply(income float64, children ...human.Person) float64
 }
 
 // TODO
-func (mr *CCBMaxReducer) NetIncomeComponents() ([]finance.IncomeSource, []finance.DeductionSource) {
-	return mr.IncomeSources, mr.DeductionSources
+func (mr *CCBMaxReducer) ExcludedNetIncomeSources() ([]finance.IncomeSource, []finance.DeductionSource) {
+	return mr.ExcludedIncome, mr.ExcludedDeductions
 }
 
 // Validate ensures that this instance is valid for use. Users need to call this
@@ -101,15 +101,28 @@ func (mr *CCBMaxReducer) Validate() error {
 // Clone returns a copy of this instance
 func (mr *CCBMaxReducer) Clone() ChildBenefitFormula {
 
-	clone := &CCBMaxReducer{
-		BeneficiaryClasses: make([]AgeGroupBenefits, len(mr.BeneficiaryClasses)),
-		Reducers:           make([]finance.WeightedBrackets, len(mr.Reducers)),
+	clone := &CCBMaxReducer{}
+
+	if mr.Reducers != nil {
+		clone.Reducers = make([]finance.WeightedBrackets, len(mr.Reducers))
+		for i, reducer := range mr.Reducers {
+			clone.Reducers[i] = reducer.Clone()
+		}
 	}
 
-	copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
+	if mr.BeneficiaryClasses != nil {
+		clone.BeneficiaryClasses = make([]AgeGroupBenefits, len(mr.BeneficiaryClasses))
+		copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
+	}
 
-	for i, reducer := range mr.Reducers {
-		clone.Reducers[i] = reducer.Clone()
+	if mr.ExcludedIncome != nil {
+		clone.ExcludedIncome = make([]finance.IncomeSource, len(mr.ExcludedIncome))
+		copy(clone.ExcludedIncome, mr.ExcludedIncome)
+	}
+
+	if mr.ExcludedDeductions != nil {
+		clone.ExcludedDeductions = make([]finance.DeductionSource, len(mr.ExcludedDeductions))
+		copy(clone.ExcludedDeductions, mr.ExcludedDeductions)
 	}
 
 	return clone

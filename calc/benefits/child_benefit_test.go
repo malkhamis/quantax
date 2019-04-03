@@ -24,15 +24,19 @@ func TestNewChildBenefitCalculator_Full(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
+		ExcludedDeductions: []finance.DeductionSource{finance.DeducSrcMedical},
+		ExcludedIncome:     []finance.IncomeSource{finance.IncSrcTFSA},
 	}
 
 	finances := finance.HouseholdFinances{
 		{
 			Income: finance.IncomeBySource{
 				finance.IncSrcEarned: 120000,
+				finance.IncSrcTFSA:   500000,
 			},
 			Deductions: finance.DeductionBySource{
-				finance.DeducSrcRRSP: 10000,
+				finance.DeducSrcRRSP:    10000,
+				finance.DeducSrcMedical: 100000,
 			},
 		},
 		{

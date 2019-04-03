@@ -19,7 +19,7 @@ type ChildBenefitFormula interface {
 	// Apply returns the sum of benefits for all beneficiaries
 	Apply(income float64, children ...human.Person) float64
 	// TODO
-	NetIncomeComponents() ([]finance.IncomeSource, []finance.DeductionSource)
+	ExcludedNetIncomeSources() ([]finance.IncomeSource, []finance.DeductionSource)
 	// Validate checks if the formula is valid for use
 	Validate() error
 	// Clone returns a copy of the formula

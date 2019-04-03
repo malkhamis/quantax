@@ -21,9 +21,9 @@ type BCECTBMaxReducer struct {
 	// Reducer is the sub-formula used to reduce the maximum benefits
 	ReducerFormula finance.WeightedBrackets
 	// TODO
-	IncomeSources []finance.IncomeSource
+	ExcludedIncome []finance.IncomeSource
 	// TODO
-	DeductionSources []finance.DeductionSource
+	ExcludedDeductions []finance.DeductionSource
 }
 
 // Apply returns the total annual benefits for the children given the income
@@ -63,8 +63,8 @@ func (mr *BCECTBMaxReducer) Apply(income float64, children ...human.Person) floa
 }
 
 // TODO
-func (mr *BCECTBMaxReducer) NetIncomeComponents() ([]finance.IncomeSource, []finance.DeductionSource) {
-	return mr.IncomeSources, mr.DeductionSources
+func (mr *BCECTBMaxReducer) ExcludedNetIncomeSources() ([]finance.IncomeSource, []finance.DeductionSource) {
+	return mr.ExcludedIncome, mr.ExcludedDeductions
 }
 
 // Validate ensures that this instance is valid for use. Users need to call this
@@ -92,11 +92,23 @@ func (mr *BCECTBMaxReducer) Validate() error {
 func (mr *BCECTBMaxReducer) Clone() ChildBenefitFormula {
 
 	clone := &BCECTBMaxReducer{
-		BeneficiaryClasses: make([]AgeGroupBenefits, len(mr.BeneficiaryClasses)),
-		ReducerFormula:     mr.ReducerFormula.Clone(),
+		ReducerFormula: mr.ReducerFormula.Clone(),
 	}
 
-	copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
+	if mr.BeneficiaryClasses != nil {
+		clone.BeneficiaryClasses = make([]AgeGroupBenefits, len(mr.BeneficiaryClasses))
+		copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
+	}
+
+	if mr.ExcludedIncome != nil {
+		clone.ExcludedIncome = make([]finance.IncomeSource, len(mr.ExcludedIncome))
+		copy(clone.ExcludedIncome, mr.ExcludedIncome)
+	}
+
+	if mr.ExcludedDeductions != nil {
+		clone.ExcludedDeductions = make([]finance.DeductionSource, len(mr.ExcludedDeductions))
+		copy(clone.ExcludedDeductions, mr.ExcludedDeductions)
+	}
 
 	return clone
 }
