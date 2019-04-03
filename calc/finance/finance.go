@@ -9,14 +9,12 @@ type IncomeDeductor interface {
 
 // IndividualFinances represents the financial data of an individual
 type IndividualFinances struct {
-	EOY        uint
-	Cash       float64
-	Income     IncomeBySource
-	Deductions DeductionBySource
-	RRSP       struct {
-		ContributionRoom    float64
-		UnclaimedDeductions float64
-	}
+	EOY                     uint
+	Cash                    float64
+	Income                  IncomeBySource
+	Deductions              DeductionBySource
+	RRSPContributionRoom    float64
+	RRSPUnclaimedDeductions float64
 }
 
 func NewEmptyIndividialFinances(endOfYear uint) *IndividualFinances {
@@ -51,6 +49,20 @@ func (f *IndividualFinances) TotalDeductions(sources ...DeductionSource) float64
 		total += f.Deductions[source]
 	}
 	return total
+}
+
+func (f *IndividualFinances) Clone() *IndividualFinances {
+
+	clone := &IndividualFinances{
+		EOY:                     f.EOY,
+		Cash:                    f.Cash,
+		Income:                  f.Income.Clone(),
+		Deductions:              f.Deductions.Clone(),
+		RRSPContributionRoom:    f.RRSPContributionRoom,
+		RRSPUnclaimedDeductions: f.RRSPUnclaimedDeductions,
+	}
+
+	return clone
 }
 
 // HouseholdFinances represents financial data for a couple, family etc
