@@ -1,30 +1,48 @@
 package main
 
+import (
+	"fmt"
+	"os"
+
+	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/malkhamis/quantax/factory"
+)
+
 func main() {
 
-	// finNums := calc.Finances{}
-	// paramsProv := factory.IncomeTaxParams{
-	// 	Year:   2018,
-	// 	Region: history.BC,
-	// }
-	// paramsFed := factory.IncomeTaxParams{
-	// 	Year:   2018,
-	// 	Region: history.Canada,
-	// }
-	//
-	// c, err := factory.NewIncomeTaxCalculatorAgg(finNums, paramsProv, paramsFed)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	os.Exit(1)
-	// }
-	//
-	// for income := 170000.0; income >= 0; income -= 200 {
-	// 	newFinNums := calc.Finances{TaxableAmount: income}
-	// 	c.Update(newFinNums)
-	// 	tax := c.Calc()
-	// 	fmt.Printf("%.2f, %.2f\n", income, tax)
-	// 	if tax <= 0 {
-	// 		break
-	// 	}
-	// }
+	config := factory.RRSPFactoryConfig{
+		Year:       2018,
+		RRSPRegion: factory.Canada,
+		TaxRegions: []factory.Region{factory.Canada, factory.BC},
+	}
+
+	f := factory.NewRRSPFactory(config)
+	c, err := f.NewCalculator()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	finances := finance.IndividualFinances{
+		Income:   83000,
+		RRSPRoom: 22000,
+	}
+	c.SetFinances(finances)
+
+	var contribution float64
+	for {
+
+		contribution += 500
+		refund, err := c.TaxRefund(contribution)
+		if err != nil {
+			return
+		}
+
+		fmt.Printf("Contribution: %.2f\tROI:\t%.2f\n", contribution, refund/contribution)
+	}
+}
+
+func iter(n int) []struct{} {
+	s := make([]struct{}, n)
+	return s
 }

@@ -22,6 +22,16 @@ func TestWeightedBrackets_Apply(t *testing.T) {
 			expected, actual,
 		)
 	}
+
+	param = -1000.0
+	expected = 0.0
+	actual = formula.Apply(param)
+	if actual != expected {
+		t.Errorf(
+			"actual does not match expected\nwant: %.2f\n got: %.2f",
+			expected, actual,
+		)
+	}
 }
 
 func TestWeightedBrackets_Clone(t *testing.T) {

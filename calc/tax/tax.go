@@ -40,7 +40,19 @@ func NewCalculator(formula Formula) (*Calculator, error) {
 // Calc computes the tax on the taxable amount set in this calculator
 func (c *Calculator) Calc(finances finance.IndividualFinances) float64 {
 
-	netIncome := finances.Income - finances.Deductions
-	payableTax := c.formula.Apply(netIncome)
+	excludedIncome, excludedDeductions := c.formula.ExcludedNetIncomeSources()
+
+	adjustedTotalIncome := finances.TotalIncome()
+	if len(excludedIncome) > 0 {
+		adjustedTotalIncome -= finances.TotalIncome(excludedIncome...)
+	}
+
+	adjustedTotalDeductions := finances.TotalDeductions()
+	if len(excludedDeductions) > 0 {
+		adjustedTotalDeductions -= finances.TotalDeductions(excludedDeductions...)
+	}
+
+	adjustedNetIncome := adjustedTotalIncome - adjustedTotalDeductions
+	payableTax := c.formula.Apply(adjustedNetIncome)
 	return payableTax
 }
