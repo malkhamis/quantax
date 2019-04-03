@@ -26,9 +26,23 @@ func TestNewChildBenefitCalculator_Full(t *testing.T) {
 		},
 	}
 
-	finances := finance.FamilyFinances{
-		{Income: 120000.0, Deductions: 10000},
-		{Income: 20000, Deductions: 20000},
+	finances := finance.HouseholdFinances{
+		{
+			Income: finance.IncomeBySource{
+				finance.IncSrcEarned: 120000,
+			},
+			Deductions: finance.DeductionBySource{
+				finance.DeducSrcRRSP: 10000,
+			},
+		},
+		{
+			Income: finance.IncomeBySource{
+				finance.IncSrcEarned: 20000,
+			},
+			Deductions: finance.DeductionBySource{
+				finance.DeducSrcRRSP: 20000,
+			},
+		},
 	}
 
 	children := []human.Person{{AgeMonths: 0}, {AgeMonths: 6*12 - 2}}
@@ -59,7 +73,7 @@ func TestNewChildBenefitCalculator_Full(t *testing.T) {
 	}
 
 	calculator.SetBeneficiaries(human.Person{AgeMonths: 0})
-	actual = calculator.Calc(finance.FamilyFinances{{}, {}})
+	actual = calculator.Calc(finance.HouseholdFinances{})
 	expected = 55 * 12
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)

@@ -35,7 +35,6 @@ func TestCCBMaxReducer_Apply(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
-		IncomeType: finance.AFNI,
 	}
 
 	err := mr.Validate()
@@ -77,7 +76,6 @@ func TestCCBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
-		IncomeType: finance.AFNI,
 	}
 
 	err := formula.Validate()
@@ -149,7 +147,6 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
-		IncomeType: finance.AFNI,
 	}
 
 	err := originalFormula.Validate()
@@ -170,12 +167,4 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", originalResults, actualResults)
 	}
 
-}
-
-func TestCCBMaxReducer_IncomeCalcMethod(t *testing.T) {
-
-	incomeType := (&CCBMaxReducer{IncomeType: finance.AFNI}).IncomeCalcMethod()
-	if incomeType != finance.AFNI {
-		t.Errorf("unexpected income type\nwant: %s\n got: %s", finance.AFNI, incomeType)
-	}
 }
