@@ -9,7 +9,7 @@ import (
 // TaxCalculator is used to calculate payable tax on individual earnings
 type TaxCalculator interface {
 	// Calc returns the payable amount of tax on the income in this calculator
-	Calc(finance.IndividualFinances) float64
+	Calc(*finance.IndividualFinances) float64
 }
 
 // ChildBenefitCalculator is used to calculate recievable child benefits for
@@ -33,5 +33,5 @@ type RRSPCalculator interface {
 	// ContributionEarned calculates the newly acquired contribution room
 	ContributionEarned() float64
 	// SetFinances makes subsequent calculations based on the given finances
-	SetFinances(finance.IndividualFinances)
+	SetFinances(*finance.IndividualFinances)
 }
