@@ -2,6 +2,7 @@ package rrsp
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/malkhamis/quantax/calc/finance"
@@ -15,19 +16,31 @@ func TestMaxCapper_Contribution(t *testing.T) {
 		expected  float64
 	}{
 		{
-			maxCapper: &MaxCapper{Rate: 0.15, Cap: 2000.0, IncomeType: finance.EARNED},
-			income:    0.0,
-			expected:  0.0,
+			maxCapper: &MaxCapper{
+				Rate:          0.15,
+				Cap:           2000.0,
+				IncomeSources: []finance.IncomeSource{finance.IncSrcEarned},
+			},
+			income:   0.0,
+			expected: 0.0,
 		},
 		{
-			maxCapper: &MaxCapper{Rate: 0.15, Cap: 2000.0, IncomeType: finance.EARNED},
-			income:    1000.0,
-			expected:  150.0,
+			maxCapper: &MaxCapper{
+				Rate:          0.15,
+				Cap:           2000.0,
+				IncomeSources: []finance.IncomeSource{finance.IncSrcEarned},
+			},
+			income:   1000.0,
+			expected: 150.0,
 		},
 		{
-			maxCapper: &MaxCapper{Rate: 0.15, Cap: 2000.0, IncomeType: finance.EARNED},
-			income:    13333.34,
-			expected:  2000.0,
+			maxCapper: &MaxCapper{
+				Rate:          0.15,
+				Cap:           2000.0,
+				IncomeSources: []finance.IncomeSource{finance.IncSrcEarned},
+			},
+			income:   13333.34,
+			expected: 2000.0,
 		},
 	}
 
@@ -44,14 +57,6 @@ func TestMaxCapper_Contribution(t *testing.T) {
 	}
 }
 
-func TestMaxCapper_IncomeCalcMethod(t *testing.T) {
-	mc := &MaxCapper{IncomeType: finance.EARNED}
-	it := mc.IncomeCalcMethod()
-	if it != finance.EARNED {
-		t.Fatalf("unexpected income type\n want: %s\n got: %s", finance.EARNED, it)
-	}
-}
-
 func TestMaxCapper_Validate(t *testing.T) {
 	err := (&MaxCapper{}).Validate()
 	if err != nil {
@@ -62,9 +67,9 @@ func TestMaxCapper_Validate(t *testing.T) {
 func TestMaxCapper_Clone(t *testing.T) {
 
 	original := MaxCapper{
-		Rate:       0.10,
-		Cap:        1000,
-		IncomeType: finance.EARNED,
+		Rate:          0.10,
+		Cap:           1000,
+		IncomeSources: []finance.IncomeSource{finance.IncSrcEarned},
 	}
 
 	income := 5000.0
@@ -76,5 +81,18 @@ func TestMaxCapper_Clone(t *testing.T) {
 	cloneResults := clone.Contribution(income)
 	if cloneResults != originaResults {
 		t.Fatalf("expected changes to original formula to not affect clone formula")
+	}
+}
+
+func TestMaxCapper_NumFieldsUnchanged(t *testing.T) {
+
+	dummy := MaxCapper{}
+	s := reflect.ValueOf(&dummy).Elem()
+	if s.NumField() != 3 {
+		t.Fatal(
+			"number of struct fields changed. Please update the constructor and the " +
+				"clone method of this type. Next, update this test with the new " +
+				"number of fields",
+		)
 	}
 }

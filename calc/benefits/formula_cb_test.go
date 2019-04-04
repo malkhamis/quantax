@@ -2,6 +2,7 @@ package benefits
 
 import (
 	"math"
+	"reflect"
 	"testing"
 
 	"github.com/malkhamis/quantax/calc/finance"
@@ -35,7 +36,6 @@ func TestCCBMaxReducer_Apply(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
-		IncomeType: finance.AFNI,
 	}
 
 	err := mr.Validate()
@@ -77,7 +77,6 @@ func TestCCBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
-		IncomeType: finance.AFNI,
 	}
 
 	err := formula.Validate()
@@ -149,7 +148,8 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
-		IncomeType: finance.AFNI,
+		ExcludedIncome:     []finance.IncomeSource{finance.IncSrcTFSA},
+		ExcludedDeductions: []finance.DeductionSource{finance.DeducSrcMedical},
 	}
 
 	err := originalFormula.Validate()
@@ -172,10 +172,24 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 
 }
 
-func TestCCBMaxReducer_IncomeCalcMethod(t *testing.T) {
+func TestCCBMaxReducer_Clone_Nil(t *testing.T) {
 
-	incomeType := (&CCBMaxReducer{IncomeType: finance.AFNI}).IncomeCalcMethod()
-	if incomeType != finance.AFNI {
-		t.Errorf("unexpected income type\nwant: %s\n got: %s", finance.AFNI, incomeType)
+	var mr *CCBMaxReducer
+	clone := mr.Clone()
+	if clone != nil {
+		t.Fatal("cloning a nil formula should return nil")
+	}
+}
+
+func TestCCBMaxReducer_NumFieldsUnchanged(t *testing.T) {
+
+	dummy := CCBMaxReducer{}
+	s := reflect.ValueOf(&dummy).Elem()
+	if s.NumField() != 4 {
+		t.Fatal(
+			"number of struct fields changed. Please update the constructor and the " +
+				"clone method of this type. Next, update this test with the new " +
+				"number of fields",
+		)
 	}
 }

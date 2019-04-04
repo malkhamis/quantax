@@ -9,11 +9,10 @@ import (
 
 var _ ChildBenefitFormula = (*CCBMaxReducer)(nil)
 
-// CCBMaxReducer computes Canada Child Benefits as a function of adjusted
-// family net income (AFNI), number of children, and children's ages. The
-// formula calculates the maximum entitlement for all children, then the max
-// is reduced based on the income, where reduction is calculated according to
-// multi-tier, rated brackets
+// CCBMaxReducer computes Canada Child Benefits as a function of income, number
+// of children, and children's ages. The formula calculates the maximum
+// entitlement for all children, then the max is reduced based on the income,
+// where reduction is calculated according to multi-tier, rated brackets
 type CCBMaxReducer struct {
 	// the [min, max] dollar amounts for given age groups (bound-inclusive)
 	BeneficiaryClasses []AgeGroupBenefits
@@ -22,12 +21,25 @@ type CCBMaxReducer struct {
 	// If the number of children is greater than the number of formulas,
 	// the last formula is used
 	Reducers []finance.WeightedBrackets
-	// IncomeType the income calculation method this formula expects
-	IncomeType finance.IncomeType
+	// ExcludedIncome is the income sources which this formula does not
+	// expect to be part of the income passed for calculating benefits.
+	// The formula uses these fields to communicate to the client about
+	// how net income should be calculated, but the formula itself won't
+	// use them at all for calculating child benefit amount
+	ExcludedIncome []finance.IncomeSource
+	// ExcludedDeductions is the deduction sources which this formula
+	// does not expect to be part of the income passed for calculating
+	// benefits. The formula uses these fields to communicate to the
+	// client about how net income should be calculated, but the formula
+	// itself won't use them at all for calculating child benefit amount
+	ExcludedDeductions []finance.DeductionSource
 }
 
-// Apply returns the total annual benefits for the children given the income
-func (mr *CCBMaxReducer) Apply(income float64, children ...human.Person) float64 {
+// Apply returns the total annual benefits for the children given the net
+// income. It is up to the client to calculate the net income appropriately
+// by checking excluded income and deduction sources through calling methods
+// 'ExcludedIncomeSources()' and 'ExcludedDeductionSources()'
+func (mr *CCBMaxReducer) Apply(netIncome float64, children ...human.Person) float64 {
 
 	if len(children) == 0 {
 		return 0.0
@@ -52,7 +64,7 @@ func (mr *CCBMaxReducer) Apply(income float64, children ...human.Person) float64
 	}
 
 	childCount := len(children)
-	reduction := mr.reducerFormula(childCount).Apply(income)
+	reduction := mr.reducerFormula(childCount).Apply(netIncome)
 
 	reducedBenefits := maxBenefits - reduction
 	if reducedBenefits < minBenefits {
@@ -62,9 +74,16 @@ func (mr *CCBMaxReducer) Apply(income float64, children ...human.Person) float64
 	return reducedBenefits
 }
 
-// IncomeCalcMethod returns the type of income this formula expects
-func (mr *CCBMaxReducer) IncomeCalcMethod() finance.IncomeType {
-	return mr.IncomeType
+// ExcludedIncomeSources returns the income sources which this formula expects
+// to not be part of the net income passed to Apply()
+func (mr *CCBMaxReducer) ExcludedIncomeSources() []finance.IncomeSource {
+	return mr.ExcludedIncome
+}
+
+// ExcludedDeductionSources returns the income sources which this formula
+// expects to not be part of the net income passed to Apply()
+func (mr *CCBMaxReducer) ExcludedDeductionSources() []finance.DeductionSource {
+	return mr.ExcludedDeductions
 }
 
 // Validate ensures that this instance is valid for use. Users need to call this
@@ -99,15 +118,32 @@ func (mr *CCBMaxReducer) Validate() error {
 // Clone returns a copy of this instance
 func (mr *CCBMaxReducer) Clone() ChildBenefitFormula {
 
-	clone := &CCBMaxReducer{
-		BeneficiaryClasses: make([]AgeGroupBenefits, len(mr.BeneficiaryClasses)),
-		Reducers:           make([]finance.WeightedBrackets, len(mr.Reducers)),
+	if mr == nil {
+		return nil
 	}
 
-	copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
+	clone := &CCBMaxReducer{}
 
-	for i, reducer := range mr.Reducers {
-		clone.Reducers[i] = reducer.Clone()
+	if mr.Reducers != nil {
+		clone.Reducers = make([]finance.WeightedBrackets, len(mr.Reducers))
+		for i, reducer := range mr.Reducers {
+			clone.Reducers[i] = reducer.Clone()
+		}
+	}
+
+	if mr.BeneficiaryClasses != nil {
+		clone.BeneficiaryClasses = make([]AgeGroupBenefits, len(mr.BeneficiaryClasses))
+		copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
+	}
+
+	if mr.ExcludedIncome != nil {
+		clone.ExcludedIncome = make([]finance.IncomeSource, len(mr.ExcludedIncome))
+		copy(clone.ExcludedIncome, mr.ExcludedIncome)
+	}
+
+	if mr.ExcludedDeductions != nil {
+		clone.ExcludedDeductions = make([]finance.DeductionSource, len(mr.ExcludedDeductions))
+		copy(clone.ExcludedDeductions, mr.ExcludedDeductions)
 	}
 
 	return clone

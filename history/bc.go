@@ -19,14 +19,17 @@ var (
 	}
 )
 
-var taxFormulaBC2018 = tax.CanadianFormula{
-	-0.0506: finance.Bracket{0, 10412},
-	0.0506:  finance.Bracket{0, 39676},
-	0.0770:  finance.Bracket{39676, 79353},
-	0.1050:  finance.Bracket{79353, 91107},
-	0.1229:  finance.Bracket{91107, 110630},
-	0.1470:  finance.Bracket{110630, 150000},
-	0.1680:  finance.Bracket{150000, math.Inf(1)},
+var taxFormulaBC2018 = &tax.CanadianFormula{
+	WeightedBrackets: finance.WeightedBrackets{
+		-0.0506: finance.Bracket{0, 10412},
+		0.0506:  finance.Bracket{0, 39676},
+		0.0770:  finance.Bracket{39676, 79353},
+		0.1050:  finance.Bracket{79353, 91107},
+		0.1229:  finance.Bracket{91107, 110630},
+		0.1470:  finance.Bracket{110630, 150000},
+		0.1680:  finance.Bracket{150000, math.Inf(1)},
+	},
+	ExcludedIncome: []finance.IncomeSource{finance.IncSrcTFSA},
 }
 
 var cbFormulaBC2018 = &benefits.BCECTBMaxReducer{
@@ -39,5 +42,9 @@ var cbFormulaBC2018 = &benefits.BCECTBMaxReducer{
 	ReducerFormula: finance.WeightedBrackets{
 		0.0132: finance.Bracket{100000, math.Inf(1)},
 	},
-	IncomeType: finance.AFNI,
+	ExcludedIncome: []finance.IncomeSource{
+		finance.IncSrcTFSA,
+		finance.IncSrcUCCB,
+		finance.IncSrcRDSP,
+	},
 }

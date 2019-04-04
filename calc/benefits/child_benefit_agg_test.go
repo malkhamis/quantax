@@ -30,6 +30,9 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
+		ExcludedIncome: []finance.IncomeSource{
+			finance.IncSrcTFSA, finance.IncSrcRRSP,
+		},
 	}
 
 	formulaCanada := &CCBMaxReducer{
@@ -61,6 +64,10 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 				0.095: finance.Bracket{65976, math.Inf(1)},
 			},
 		},
+		ExcludedIncome: []finance.IncomeSource{
+			finance.IncSrcTFSA, finance.IncSrcRRSP,
+		},
+		ExcludedDeductions: []finance.DeductionSource{finance.DeducSrcUnknown},
 	}
 
 	calculator, err := NewChildBenefitAggregator(formulaCanada, formulaBC)
@@ -71,10 +78,18 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 	children := []human.Person{{AgeMonths: 0}, {AgeMonths: (17 * 12) - 2}}
 	calculator.SetBeneficiaries(children...)
 
-	finances := finance.FamilyFinances{
-		{Income: 180000.0, Deductions: 10000},
-		{Income: 20000, Deductions: 20000},
-	}
+	f1 := finance.NewEmptyIndividialFinances(2020)
+	f1.AddIncome(finance.IncSrcEarned, 180000)
+	f1.AddIncome(finance.IncSrcTFSA, 12000)
+	f1.AddDeduction(finance.DeducSrcRRSP, 10000)
+
+	f2 := finance.NewEmptyIndividialFinances(2020)
+	f2.AddIncome(finance.IncSrcEarned, 20000)
+	f2.AddIncome(finance.IncSrcRRSP, 5000)
+	f2.AddDeduction(finance.DeducSrcRRSP, 20000)
+	f2.AddDeduction(finance.DeducSrcUnknown, 1000)
+
+	finances := finance.NewHouseholdFinances(f1, f2)
 	actual := calculator.Calc(finances)
 
 	expectedBC := 0.0
@@ -92,7 +107,7 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 	}
 
 	calculator.SetBeneficiaries(human.Person{AgeMonths: 0})
-	actual = calculator.Calc(finance.FamilyFinances{{}, {}})
+	actual = calculator.Calc(finance.HouseholdFinances{{}, {}})
 	expected = (55 * 12) + (541.33 * 12)
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
@@ -100,7 +115,14 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 
 	children = []human.Person{{AgeMonths: 0}, {AgeMonths: (6 * 12) - 2}}
 	calculator.SetBeneficiaries(children...)
-	actual = calculator.Calc(finance.FamilyFinances{{Income: 100000}, {}})
+	finances = finance.HouseholdFinances{
+		{
+			Income: finance.IncomeBySource{
+				finance.IncSrcEarned: 100000,
+			},
+		},
+	}
+	actual = calculator.Calc(finances)
 	expectedCanada = (541.33*12 + 541.33*2 + 456.75*10) - (0.135 * (65976.0 - 30450.0)) - (0.057 * (100000.0 - 65976.0))
 	expectedBC = (55 * 12) + (55 * 2)
 	expected = expectedCanada + expectedBC

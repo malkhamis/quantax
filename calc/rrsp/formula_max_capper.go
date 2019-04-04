@@ -9,24 +9,27 @@ var _ Formula = (*MaxCapper)(nil)
 // The formula works by computing a percentage of earned income, where the
 // result is capped by a maximum value
 type MaxCapper struct {
-	Rate       float64            // the percentage of earned income
-	Cap        float64            // the maximum contributable amount
-	IncomeType finance.IncomeType // The method of calculating income
+	Rate          float64                // the percentage of earned income
+	Cap           float64                // the maximum contributable amount
+	IncomeSources []finance.IncomeSource // sources that add to contribution room
 }
 
-// Contribution returns the max contribution room acquired given then income
-func (mc *MaxCapper) Contribution(income float64) float64 {
+// Contribution returns the max contribution room acquired given the net income.
+// It is up to the client to calculate the net income appropriately by checking
+// allowed income sources through calling method 'AllowedIncomeSources()'
+func (mc *MaxCapper) Contribution(netIncome float64) float64 {
 
-	contribution := mc.Rate * income
+	contribution := mc.Rate * netIncome
 	if contribution > mc.Cap {
 		return mc.Cap
 	}
 	return contribution
 }
 
-// IncomeCalcMethod returns the method of calculating the income
-func (mc *MaxCapper) IncomeCalcMethod() finance.IncomeType {
-	return mc.IncomeType
+// AllowedIncomeSources returns the sources which this formula expects as part
+// of the net income when calculating the contribution
+func (mc *MaxCapper) AllowedIncomeSources() []finance.IncomeSource {
+	return mc.IncomeSources
 }
 
 // Validate checks if the formula is valid for use
@@ -36,6 +39,13 @@ func (mc *MaxCapper) Validate() error {
 
 // Clone returns a copy of the formula
 func (mc *MaxCapper) Clone() Formula {
+
 	clone := *mc
+
+	if mc.IncomeSources != nil {
+		clone.IncomeSources = make([]finance.IncomeSource, len(mc.IncomeSources))
+		copy(clone.IncomeSources, mc.IncomeSources)
+	}
+
 	return &clone
 }

@@ -12,13 +12,17 @@ import (
 
 func TestCalculator_Calc(t *testing.T) {
 
-	formulaCanada2018 := CanadianFormula{
-		-0.150: finance.Bracket{0, 11809},
-		0.150:  finance.Bracket{0, 46605},
-		0.205:  finance.Bracket{46606, 93208},
-		0.260:  finance.Bracket{93209, 144489},
-		0.290:  finance.Bracket{144490, 205842},
-		0.330:  finance.Bracket{205843, math.Inf(1)},
+	formulaCanada2018 := &CanadianFormula{
+		WeightedBrackets: finance.WeightedBrackets{
+			-0.150: finance.Bracket{0, 11809},
+			0.150:  finance.Bracket{0, 46605},
+			0.205:  finance.Bracket{46606, 93208},
+			0.260:  finance.Bracket{93209, 144489},
+			0.290:  finance.Bracket{144490, 205842},
+			0.330:  finance.Bracket{205843, math.Inf(1)},
+		},
+		ExcludedIncome:     []finance.IncomeSource{finance.IncSrcTFSA},
+		ExcludedDeductions: []finance.DeductionSource{finance.DeducSrcMedical},
 	}
 
 	cases := []struct {
@@ -28,43 +32,62 @@ func TestCalculator_Calc(t *testing.T) {
 		errMargin   float64
 	}{
 		{
-			finances:    finance.IndividualFinances{Income: 400000, Deductions: 100000},
+			finances: finance.IndividualFinances{
+				Income:     finance.IncomeBySource{finance.IncSrcEarned: 400000},
+				Deductions: finance.DeductionBySource{finance.DeducSrcRRSP: 100000},
+			},
 			formula:     formulaCanada2018,
 			expectedTax: 76969,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    finance.IndividualFinances{},
+			finances: finance.IndividualFinances{
+				Income: finance.IncomeBySource{
+					finance.IncSrcEarned: 0,
+					finance.IncSrcTFSA:   50000,
+				},
+				Deductions: finance.DeductionBySource{
+					finance.DeducSrcRRSP:    100000,
+					finance.DeducSrcMedical: 1000,
+				},
+			},
 			formula:     formulaCanada2018,
 			expectedTax: 0,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    finance.IndividualFinances{Income: 9000},
+			finances: finance.IndividualFinances{
+				Income: finance.IncomeBySource{finance.IncSrcEarned: 9000},
+			},
 			formula:     formulaCanada2018,
 			expectedTax: 0,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    finance.IndividualFinances{Income: 12000},
+			finances: finance.IndividualFinances{
+				Income: finance.IncomeBySource{
+					finance.IncSrcEarned: 12000,
+					finance.IncSrcTFSA:   13000,
+				},
+			},
 			formula:     formulaCanada2018,
 			expectedTax: 28.65,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    finance.IndividualFinances{Income: 85000},
+			finances: finance.IndividualFinances{
+				Income:     finance.IncomeBySource{finance.IncSrcEarned: 85000},
+				Deductions: finance.DeductionBySource{finance.DeducSrcMedical: 1000},
+			},
 			formula:     formulaCanada2018,
 			expectedTax: 13090,
 			errMargin:   1e-9,
 		},
 		{
-			finances:    finance.IndividualFinances{Income: 85000},
-			formula:     formulaCanada2018,
-			expectedTax: 13090,
-			errMargin:   1e-9,
-		},
-		{
-			finances:    finance.IndividualFinances{Income: 90000, Deductions: 5000},
+			finances: finance.IndividualFinances{
+				Income:     finance.IncomeBySource{finance.IncSrcEarned: 90000},
+				Deductions: finance.DeductionBySource{finance.DeducSrcRRSP: 5000},
+			},
 			formula:     formulaCanada2018,
 			expectedTax: 13090,
 			errMargin:   1e-9,
@@ -80,7 +103,7 @@ func TestCalculator_Calc(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			actualTax := calculator.Calc(c.finances)
+			actualTax := calculator.Calc(&c.finances)
 			if !areEqual(actualTax, c.expectedTax, c.errMargin) {
 				t.Errorf(
 					"difference between actual and expected total "+
@@ -96,7 +119,11 @@ func TestCalculator_Calc(t *testing.T) {
 
 func TestNewCalculator_InvalidFormula(t *testing.T) {
 
-	invalidTaxParams := CanadianFormula{0.10: finance.Bracket{300, 200}}
+	invalidTaxParams := &CanadianFormula{
+		WeightedBrackets: finance.WeightedBrackets{
+			0.10: finance.Bracket{300, 200},
+		},
+	}
 	_, err := NewCalculator(invalidTaxParams)
 	cause := errors.Cause(err)
 	if cause != finance.ErrBoundsReversed {
