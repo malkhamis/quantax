@@ -96,6 +96,21 @@ func (f *IndividualFinances) Clone() *IndividualFinances {
 // HouseholdFinances represents financial data for a couple, family etc
 type HouseholdFinances []*IndividualFinances
 
+// NewHouseholdFinances returns a new instance, appending the given non-nil
+// individual finances. The return instance is never nil
+func NewHouseholdFinances(finances ...*IndividualFinances) HouseholdFinances {
+
+	hf := make(HouseholdFinances, 0, len(finances))
+
+	for _, f := range finances {
+		if f != nil {
+			hf = append(hf, f)
+		}
+	}
+
+	return hf
+}
+
 // Income calculate the the total income of the household from the given income
 // sources. if no sources are given, the sum of all income sources is returned
 func (hf HouseholdFinances) TotalIncome(sources ...IncomeSource) float64 {
