@@ -9,11 +9,10 @@ import (
 
 var _ ChildBenefitFormula = (*CCBMaxReducer)(nil)
 
-// CCBMaxReducer computes Canada Child Benefits as a function of adjusted
-// family net income (AFNI), number of children, and children's ages. The
-// formula calculates the maximum entitlement for all children, then the max
-// is reduced based on the income, where reduction is calculated according to
-// multi-tier, rated brackets
+// CCBMaxReducer computes Canada Child Benefits as a function of income, number
+// of children, and children's ages. The formula calculates the maximum
+// entitlement for all children, then the max is reduced based on the income,
+// where reduction is calculated according to multi-tier, rated brackets
 type CCBMaxReducer struct {
 	// the [min, max] dollar amounts for given age groups (bound-inclusive)
 	BeneficiaryClasses []AgeGroupBenefits
@@ -22,14 +21,25 @@ type CCBMaxReducer struct {
 	// If the number of children is greater than the number of formulas,
 	// the last formula is used
 	Reducers []finance.WeightedBrackets
-	// TODO
+	// ExcludedIncome is the income sources which this formula does not
+	// expect to be part of the income passed for calculating benefits.
+	// The formula uses these fields to communicate to the client about
+	// how net income should be calculated, but the formula itself won't
+	// use them at all for calculating child benefit amount
 	ExcludedIncome []finance.IncomeSource
-	// TODO
+	// ExcludedDeductions is the deduction sources which this formula
+	// does not expect to be part of the income passed for calculating
+	// benefits. The formula uses these fields to communicate to the
+	// client about how net income should be calculated, but the formula
+	// itself won't use them at all for calculating child benefit amount
 	ExcludedDeductions []finance.DeductionSource
 }
 
-// Apply returns the total annual benefits for the children given the income
-func (mr *CCBMaxReducer) Apply(income float64, children ...human.Person) float64 {
+// Apply returns the total annual benefits for the children given the net
+// income. It is up to the client to calculate the net income appropriately
+// by checking excluded income and deduction sources through calling method
+// 'ExcludedIncomeSources()' and 'ExcludedDeductionSources()'
+func (mr *CCBMaxReducer) Apply(netIncome float64, children ...human.Person) float64 {
 
 	if len(children) == 0 {
 		return 0.0
@@ -54,7 +64,7 @@ func (mr *CCBMaxReducer) Apply(income float64, children ...human.Person) float64
 	}
 
 	childCount := len(children)
-	reduction := mr.reducerFormula(childCount).Apply(income)
+	reduction := mr.reducerFormula(childCount).Apply(netIncome)
 
 	reducedBenefits := maxBenefits - reduction
 	if reducedBenefits < minBenefits {
@@ -64,9 +74,16 @@ func (mr *CCBMaxReducer) Apply(income float64, children ...human.Person) float64
 	return reducedBenefits
 }
 
-// TODO
-func (mr *CCBMaxReducer) ExcludedNetIncomeSources() ([]finance.IncomeSource, []finance.DeductionSource) {
-	return mr.ExcludedIncome, mr.ExcludedDeductions
+// ExcludedIncomeSources returns the income sources which this formula expects
+// to not be part of the net income passed to Apply()
+func (mr *CCBMaxReducer) ExcludedIncomeSources() []finance.IncomeSource {
+	return mr.ExcludedIncome
+}
+
+// ExcludedDeductionSources returns the income sources which this formula
+// expects to not be part of the net income passed to Apply()
+func (mr *CCBMaxReducer) ExcludedDeductionSources() []finance.DeductionSource {
+	return mr.ExcludedDeductions
 }
 
 // Validate ensures that this instance is valid for use. Users need to call this

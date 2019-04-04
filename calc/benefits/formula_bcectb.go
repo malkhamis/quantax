@@ -20,14 +20,25 @@ type BCECTBMaxReducer struct {
 	BeneficiaryClasses []AgeGroupBenefits
 	// Reducer is the sub-formula used to reduce the maximum benefits
 	ReducerFormula finance.WeightedBrackets
-	// TODO
+	// ExcludedIncome is the income sources which this formula does not
+	// expect to be part of the income passed for calculating benefits.
+	// The formula uses these fields to communicate to the client about
+	// how net income should be calculated, but the formula itself won't
+	// use them at all for calculating child benefit amount
 	ExcludedIncome []finance.IncomeSource
-	// TODO
+	// ExcludedDeductions is the deduction sources which this formula
+	// does not expect to be part of the income passed for calculating
+	// benefits. The formula uses these fields to communicate to the
+	// client about how net income should be calculated, but the formula
+	// itself won't use them at all for calculating child benefit amount
 	ExcludedDeductions []finance.DeductionSource
 }
 
-// Apply returns the total annual benefits for the children given the income
-func (mr *BCECTBMaxReducer) Apply(income float64, children ...human.Person) float64 {
+// Apply returns the total annual benefits for the children given the net
+// income. It is up to the client to calculate the net income appropriately
+// by checking excluded income and deduction sources through calling method
+// 'ExcludedIncomeSources()' and 'ExcludedDeductionSources()'
+func (mr *BCECTBMaxReducer) Apply(netIncome float64, children ...human.Person) float64 {
 
 	if len(children) == 0 {
 		return 0.0
@@ -52,7 +63,7 @@ func (mr *BCECTBMaxReducer) Apply(income float64, children ...human.Person) floa
 	}
 
 	childCount := len(children)
-	reduction := float64(childCount) * mr.ReducerFormula.Apply(income)
+	reduction := float64(childCount) * mr.ReducerFormula.Apply(netIncome)
 
 	reducedBenefits := maxBenefits - reduction
 	if reducedBenefits < minBenefits {
@@ -62,9 +73,16 @@ func (mr *BCECTBMaxReducer) Apply(income float64, children ...human.Person) floa
 	return reducedBenefits
 }
 
-// TODO
-func (mr *BCECTBMaxReducer) ExcludedNetIncomeSources() ([]finance.IncomeSource, []finance.DeductionSource) {
-	return mr.ExcludedIncome, mr.ExcludedDeductions
+// ExcludedIncomeSources returns the net income sources which this formula expects
+// to not be part of the income passed to Apply()
+func (mr *BCECTBMaxReducer) ExcludedIncomeSources() []finance.IncomeSource {
+	return mr.ExcludedIncome
+}
+
+// ExcludedDeductionSources returns the income sources which this formula
+// expects to not be part of the net income passed to Apply()
+func (mr *BCECTBMaxReducer) ExcludedDeductionSources() []finance.DeductionSource {
+	return mr.ExcludedDeductions
 }
 
 // Validate ensures that this instance is valid for use. Users need to call this

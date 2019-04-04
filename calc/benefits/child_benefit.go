@@ -38,16 +38,17 @@ func NewChildBenefitCalculator(formula ChildBenefitFormula) (*ChildBenfitCalcula
 // Calc returns the recievable amount of child benefits
 func (c *ChildBenfitCalculator) Calc(finances finance.IncomeDeductor) float64 {
 
-	excludedIncome, excludedDeductions := c.formula.ExcludedNetIncomeSources()
+	excludedIncSrcs := c.formula.ExcludedIncomeSources()
+	excludedDeducSrcs := c.formula.ExcludedDeductionSources()
 
 	adjustedTotalIncome := finances.TotalIncome()
-	if len(excludedIncome) > 0 {
-		adjustedTotalIncome -= finances.TotalIncome(excludedIncome...)
+	if len(excludedIncSrcs) > 0 {
+		adjustedTotalIncome -= finances.TotalIncome(excludedIncSrcs...)
 	}
 
 	adjustedTotalDeductions := finances.TotalDeductions()
-	if len(excludedDeductions) > 0 {
-		adjustedTotalDeductions -= finances.TotalDeductions(excludedDeductions...)
+	if len(excludedDeducSrcs) > 0 {
+		adjustedTotalDeductions -= finances.TotalDeductions(excludedDeducSrcs...)
 	}
 
 	adjustedNetIncome := adjustedTotalIncome - adjustedTotalDeductions
