@@ -28,28 +28,19 @@ func TestNewChildBenefitCalculator_Full(t *testing.T) {
 		ExcludedIncome:     []finance.IncomeSource{finance.IncSrcTFSA},
 	}
 
-	finances := finance.HouseholdFinances{
-		{
-			Income: finance.IncomeBySource{
-				finance.IncSrcEarned: 120000,
-				finance.IncSrcTFSA:   500000,
-			},
-			Deductions: finance.DeductionBySource{
-				finance.DeducSrcRRSP:    10000,
-				finance.DeducSrcMedical: 100000,
-			},
-		},
-		{
-			Income: finance.IncomeBySource{
-				finance.IncSrcEarned: 20000,
-			},
-			Deductions: finance.DeductionBySource{
-				finance.DeducSrcRRSP: 20000,
-			},
-		},
-	}
+	f1 := finance.NewEmptyIndividialFinances(2018)
+	f1.AddIncome(finance.IncSrcEarned, 120000)
+	f1.AddIncome(finance.IncSrcTFSA, 500000)
+	f1.AddDeduction(finance.DeducSrcRRSP, 10000)
+	f1.AddDeduction(finance.DeducSrcMedical, 100000)
 
+	f2 := finance.NewEmptyIndividialFinances(2018)
+	f2.AddIncome(finance.IncSrcEarned, 20000)
+	f2.AddDeduction(finance.DeducSrcRRSP, 20000)
+
+	finances := finance.NewHouseholdFinances(f1, f2)
 	children := []human.Person{{AgeMonths: 0}, {AgeMonths: 6*12 - 2}}
+
 	calculator, err := NewChildBenefitCalculator(formulaBC)
 	if err != nil {
 		t.Fatal(err)

@@ -30,6 +30,9 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 55},
 			},
 		},
+		ExcludedIncome: []finance.IncomeSource{
+			finance.IncSrcTFSA, finance.IncSrcRRSP,
+		},
 	}
 
 	formulaCanada := &CCBMaxReducer{
@@ -61,6 +64,10 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 				0.095: finance.Bracket{65976, math.Inf(1)},
 			},
 		},
+		ExcludedIncome: []finance.IncomeSource{
+			finance.IncSrcTFSA, finance.IncSrcRRSP,
+		},
+		ExcludedDeductions: []finance.DeductionSource{finance.DeducSrcUnknown},
 	}
 
 	calculator, err := NewChildBenefitAggregator(formulaCanada, formulaBC)
@@ -71,25 +78,18 @@ func TestNewChildBenefitAggregator_Full(t *testing.T) {
 	children := []human.Person{{AgeMonths: 0}, {AgeMonths: (17 * 12) - 2}}
 	calculator.SetBeneficiaries(children...)
 
-	finances := finance.HouseholdFinances{
-		{
-			Income: finance.IncomeBySource{
-				finance.IncSrcEarned: 180000,
-			},
-			Deductions: finance.DeductionBySource{
-				finance.DeducSrcRRSP: 10000,
-			},
-		},
-		{
-			Income: finance.IncomeBySource{
-				finance.IncSrcEarned: 20000,
-			},
-			Deductions: finance.DeductionBySource{
-				finance.DeducSrcRRSP: 20000,
-			},
-		},
-	}
+	f1 := finance.NewEmptyIndividialFinances(2020)
+	f1.AddIncome(finance.IncSrcEarned, 180000)
+	f1.AddIncome(finance.IncSrcTFSA, 12000)
+	f1.AddDeduction(finance.DeducSrcRRSP, 10000)
 
+	f2 := finance.NewEmptyIndividialFinances(2020)
+	f2.AddIncome(finance.IncSrcEarned, 20000)
+	f2.AddIncome(finance.IncSrcRRSP, 5000)
+	f2.AddDeduction(finance.DeducSrcRRSP, 20000)
+	f2.AddDeduction(finance.DeducSrcUnknown, 1000)
+
+	finances := finance.NewHouseholdFinances(f1, f2)
 	actual := calculator.Calc(finances)
 
 	expectedBC := 0.0
