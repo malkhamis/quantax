@@ -10,7 +10,7 @@ import (
 
 // Sentinel errors that can ben wrapped and returned by this package
 var (
-	ErrNoFormula = errors.New("not formula given/set")
+	ErrNoFormula = errors.New("no formula given/set")
 )
 
 // compile-time check for interface implementation
@@ -40,16 +40,17 @@ func NewCalculator(formula Formula) (*Calculator, error) {
 // Calc computes the tax on the taxable amount set in this calculator
 func (c *Calculator) Calc(finances *finance.IndividualFinances) float64 {
 
-	excludedIncome, excludedDeductions := c.formula.ExcludedNetIncomeSources()
+	excludedIncSrcs := c.formula.ExcludedIncomeSources()
+	excludedDeducSrcs := c.formula.ExcludedDeductionSources()
 
 	adjustedTotalIncome := finances.TotalIncome()
-	if len(excludedIncome) > 0 {
-		adjustedTotalIncome -= finances.TotalIncome(excludedIncome...)
+	if len(excludedIncSrcs) > 0 {
+		adjustedTotalIncome -= finances.TotalIncome(excludedIncSrcs...)
 	}
 
 	adjustedTotalDeductions := finances.TotalDeductions()
-	if len(excludedDeductions) > 0 {
-		adjustedTotalDeductions -= finances.TotalDeductions(excludedDeductions...)
+	if len(excludedDeducSrcs) > 0 {
+		adjustedTotalDeductions -= finances.TotalDeductions(excludedDeducSrcs...)
 	}
 
 	adjustedNetIncome := adjustedTotalIncome - adjustedTotalDeductions

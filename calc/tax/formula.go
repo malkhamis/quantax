@@ -5,9 +5,13 @@ import "github.com/malkhamis/quantax/calc/finance"
 // Formula computes payable taxes on the given income
 type Formula interface {
 	// Apply applies the formula on the income
-	Apply(income float64) float64
-	// TODO
-	ExcludedNetIncomeSources() ([]finance.IncomeSource, []finance.DeductionSource)
+	Apply(netIncome float64) float64
+	// ExcludedIncomeSources returns the income sources that should
+	// be excluded from the expected total income for the formula
+	ExcludedIncomeSources() []finance.IncomeSource
+	// ExcludedDeductionSources returns the income sources that should
+	// be excluded from the expected total deductions for the formula
+	ExcludedDeductionSources() []finance.DeductionSource
 	// Clone returns a copy of this formula
 	Clone() Formula
 	// Validate checks if the formula is valid for use
@@ -15,25 +19,47 @@ type Formula interface {
 }
 
 type CanadianFormula struct {
-	// TODO
+	// ExcludedIncome is the income sources which this formula does not
+	// expect to be part of the income passed for calculating the tax.
+	// The formula uses these fields to communicate to the client about
+	// how net income should be calculated, but the formula itself won't
+	// use them at all for calculating the payable tax
 	ExcludedIncome []finance.IncomeSource
-	// TODO
+	// ExcludedDeductions is the deduction sources which this formula
+	// does not expect to be part of the income passed for calculating
+	// the tax. The formula uses these fields to communicate to the
+	// client about how net income should be calculated, but the formula
+	// itself won't use them at all for calculating the payable tax
 	ExcludedDeductions []finance.DeductionSource
 	finance.WeightedBrackets
 }
 
-// Apply applies this formula on the given income and returns the payable tax
-func (ct *CanadianFormula) Apply(income float64) float64 {
-	return ct.WeightedBrackets.Apply(income)
+// Apply applies this formula on the given net income and returns the payable
+// tax. It is up to the client to calculate the net income appropriately by
+// checking excluded income and deduction sources through calling methods
+// 'ExcludedIncomeSources()' and 'ExcludedDeductionSources()'
+func (ct *CanadianFormula) Apply(netIncome float64) float64 {
+	return ct.WeightedBrackets.Apply(netIncome)
 }
 
-// TODO
-func (ct *CanadianFormula) ExcludedNetIncomeSources() ([]finance.IncomeSource, []finance.DeductionSource) {
-	return ct.ExcludedIncome, ct.ExcludedDeductions
+// ExcludedIncomeSources returns the income sources which this formula expects
+// to not be part of the net income passed to Apply()
+func (ct *CanadianFormula) ExcludedIncomeSources() []finance.IncomeSource {
+	return ct.ExcludedIncome
+}
+
+// ExcludedDeductionSources returns the income sources which this formula
+// expects to not be part of the net income passed to Apply()
+func (ct *CanadianFormula) ExcludedDeductionSources() []finance.DeductionSource {
+	return ct.ExcludedDeductions
 }
 
 // Clone returns a copy of this formula
 func (ct *CanadianFormula) Clone() Formula {
+
+	if ct == nil {
+		return nil
+	}
 
 	clone := &CanadianFormula{
 		WeightedBrackets: ct.WeightedBrackets.Clone(),

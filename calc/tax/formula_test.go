@@ -21,3 +21,12 @@ func TestFormula_Clone(t *testing.T) {
 		t.Errorf("expected clone results to be equal to results of original formula prior to mutation")
 	}
 }
+
+func TestFormula_Clone_Nil(t *testing.T) {
+
+	var mr *CanadianFormula
+	clone := mr.Clone()
+	if clone != nil {
+		t.Fatal("cloning a nil formula should return nil")
+	}
+}
