@@ -38,7 +38,7 @@ func NewCalculator(formula Formula) (*Calculator, error) {
 }
 
 // Calc computes the tax on the taxable amount set in this calculator
-func (c *Calculator) Calc(finances *finance.IndividualFinances) float64 {
+func (c *Calculator) Calc(finances finance.IncomeDeductor) float64 {
 
 	excludedIncSrcs := c.formula.ExcludedIncomeSources()
 	excludedDeducSrcs := c.formula.ExcludedDeductionSources()

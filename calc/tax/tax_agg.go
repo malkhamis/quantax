@@ -36,7 +36,7 @@ func NewAggregator(formula1, formula2 Formula, extras ...Formula) (*Aggregator, 
 }
 
 // Calc computes the tax on the taxable amount set in this calculator
-func (agg *Aggregator) Calc(finances *finance.IndividualFinances) float64 {
+func (agg *Aggregator) Calc(finances finance.IncomeDeductor) float64 {
 
 	var payableTax float64
 	for _, c := range agg.calculators {
