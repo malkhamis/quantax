@@ -118,6 +118,10 @@ func (mr *CCBMaxReducer) Validate() error {
 // Clone returns a copy of this instance
 func (mr *CCBMaxReducer) Clone() ChildBenefitFormula {
 
+	if mr == nil {
+		return nil
+	}
+
 	clone := &CCBMaxReducer{}
 
 	if mr.Reducers != nil {

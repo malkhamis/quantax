@@ -109,6 +109,10 @@ func (mr *BCECTBMaxReducer) Validate() error {
 // Clone returns a copy of this instance
 func (mr *BCECTBMaxReducer) Clone() ChildBenefitFormula {
 
+	if mr == nil {
+		return nil
+	}
+
 	clone := &BCECTBMaxReducer{
 		ReducerFormula: mr.ReducerFormula.Clone(),
 	}

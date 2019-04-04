@@ -138,6 +138,15 @@ func TestBCECTBMaxReducer_Clone(t *testing.T) {
 
 }
 
+func TestBCECTBReducer_Clone_Nil(t *testing.T) {
+
+	var mr *BCECTBMaxReducer
+	clone := mr.Clone()
+	if clone != nil {
+		t.Fatal("cloning a nil formula should return nil")
+	}
+}
+
 func TestBCECTBReducer_NumFieldsUnchanged(t *testing.T) {
 
 	dummy := BCECTBMaxReducer{}
