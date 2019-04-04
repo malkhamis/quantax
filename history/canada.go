@@ -29,13 +29,16 @@ var rrspFormulaCanada2018 = &rrsp.MaxCapper{
 	Cap:  26230.00,
 }
 
-var taxFormulaCanada2018 = tax.CanadianFormula{
-	-0.150: finance.Bracket{0, 11809},
-	0.150:  finance.Bracket{0, 46605},
-	0.205:  finance.Bracket{46605, 93208},
-	0.260:  finance.Bracket{93208, 144489},
-	0.290:  finance.Bracket{144489, 205842},
-	0.330:  finance.Bracket{205842, math.Inf(1)},
+var taxFormulaCanada2018 = &tax.CanadianFormula{
+	WeightedBrackets: finance.WeightedBrackets{
+		-0.150: finance.Bracket{0, 11809},
+		0.150:  finance.Bracket{0, 46605},
+		0.205:  finance.Bracket{46605, 93208},
+		0.260:  finance.Bracket{93208, 144489},
+		0.290:  finance.Bracket{144489, 205842},
+		0.330:  finance.Bracket{205842, math.Inf(1)},
+	},
+	ExcludedIncome: []finance.IncomeSource{finance.IncSrcTFSA},
 }
 
 var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
@@ -66,5 +69,10 @@ var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
 			0.230: finance.Bracket{30450, 65976},
 			0.095: finance.Bracket{65976, math.Inf(1)},
 		},
+	},
+	ExcludedIncome: []finance.IncomeSource{
+		finance.IncSrcTFSA,
+		finance.IncSrcUCCB,
+		finance.IncSrcRDSP,
 	},
 }
