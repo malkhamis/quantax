@@ -8,15 +8,15 @@ import (
 
 // TaxCalculator is used to calculate payable tax on individual earnings
 type TaxCalculator interface {
-	// Calc returns the payable amount of tax on the income in this calculator
+	// Calc returns the payable amount of tax for the given income-deduction
 	Calc(finance.IncomeDeductor) float64
 }
 
 // ChildBenefitCalculator is used to calculate recievable child benefits for
 // families with dependent children.
 type ChildBenefitCalculator interface {
-	// Calc returns the recievable amount of child benefits given family finances
-	// and the children set in the calculator
+	// Calc returns the recievable amount of child benefits for the given
+	// income-deduction and the children set in the calculator
 	Calc(finance.IncomeDeductor) float64
 	// SetBeneficiaries sets the children which the calculator will compute the
 	// benefits for in subsequent calls to Calc()
