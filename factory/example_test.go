@@ -17,7 +17,8 @@ func ExampleNewTaxFactory() {
 	}
 
 	finances := finance.NewEmptyIndividialFinances(2018)
-	finances.AddIncome(finance.IncSrcEarned, 170000.0)
+	finances.AddIncome(finance.IncSrcEarned, 180000.0)
+	finances.AddDeduction(finance.DeducSrcRRSP, 10000)
 	aggTax := calculator.Calc(finances)
 	fmt.Printf("%.2f", aggTax) // Output: 52821.09
 }
@@ -34,12 +35,14 @@ func ExampleNewChildBenefitFactory() {
 	children := []human.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
 	calculator.SetBeneficiaries(children...)
 
-	finances := finance.HouseholdFinances{
-		finance.NewEmptyIndividialFinances(2017),
-		finance.NewEmptyIndividialFinances(2017),
-	}
+	f1 := finance.NewEmptyIndividialFinances(2017)
+	f2 := finance.NewEmptyIndividialFinances(2017)
 
-	finances[0].AddIncome(finance.IncSrcEarned, 110000.0)
+	f1.AddIncome(finance.IncSrcEarned, 110000.0)
+	f2.AddIncome(finance.IncSrcEarned, 15000)
+	f2.AddDeduction(finance.DeducSrcRRSP, 15000)
+
+	finances := finance.NewHouseholdFinances(f1, f2)
 	total := calculator.Calc(finances)
 
 	fmt.Printf("%.2f", total) // Output: 6742.54
