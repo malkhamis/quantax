@@ -4,12 +4,12 @@ import "testing"
 
 func TestFamilyFinances(t *testing.T) {
 
-	spouse1 := IndividualFinances{
+	spouse1 := &IndividualFinances{
 		Income:     IncomeBySource{IncSrcEarned: 10},
 		Deductions: DeductionBySource{DeducSrcRRSP: 20},
 	}
 
-	spouse2 := IndividualFinances{
+	spouse2 := &IndividualFinances{
 		Income:     IncomeBySource{IncSrcEarned: 15},
 		Deductions: DeductionBySource{DeducSrcRRSP: 50},
 	}

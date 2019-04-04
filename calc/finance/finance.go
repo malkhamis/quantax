@@ -51,6 +51,10 @@ func (f *IndividualFinances) TotalDeductions(sources ...DeductionSource) float64
 	return total
 }
 
+func (f *IndividualFinances) AddIncome(source IncomeSource, amount float64) {
+	f.Income[source] += amount
+}
+
 func (f *IndividualFinances) Clone() *IndividualFinances {
 
 	clone := &IndividualFinances{
@@ -66,7 +70,7 @@ func (f *IndividualFinances) Clone() *IndividualFinances {
 }
 
 // HouseholdFinances represents financial data for a couple, family etc
-type HouseholdFinances []IndividualFinances
+type HouseholdFinances []*IndividualFinances
 
 // Income calculate the the total income of the household from the given income
 // sources. if no sources are given, the sum of all income sources is returned

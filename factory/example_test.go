@@ -16,7 +16,8 @@ func ExampleNewTaxFactory() {
 		return
 	}
 
-	finances := finance.IndividualFinances{Income: 170000.0}
+	finances := finance.NewEmptyIndividialFinances(2018)
+	finances.AddIncome(finance.IncSrcEarned, 170000.0)
 	aggTax := calculator.Calc(finances)
 	fmt.Printf("%.2f", aggTax) // Output: 52821.09
 }
@@ -33,10 +34,12 @@ func ExampleNewChildBenefitFactory() {
 	children := []human.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
 	calculator.SetBeneficiaries(children...)
 
-	finances := finance.FamilyFinances{
-		finance.IndividualFinances{Income: 110000},
-		finance.IndividualFinances{Income: 0},
+	finances := finance.HouseholdFinances{
+		finance.NewEmptyIndividialFinances(2017),
+		finance.NewEmptyIndividialFinances(2017),
 	}
+
+	finances[0].AddIncome(finance.IncSrcEarned, 110000.0)
 	total := calculator.Calc(finances)
 
 	fmt.Printf("%.2f", total) // Output: 6742.54
@@ -57,10 +60,10 @@ func ExampleNewRRSPFactory() {
 		return
 	}
 
-	finances := finance.IndividualFinances{
-		Income:   100000.0,
-		RRSPRoom: 15000.0,
-	}
+	finances := finance.NewEmptyIndividialFinances(2018)
+	finances.AddIncome(finance.IncSrcEarned, 100000.0)
+	finances.RRSPContributionRoom = 15000.0
+
 	calculator.SetFinances(finances)
 	taxRecievable, err := calculator.TaxRefund(15000.0)
 	if err != nil {
