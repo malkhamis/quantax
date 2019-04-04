@@ -28,21 +28,22 @@ func (s IncomeBySource) Sum() float64 {
 
 func (s IncomeBySource) Clone() IncomeBySource {
 
-	if s == nil {
-		return nil
+	var clone IncomeBySource
+
+	if s != nil {
+		clone = make(IncomeBySource)
 	}
 
-	clone := make(IncomeBySource)
 	for source, income := range s {
 		clone[source] = income
 	}
+
 	return clone
 }
 
 // DeductionSource represents the source type of deduction
 type DeductionSource int
 
-// Recognized sources of deducitons
 const (
 	DeducSrcUnknown DeductionSource = iota
 	// Recognized sources of deduction
@@ -64,13 +65,15 @@ func (s DeductionBySource) Sum() float64 {
 
 func (s DeductionBySource) Clone() DeductionBySource {
 
-	if s == nil {
-		return nil
+	var clone DeductionBySource
+
+	if s != nil {
+		clone = make(DeductionBySource)
 	}
 
-	clone := make(DeductionBySource)
 	for source, deduction := range s {
 		clone[source] = deduction
 	}
+
 	return clone
 }

@@ -2,8 +2,15 @@
 // Canadian taxes and benefits given financial information
 package finance
 
+// IncomeDeductor stores financial information such that amounts for income and
+// deduction sources for a tax payer can be retrieved by their source
 type IncomeDeductor interface {
+	// TotalIncome returns the sum of income for the given sources only.
+	// If no sources given, the total income for all sources is returned
 	TotalIncome(sources ...IncomeSource) float64
+	// TotalDeductions returns the sum of TotalDeductionss for the given
+	// sources only. If no sources given, the total deduction for all sources
+	// is returned
 	TotalDeductions(sources ...DeductionSource) float64
 }
 
@@ -17,6 +24,8 @@ type IndividualFinances struct {
 	RRSPUnclaimedDeductions float64
 }
 
+// NewEmptyIndividialFinances returns an instance whose EOY is initialized to
+// endOfYear and whose maps are initialized with no income sources
 func NewEmptyIndividialFinances(endOfYear uint) *IndividualFinances {
 	return &IndividualFinances{
 		EOY:        endOfYear,
@@ -25,6 +34,8 @@ func NewEmptyIndividialFinances(endOfYear uint) *IndividualFinances {
 	}
 }
 
+// TotalIncome returns the sum of income for the given sources only. If no
+// sources given, the total income for all sources is returned
 func (f *IndividualFinances) TotalIncome(sources ...IncomeSource) float64 {
 
 	if len(sources) == 0 {
@@ -38,6 +49,8 @@ func (f *IndividualFinances) TotalIncome(sources ...IncomeSource) float64 {
 	return total
 }
 
+// TotalDeductions returns the sum of TotalDeductionss for the given sources
+// only. If no sources given, the total deduction for all sources is returned
 func (f *IndividualFinances) TotalDeductions(sources ...DeductionSource) float64 {
 
 	if len(sources) == 0 {
@@ -51,11 +64,22 @@ func (f *IndividualFinances) TotalDeductions(sources ...DeductionSource) float64
 	return total
 }
 
+// AddIncome adds the given amount to the stored amount of the given source
 func (f *IndividualFinances) AddIncome(source IncomeSource, amount float64) {
 	f.Income[source] += amount
 }
 
+// AddDeduction adds the given amount to the stored amount of the given source
+func (f *IndividualFinances) AddDeduction(source DeductionSource, amount float64) {
+	f.Deductions[source] += amount
+}
+
+// Clone returns a copy of this instance
 func (f *IndividualFinances) Clone() *IndividualFinances {
+
+	if f == nil {
+		return nil
+	}
 
 	clone := &IndividualFinances{
 		EOY:                     f.EOY,
@@ -102,4 +126,20 @@ func (hf HouseholdFinances) Cash() float64 {
 		total += f.Cash
 	}
 	return total
+}
+
+// Clone returns a copy of this instance
+func (hf HouseholdFinances) Clone() HouseholdFinances {
+
+	var clone HouseholdFinances
+
+	if hf != nil {
+		clone = make(HouseholdFinances, len(hf))
+	}
+
+	for i, f := range hf {
+		clone[i] = f.Clone()
+	}
+
+	return clone
 }
