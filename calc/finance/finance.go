@@ -8,10 +8,13 @@ type IncomeDeductor interface {
 	// TotalIncome returns the sum of income for the given sources only.
 	// If no sources given, the total income for all sources is returned
 	TotalIncome(sources ...IncomeSource) float64
-	// TotalDeductions returns the sum of TotalDeductionss for the given
-	// sources only. If no sources given, the total deduction for all sources
-	// is returned
+	// IncomeSources returns a set of all income sources
+	IncomeSources() map[IncomeSource]struct{}
+	// TotalDeductions returns the sum of deductions for the given sources only.
+	// If no sources given, the total deduction for all sources is returned
 	TotalDeductions(sources ...DeductionSource) float64
+	// DeductionSources returns a set of deduction sources
+	DeductionSources() map[DeductionSource]struct{}
 }
 
 // IndividualFinances represents the financial data of an individual
@@ -72,6 +75,40 @@ func (f *IndividualFinances) AddIncome(source IncomeSource, amount float64) {
 // AddDeduction adds the given amount to the stored amount of the given source
 func (f *IndividualFinances) AddDeduction(source DeductionSource, amount float64) {
 	f.Deductions[source] += amount
+}
+
+// IncomeSources returns a set of all income sources in this instance. The
+// returned map is never nil
+func (f *IndividualFinances) IncomeSources() map[IncomeSource]struct{} {
+
+	set := make(map[IncomeSource]struct{})
+
+	if f == nil {
+		return set
+	}
+
+	for source := range f.Income {
+		set[source] = struct{}{}
+	}
+
+	return set
+}
+
+// DeductionSources returns a set of all deduciton sources in this instance.
+// The returned map is never nil
+func (f *IndividualFinances) DeductionSources() map[DeductionSource]struct{} {
+
+	set := make(map[DeductionSource]struct{})
+
+	if f == nil {
+		return set
+	}
+
+	for source := range f.Deductions {
+		set[source] = struct{}{}
+	}
+
+	return set
 }
 
 // Clone returns a copy of this instance
@@ -141,6 +178,36 @@ func (hf HouseholdFinances) Cash() float64 {
 		total += f.Cash
 	}
 	return total
+}
+
+// IncomeSources returns a set of all income sources in this instance. The
+// returned map is never nil
+func (hf HouseholdFinances) IncomeSources() map[IncomeSource]struct{} {
+
+	set := make(map[IncomeSource]struct{})
+
+	for _, f := range hf {
+		for source := range f.Income {
+			set[source] = struct{}{}
+		}
+	}
+
+	return set
+}
+
+// DeductionSources returns a set of all deduciton sources in this instance.
+// The returned map is never nil
+func (hf HouseholdFinances) DeductionSources() map[DeductionSource]struct{} {
+
+	set := make(map[DeductionSource]struct{})
+
+	for _, f := range hf {
+		for source := range f.Deductions {
+			set[source] = struct{}{}
+		}
+	}
+
+	return set
 }
 
 // Clone returns a copy of this instance

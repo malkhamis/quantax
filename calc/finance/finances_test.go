@@ -71,6 +71,77 @@ func TestHouseholdFinances_Full(t *testing.T) {
 	}
 }
 
+func TestHouseholdFinances_Sources(t *testing.T) {
+
+	spouse1 := NewEmptyIndividialFinances(2018)
+	spouse1.AddIncome(IncSrcEarned, 6)
+	spouse1.AddIncome(IncSrcUCCB, 4)
+	spouse1.AddDeduction(DeducSrcRRSP, 20)
+
+	actualIncSrcs := spouse1.IncomeSources()
+	expectedIncSrcs := map[IncomeSource]struct{}{
+		IncSrcEarned: struct{}{}, IncSrcUCCB: struct{}{},
+	}
+	diff := deep.Equal(actualIncSrcs, expectedIncSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	actualDeducSrcs := spouse1.DeductionSources()
+	expectedDeducSrcs := map[DeductionSource]struct{}{
+		DeducSrcRRSP: struct{}{},
+	}
+	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	spouse2 := NewEmptyIndividialFinances(2018)
+	spouse2.AddIncome(IncSrcEarned, 12)
+	spouse2.AddIncome(IncSrcInterest, 3)
+	spouse2.AddDeduction(DeducSrcRRSP, 25)
+	spouse2.AddDeduction(DeducSrcMedical, 25)
+
+	finances := NewHouseholdFinances(spouse1, spouse2)
+
+	actualIncSrcs = finances.IncomeSources()
+	expectedIncSrcs = map[IncomeSource]struct{}{
+		IncSrcEarned: struct{}{}, IncSrcUCCB: struct{}{}, IncSrcInterest: struct{}{},
+	}
+	diff = deep.Equal(actualIncSrcs, expectedIncSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	actualDeducSrcs = finances.DeductionSources()
+	expectedDeducSrcs = map[DeductionSource]struct{}{
+		DeducSrcRRSP: struct{}{}, DeducSrcMedical: struct{}{},
+	}
+	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+}
+
+func TestIndividualFinances_Nil_Sources(t *testing.T) {
+
+	var nilFinances *IndividualFinances
+
+	expectedIncSrcs := make(map[IncomeSource]struct{})
+	actualIncSrcs := nilFinances.IncomeSources()
+	diff := deep.Equal(actualIncSrcs, expectedIncSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	expectedDeducSrcs := make(map[DeductionSource]struct{})
+	actualDeducSrcs := nilFinances.DeductionSources()
+	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+}
+
 func TestHouseholdFinances_Clone(t *testing.T) {
 
 	f1 := NewEmptyIndividialFinances(2018)
