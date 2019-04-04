@@ -71,6 +71,42 @@ func TestHouseholdFinances_Full(t *testing.T) {
 	}
 }
 
+func TestHouseholdFinances_AddIncome(t *testing.T) {
+
+	spouse1 := NewEmptyIndividialFinances(2018)
+	spouse1.AddIncome(IncSrcEarned, 6)
+
+	actual := spouse1.Income[IncSrcEarned]
+	if actual != 6 {
+		t.Fatalf("expected AdddIncome to set the map key, got: %.2f", actual)
+	}
+
+	spouse1.AddIncome(IncSrcEarned, 6)
+	actual = spouse1.Income[IncSrcEarned]
+	if actual != 12 {
+		t.Fatalf("expected AdddIncome to accumulate amount, got: %.2f", actual)
+	}
+
+}
+
+func TestHouseholdFinances_AddDeduction(t *testing.T) {
+
+	spouse1 := NewEmptyIndividialFinances(2018)
+
+	spouse1.AddDeduction(DeducSrcRRSP, 6)
+	actual := spouse1.Deductions[DeducSrcRRSP]
+	if actual != 6 {
+		t.Fatalf("expected AdddDeduction to set the map key, got: %.2f", actual)
+	}
+
+	spouse1.AddDeduction(DeducSrcRRSP, 6)
+	actual = spouse1.Deductions[DeducSrcRRSP]
+	if actual != 12 {
+		t.Fatalf("expected AdddDeduction to set the map key, got: %.2f", actual)
+	}
+
+}
+
 func TestHouseholdFinances_Sources(t *testing.T) {
 
 	spouse1 := NewEmptyIndividialFinances(2018)
