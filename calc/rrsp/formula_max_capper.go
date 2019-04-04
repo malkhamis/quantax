@@ -11,20 +11,23 @@ var _ Formula = (*MaxCapper)(nil)
 type MaxCapper struct {
 	Rate          float64                // the percentage of earned income
 	Cap           float64                // the maximum contributable amount
-	IncomeSources []finance.IncomeSource // TODO
+	IncomeSources []finance.IncomeSource // sources that add to contribution room
 }
 
-// Contribution returns the max contribution room acquired given then income
-func (mc *MaxCapper) Contribution(income float64) float64 {
+// Contribution returns the max contribution room acquired given the net income.
+// It is up to the client to calculate the net income appropriately by checking
+// allowed income sources through calling method 'AllowedIncomeSources()'
+func (mc *MaxCapper) Contribution(netIncome float64) float64 {
 
-	contribution := mc.Rate * income
+	contribution := mc.Rate * netIncome
 	if contribution > mc.Cap {
 		return mc.Cap
 	}
 	return contribution
 }
 
-// TODO
+// AllowedIncomeSources returns the sources which this formula expects as part
+// of the net income when calculating the contribution
 func (mc *MaxCapper) AllowedIncomeSources() []finance.IncomeSource {
 	return mc.IncomeSources
 }

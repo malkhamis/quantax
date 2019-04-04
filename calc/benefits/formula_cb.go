@@ -37,7 +37,7 @@ type CCBMaxReducer struct {
 
 // Apply returns the total annual benefits for the children given the net
 // income. It is up to the client to calculate the net income appropriately
-// by checking excluded income and deduction sources through calling method
+// by checking excluded income and deduction sources through calling methods
 // 'ExcludedIncomeSources()' and 'ExcludedDeductionSources()'
 func (mr *CCBMaxReducer) Apply(netIncome float64, children ...human.Person) float64 {
 

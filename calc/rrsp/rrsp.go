@@ -91,8 +91,14 @@ func (c *Calculator) TaxRefund(contribution float64) (float64, error) {
 // ContributionEarned calculates the newly acquired contribution room
 func (c *Calculator) ContributionEarned() float64 {
 
-	income := c.finances.TotalIncome(c.formula.AllowedIncomeSources()...)
-	return c.formula.Contribution(income)
+	var netIncome float64
+
+	incSrcs := c.formula.AllowedIncomeSources()
+	if len(incSrcs) > 0 {
+		netIncome = c.finances.TotalIncome(incSrcs...)
+	}
+
+	return c.formula.Contribution(netIncome)
 }
 
 // SetFinances makes subsequent calculations based on the given finances
