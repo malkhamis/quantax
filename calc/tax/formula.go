@@ -12,6 +12,12 @@ type Formula interface {
 	// ExcludedDeductionSources returns the income sources that should
 	// be excluded from the expected total deductions for the formula
 	ExcludedDeductionSources() []finance.DeductionSource
+	// AdjustableIncomeSources returns the income sources that trigger
+	// income source and payable tax adjustments
+	AdjustableIncomeSources() map[finance.IncomeSource]Adjuster
+	// AdjustableDeductionSources returns the deduction sources that
+	// trigger deduction source and payable tax adjustments
+	AdjustableDeductionSources() map[finance.DeductionSource]Adjuster
 	// Clone returns a copy of this formula
 	Clone() Formula
 	// Validate checks if the formula is valid for use
@@ -67,6 +73,18 @@ func (ct *CanadianFormula) ExcludedDeductionSources() []finance.DeductionSource 
 	return ct.ExcludedDeductions
 }
 
+// AdjustableIncomeSources returns the adjuster of a given income source. This
+// formula expects the client to call the adjuster before calling Apply()
+func (ct *CanadianFormula) AdjustableIncomeSources() map[finance.IncomeSource]Adjuster {
+	return ct.IncomeAdjusters
+}
+
+// AdjustableDeductionSources returns the adjuster of a given deduction source.
+// This formula expects the client to call the adjuster before calling Apply()
+func (ct *CanadianFormula) AdjustableDeductionSources() map[finance.DeductionSource]Adjuster {
+	return ct.DeductionAdjusters
+}
+
 // Clone returns a copy of this formula
 func (ct *CanadianFormula) Clone() Formula {
 
@@ -88,14 +106,14 @@ func (ct *CanadianFormula) Clone() Formula {
 		copy(clone.ExcludedDeductions, ct.ExcludedDeductions)
 	}
 
-	if clone.IncomeAdjusters != nil {
+	if ct.IncomeAdjusters != nil {
 		clone.IncomeAdjusters = make(map[finance.IncomeSource]Adjuster)
 		for source, adjuster := range ct.IncomeAdjusters {
 			clone.IncomeAdjusters[source] = adjuster.Clone()
 		}
 	}
 
-	if clone.DeductionAdjusters != nil {
+	if ct.DeductionAdjusters != nil {
 		clone.DeductionAdjusters = make(map[finance.DeductionSource]Adjuster)
 		for source, adjuster := range ct.DeductionAdjusters {
 			clone.DeductionAdjusters[source] = adjuster.Clone()

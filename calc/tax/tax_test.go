@@ -23,6 +23,16 @@ func TestCalculator_Calc(t *testing.T) {
 		},
 		ExcludedIncome:     []finance.IncomeSource{finance.IncSrcTFSA},
 		ExcludedDeductions: []finance.DeductionSource{finance.DeducSrcMedical},
+		IncomeAdjusters: map[finance.IncomeSource]Adjuster{
+			finance.IncSrcCapitalGainCA: CanadianCapitalGainAdjuster{
+				TaxableProportion: 0.50,
+			},
+		},
+	}
+
+	err := formulaCanada2018.Validate()
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	cases := []struct {
@@ -92,6 +102,16 @@ func TestCalculator_Calc(t *testing.T) {
 			expectedTax: 13090,
 			errMargin:   1e-9,
 		},
+		{
+			finances: finance.IndividualFinances{
+				Income: finance.IncomeBySource{
+					finance.IncSrcCapitalGainCA: 24000.0,
+				},
+			},
+			formula:     formulaCanada2018,
+			expectedTax: 28.65,
+			errMargin:   1e-9,
+		},
 	}
 
 	for i, c := range cases {
@@ -115,6 +135,83 @@ func TestCalculator_Calc(t *testing.T) {
 		})
 
 	}
+}
+
+func TestCalculator_Calc_Credits(t *testing.T) {
+
+	formula := &CanadianFormula{
+		WeightedBrackets: finance.WeightedBrackets{},
+		IncomeAdjusters: map[finance.IncomeSource]Adjuster{
+			finance.IncomeSource(1000): testAdjuster{
+				Adjustment{
+					AdjustedAmount: 0,
+					Credits: TaxCredits{
+						NonRefundable: 250,
+						Refundable:    100,
+					},
+				},
+			},
+		},
+	}
+
+	err := formula.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	calculator, err := NewCalculator(formula)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	finances := finance.NewEmptyIndividialFinances(2018)
+	finances.AddIncome(finance.IncomeSource(1000), 15)
+	actualTax := calculator.Calc(finances)
+	expectedTax := -100.0
+	if actualTax != expectedTax {
+		t.Errorf(
+			"actual does not match expected\nwant: %02f\n got: %02f",
+			expectedTax, actualTax,
+		)
+	}
+
+}
+
+func TestCalculator_Calc_AdjustedDeductions(t *testing.T) {
+
+	formula := &CanadianFormula{
+		WeightedBrackets: finance.WeightedBrackets{
+			0.10: finance.Bracket{0, math.Inf(1)},
+		},
+		DeductionAdjusters: map[finance.DeductionSource]Adjuster{
+			finance.DeductionSource(1000): testAdjuster{
+				Adjustment{AdjustedAmount: 95},
+			},
+		},
+	}
+
+	err := formula.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	calculator, err := NewCalculator(formula)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	finances := finance.NewEmptyIndividialFinances(2018)
+	finances.AddIncome(finance.IncSrcEarned, 100)
+	finances.AddDeduction(finance.DeductionSource(1000), 110)
+	actualTax := calculator.Calc(finances)
+	expectedTax := 0.5
+	if actualTax != expectedTax {
+		t.Errorf(
+			"actual does not match expected\nwant: %02f\n got: %02f",
+			expectedTax, actualTax,
+		)
+	}
+
 }
 
 func TestNewCalculator_InvalidFormula(t *testing.T) {
