@@ -18,6 +18,7 @@ type Formula interface {
 	Validate() error
 }
 
+// CanadianFormula is used to calculate Canadian federal and provincial taxes
 type CanadianFormula struct {
 	// ExcludedIncome is the income sources which this formula does not
 	// expect to be part of the income passed for calculating the tax.
@@ -31,6 +32,18 @@ type CanadianFormula struct {
 	// client about how net income should be calculated, but the formula
 	// itself won't use them at all for calculating the payable tax
 	ExcludedDeductions []finance.DeductionSource
+	// IncomeAdjusters specify income sources that should be adjusted
+	// to accurately calculate the tax. The formula uses these fields
+	// to communicate to the client about how net income should be
+	// calculated, but the formula itself won't use them at all for
+	// calculating the payable tax
+	IncomeAdjusters map[finance.IncomeSource]Adjuster
+	// DeductionAdjusters specify deduction sources that should be
+	// adjusted to accurately calculate the tax. The formula uses these
+	// fields to communicate to the client about how net income should
+	// be calculated, but the formula itself won't use them at all for
+	// calculating the payable tax
+	DeductionAdjusters map[finance.DeductionSource]Adjuster
 	finance.WeightedBrackets
 }
 
@@ -73,6 +86,20 @@ func (ct *CanadianFormula) Clone() Formula {
 	if ct.ExcludedDeductions != nil {
 		clone.ExcludedDeductions = make([]finance.DeductionSource, len(ct.ExcludedDeductions))
 		copy(clone.ExcludedDeductions, ct.ExcludedDeductions)
+	}
+
+	if clone.IncomeAdjusters != nil {
+		clone.IncomeAdjusters = make(map[finance.IncomeSource]Adjuster)
+		for source, adjuster := range ct.IncomeAdjusters {
+			clone.IncomeAdjusters[source] = adjuster.Clone()
+		}
+	}
+
+	if clone.DeductionAdjusters != nil {
+		clone.DeductionAdjusters = make(map[finance.DeductionSource]Adjuster)
+		for source, adjuster := range ct.DeductionAdjusters {
+			clone.DeductionAdjusters[source] = adjuster.Clone()
+		}
 	}
 
 	return clone

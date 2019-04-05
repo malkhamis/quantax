@@ -36,7 +36,7 @@ func TestFormula_NumFieldsUnchanged(t *testing.T) {
 
 	dummy := CanadianFormula{}
 	s := reflect.ValueOf(&dummy).Elem()
-	if s.NumField() != 3 {
+	if s.NumField() != 5 {
 		t.Fatal(
 			"number of struct fields changed. Please update the constructor and the " +
 				"clone method of this type. Next, update this test with the new " +
