@@ -30,6 +30,11 @@ var taxFormulaBC2018 = &tax.CanadianFormula{
 		0.1680:  finance.Bracket{150000, math.Inf(1)},
 	},
 	ExcludedIncome: []finance.IncomeSource{finance.IncSrcTFSA},
+	IncomeAdjusters: map[finance.IncomeSource]tax.Adjuster{
+		finance.IncSrcCapitalGainCA: tax.CanadianCapitalGainAdjuster{
+			TaxableProportion: 0.50,
+		},
+	},
 }
 
 var cbFormulaBC2018 = &benefits.BCECTBMaxReducer{

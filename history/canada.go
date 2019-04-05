@@ -39,6 +39,11 @@ var taxFormulaCanada2018 = &tax.CanadianFormula{
 		0.330:  finance.Bracket{205842, math.Inf(1)},
 	},
 	ExcludedIncome: []finance.IncomeSource{finance.IncSrcTFSA},
+	IncomeAdjusters: map[finance.IncomeSource]tax.Adjuster{
+		finance.IncSrcCapitalGainCA: tax.CanadianCapitalGainAdjuster{
+			TaxableProportion: 0.50,
+		},
+	},
 }
 
 var cbFormulaCanada2017 = &benefits.CCBMaxReducer{

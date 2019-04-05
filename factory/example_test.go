@@ -17,7 +17,8 @@ func ExampleNewTaxFactory() {
 	}
 
 	finances := finance.NewEmptyIndividialFinances(2018)
-	finances.AddIncome(finance.IncSrcEarned, 180000.0)
+	finances.AddIncome(finance.IncSrcEarned, 170000.0)
+	finances.AddIncome(finance.IncSrcCapitalGainCA, 20000)
 	finances.AddDeduction(finance.DeducSrcRRSP, 10000)
 	aggTax := calculator.Calc(finances)
 	fmt.Printf("%.2f", aggTax) // Output: 52821.09
