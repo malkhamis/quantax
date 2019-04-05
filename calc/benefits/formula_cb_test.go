@@ -188,8 +188,8 @@ func TestCCBMaxReducer_NumFieldsUnchanged(t *testing.T) {
 	if s.NumField() != 4 {
 		t.Fatal(
 			"number of struct fields changed. Please update the constructor and the " +
-				"clone method of this type. Next, update this test with the new " +
-				"number of fields",
+				"clone method of this type as well as associated test. Next, update " +
+				"this test with the new number of fields",
 		)
 	}
 }

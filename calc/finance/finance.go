@@ -2,21 +2,6 @@
 // Canadian taxes and benefits given financial information
 package finance
 
-// IncomeDeductor stores financial information such that amounts for income and
-// deduction sources for a tax payer can be retrieved by their source
-type IncomeDeductor interface {
-	// TotalIncome returns the sum of income for the given sources only.
-	// If no sources given, the total income for all sources is returned
-	TotalIncome(sources ...IncomeSource) float64
-	// IncomeSources returns a set of all income sources
-	IncomeSources() map[IncomeSource]struct{}
-	// TotalDeductions returns the sum of deductions for the given sources only.
-	// If no sources given, the total deduction for all sources is returned
-	TotalDeductions(sources ...DeductionSource) float64
-	// DeductionSources returns a set of deduction sources
-	DeductionSources() map[DeductionSource]struct{}
-}
-
 // IndividualFinances represents the financial data of an individual
 type IndividualFinances struct {
 	EOY                     uint
