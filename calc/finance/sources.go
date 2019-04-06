@@ -78,3 +78,41 @@ func (s DeductionBySource) Clone() DeductionBySource {
 
 	return clone
 }
+
+// IncomeSourceSet is a convenience type used for income source lookup
+type IncomeSourceSet map[IncomeSource]struct{}
+
+// NewIncomeSourceSet returns a new set from the given income sources
+func NewIncomeSourceSet(sources ...IncomeSource) IncomeSourceSet {
+
+	set := make(IncomeSourceSet)
+	for _, s := range sources {
+		set[s] = struct{}{}
+	}
+	return set
+}
+
+// Has returns true if the given source exists in this set
+func (set IncomeSourceSet) Has(source IncomeSource) bool {
+	_, ok := set[source]
+	return ok
+}
+
+// DeductionSourceSet is a convenience type used for deduction source lookup
+type DeductionSourceSet map[DeductionSource]struct{}
+
+// NewDeductionSourceSet returns a new set from the given deduciton sources
+func NewDeductionSourceSet(sources ...DeductionSource) DeductionSourceSet {
+
+	set := make(DeductionSourceSet)
+	for _, s := range sources {
+		set[s] = struct{}{}
+	}
+	return set
+}
+
+// Has returns true if the given source exists in this set
+func (set DeductionSourceSet) Has(source DeductionSource) bool {
+	_, ok := set[source]
+	return ok
+}

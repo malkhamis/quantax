@@ -21,8 +21,7 @@ type Calculator struct {
 	formula Formula
 }
 
-// NewCalculator returns a new tax calculator for the given financial numbers
-// and tax formula
+// NewCalculator returns a new tax calculator for the given tax formula
 func NewCalculator(formula Formula) (*Calculator, error) {
 
 	if formula == nil {
