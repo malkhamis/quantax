@@ -22,10 +22,7 @@ type BCECTBMaxReducer struct {
 	ReducerFormula finance.WeightedBrackets
 }
 
-// Apply returns the total annual benefits for the children given the net
-// income. It is up to the client to calculate the net income appropriately
-// by checking excluded income and deduction sources through calling methods
-// 'ExcludedIncomeSources()' and 'ExcludedDeductionSources()'
+// Apply returns the total annual benefits for the children given the net income
 func (mr *BCECTBMaxReducer) Apply(netIncome float64, children ...human.Person) float64 {
 
 	if len(children) == 0 {
