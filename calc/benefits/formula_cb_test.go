@@ -123,7 +123,7 @@ func TestCCBMaxReducer_Validate_InvalidFormula(t *testing.T) {
 	}
 }
 
-func TestBCECTBReducer_Clone(t *testing.T) {
+func TestCCBMaxReducer_Clone(t *testing.T) {
 
 	childCount1 := finance.WeightedBrackets{
 		0.000: finance.Bracket{0, 10000},
@@ -148,8 +148,6 @@ func TestBCECTBReducer_Clone(t *testing.T) {
 				AmountsPerMonth: finance.Bracket{0, 250},
 			},
 		},
-		ExcludedIncome:     []finance.IncomeSource{finance.IncSrcTFSA},
-		ExcludedDeductions: []finance.DeductionSource{finance.DeducSrcMedical},
 	}
 
 	err := originalFormula.Validate()
@@ -185,7 +183,7 @@ func TestCCBMaxReducer_NumFieldsUnchanged(t *testing.T) {
 
 	dummy := CCBMaxReducer{}
 	s := reflect.ValueOf(&dummy).Elem()
-	if s.NumField() != 4 {
+	if s.NumField() != 2 {
 		t.Fatal(
 			"number of struct fields changed. Please update the constructor and the " +
 				"clone method of this type as well as associated test. Next, update " +

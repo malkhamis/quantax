@@ -20,18 +20,6 @@ type BCECTBMaxReducer struct {
 	BeneficiaryClasses []AgeGroupBenefits
 	// Reducer is the sub-formula used to reduce the maximum benefits
 	ReducerFormula finance.WeightedBrackets
-	// ExcludedIncome is the income sources which this formula does not
-	// expect to be part of the income passed for calculating benefits.
-	// The formula uses these fields to communicate to the client about
-	// how net income should be calculated, but the formula itself won't
-	// use them at all for calculating child benefit amount
-	ExcludedIncome []finance.IncomeSource
-	// ExcludedDeductions is the deduction sources which this formula
-	// does not expect to be part of the income passed for calculating
-	// benefits. The formula uses these fields to communicate to the
-	// client about how net income should be calculated, but the formula
-	// itself won't use them at all for calculating child benefit amount
-	ExcludedDeductions []finance.DeductionSource
 }
 
 // Apply returns the total annual benefits for the children given the net
@@ -73,18 +61,6 @@ func (mr *BCECTBMaxReducer) Apply(netIncome float64, children ...human.Person) f
 	return reducedBenefits
 }
 
-// ExcludedIncomeSources returns the net income sources which this formula expects
-// to not be part of the income passed to Apply()
-func (mr *BCECTBMaxReducer) ExcludedIncomeSources() []finance.IncomeSource {
-	return mr.ExcludedIncome
-}
-
-// ExcludedDeductionSources returns the income sources which this formula
-// expects to not be part of the net income passed to Apply()
-func (mr *BCECTBMaxReducer) ExcludedDeductionSources() []finance.DeductionSource {
-	return mr.ExcludedDeductions
-}
-
 // Validate ensures that this instance is valid for use. Users need to call this
 // method before use only if the instance was manually created/modified
 func (mr *BCECTBMaxReducer) Validate() error {
@@ -120,16 +96,6 @@ func (mr *BCECTBMaxReducer) Clone() ChildBenefitFormula {
 	if mr.BeneficiaryClasses != nil {
 		clone.BeneficiaryClasses = make([]AgeGroupBenefits, len(mr.BeneficiaryClasses))
 		copy(clone.BeneficiaryClasses, mr.BeneficiaryClasses)
-	}
-
-	if mr.ExcludedIncome != nil {
-		clone.ExcludedIncome = make([]finance.IncomeSource, len(mr.ExcludedIncome))
-		copy(clone.ExcludedIncome, mr.ExcludedIncome)
-	}
-
-	if mr.ExcludedDeductions != nil {
-		clone.ExcludedDeductions = make([]finance.DeductionSource, len(mr.ExcludedDeductions))
-		copy(clone.ExcludedDeductions, mr.ExcludedDeductions)
 	}
 
 	return clone
