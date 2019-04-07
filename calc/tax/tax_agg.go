@@ -4,35 +4,33 @@ package tax
 import (
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
+	"github.com/pkg/errors"
 )
 
 // compile-time check for interface implementation
 var _ calc.TaxCalculator = (*Aggregator)(nil)
 
-// Aggregator is used to aggregate payable tax for individuals from multiple
-// tax formulas
+// Aggregator is used to aggregate payable tax from multiple tax calculators
 type Aggregator struct {
-	calculators []*Calculator
+	calculators []calc.TaxCalculator
 }
 
-// NewAggregator returns a new tax calculator for the given financial numbers
-// and tax formulas. The returned calculator will calculate the sum of taxes
-// using the given formulas for the given finances
-func NewAggregator(formula1, formula2 Formula, extras ...Formula) (*Aggregator, error) {
+// NewAggregator returns a new tax aggregator for the given tax calculators
+func NewAggregator(c0, c1 calc.TaxCalculator, extras ...calc.TaxCalculator) (*Aggregator, error) {
 
 	cAgg := &Aggregator{
-		calculators: make([]*Calculator, len(extras)+2),
+		calculators: make([]calc.TaxCalculator, 0, len(extras)+2),
 	}
 
-	for i, formula := range append([]Formula{formula1, formula2}, extras...) {
-		c, err := NewCalculator(formula)
-		if err != nil {
-			return nil, err
+	for i, c := range append([]calc.TaxCalculator{c0, c1}, extras...) {
+		if c == nil {
+			return nil, errors.Wrapf(ErrNoCalc, "index %d: invalid calculator", i)
 		}
-		cAgg.calculators[i] = c
+		cAgg.calculators = append(cAgg.calculators, c)
 	}
 
 	return cAgg, nil
+
 }
 
 // Calc computes the tax on the taxable amount set in this calculator
