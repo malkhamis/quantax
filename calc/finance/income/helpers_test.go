@@ -48,7 +48,7 @@ type testAdjuster struct {
 	adjusted float64
 }
 
-func (ta testAdjuster) Adjusted(_ finance.IncomeDeductor) float64 {
+func (ta testAdjuster) Adjusted(_ float64) float64 {
 	return ta.adjusted
 }
 

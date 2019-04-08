@@ -1,43 +1,27 @@
 package income
 
-import "github.com/malkhamis/quantax/calc/finance"
-
 // compile-time check for interface implementatino
 var (
-	_ Adjuster = CanadianCapitalGainAdjuster{}
+	_ Adjuster = WeightedAdjuster(0.0)
 )
 
-// Adjuster is a type that adjusts any amount given finances. The type is
-/// mainly used by income calculators to adjust specific income/deductions
+// Adjuster is a type that adjusts any given amount according to some logic
 type Adjuster interface {
 	// Adjusted returns an adjusted amount from the given finances
-	Adjusted(finance.IncomeDeductor) float64
+	Adjusted(float64) float64
 	// Clone returns a copy of this adjuster
 	Clone() Adjuster
 }
 
-// CanadianCapitalGainAdjuster returns the adjusted income for Canadian-sourced
-// capital gain income
-type CanadianCapitalGainAdjuster struct {
-	// the proportion of the capital gain that is considered income
-	Proportion float64
-}
+// WeightedAdjuster multiplies itself by a given amount
+type WeightedAdjuster float64
 
-// Adjusted returns the adjusted amount of capital gain income by returning the
-// adjusted amount as follows:
-//  AdjustedAmount = (Proportion) x (Capital Gain Income)
-// If the given finances is nil, it returns 0.0
-func (cg CanadianCapitalGainAdjuster) Adjusted(finances finance.IncomeDeductor) float64 {
-
-	if finances == nil {
-		return 0.0
-	}
-
-	income := finances.TotalIncome(finance.IncSrcCapitalGainCA)
-	return income * cg.Proportion
+// Adjusted multiplies 'wa' by 'amount' and returns the result
+func (wa WeightedAdjuster) Adjusted(amount float64) float64 {
+	return amount * float64(wa)
 }
 
 // Clone returns a copy of this instance
-func (cg CanadianCapitalGainAdjuster) Clone() Adjuster {
-	return cg
+func (wa WeightedAdjuster) Clone() Adjuster {
+	return wa
 }

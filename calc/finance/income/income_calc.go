@@ -64,13 +64,15 @@ func (c *Calculator) TotalIncome(finances finance.IncomeDeductor) float64 {
 	var totalIncome float64
 	for source := range finances.IncomeSources() {
 
+		incomeFromSrc := finances.TotalIncome(source)
+
 		adjuster, isAdjustable := c.incomeAdjusters[source]
 		if isAdjustable {
-			totalIncome += adjuster.Adjusted(finances)
+			totalIncome += adjuster.Adjusted(incomeFromSrc)
 			continue
 		}
 
-		totalIncome += finances.TotalIncome(source)
+		totalIncome += incomeFromSrc
 	}
 
 	return totalIncome
@@ -88,13 +90,15 @@ func (c *Calculator) TotalDeductions(finances finance.IncomeDeductor) float64 {
 	var totalDeductions float64
 	for source := range finances.DeductionSources() {
 
+		deducFromSrc := finances.TotalDeductions(source)
+
 		adjuster, isAdjustable := c.deducAdjusters[source]
 		if isAdjustable {
-			totalDeductions += adjuster.Adjusted(finances)
+			totalDeductions += adjuster.Adjusted(deducFromSrc)
 			continue
 		}
 
-		totalDeductions += finances.TotalDeductions(source)
+		totalDeductions += deducFromSrc
 	}
 
 	return totalDeductions
