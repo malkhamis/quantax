@@ -6,6 +6,16 @@ import (
 	"github.com/malkhamis/quantax/calc/human"
 )
 
+// IncomeCalculator is used to calculate income used for benefits and tax
+type IncomeCalculator interface {
+	// TotalIncome returns the total adjusted income
+	TotalIncome(finance.IncomeDeductor) float64
+	// TotalDeductions returns total adjusted deductions
+	TotalDeductions(finance.IncomeDeductor) float64
+	// NetIncome returns total income less total deduction
+	NetIncome(finance.IncomeDeductor) float64
+}
+
 // TaxCalculator is used to calculate payable tax on individual earnings
 type TaxCalculator interface {
 	// Calc returns the payable amount of tax for the given finances
@@ -17,7 +27,7 @@ type TaxCalculator interface {
 type ChildBenefitCalculator interface {
 	// Calc returns the recievable amount of child benefits for the given
 	// finances and the children set in the calculator
-	Calc(finance.HouseholdFinances) float64
+	Calc(finance.IncomeDeductor) float64
 	// SetBeneficiaries sets the children which the calculator will compute the
 	// benefits for in subsequent calls to Calc()
 	SetBeneficiaries(...human.Person)

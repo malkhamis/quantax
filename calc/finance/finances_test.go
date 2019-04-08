@@ -10,13 +10,13 @@ import (
 
 func TestHouseholdFinances_Full(t *testing.T) {
 
-	spouse1 := NewEmptyIndividialFinances(2018)
+	spouse1 := NewEmptyIndividualFinances(2018)
 	spouse1.AddIncome(IncSrcEarned, 6)
 	spouse1.AddIncome(IncSrcUCCB, 4)
 	spouse1.AddDeduction(DeducSrcRRSP, 20)
 	spouse1.Cash = 24
 
-	spouse2 := NewEmptyIndividialFinances(2018)
+	spouse2 := NewEmptyIndividualFinances(2018)
 	spouse2.AddIncome(IncSrcEarned, 12)
 	spouse2.AddIncome(IncSrcInterest, 3)
 	spouse2.AddDeduction(DeducSrcRRSP, 25)
@@ -73,7 +73,7 @@ func TestHouseholdFinances_Full(t *testing.T) {
 
 func TestHouseholdFinances_AddIncome(t *testing.T) {
 
-	spouse1 := NewEmptyIndividialFinances(2018)
+	spouse1 := NewEmptyIndividualFinances(2018)
 	spouse1.AddIncome(IncSrcEarned, 6)
 
 	actual := spouse1.Income[IncSrcEarned]
@@ -91,7 +91,7 @@ func TestHouseholdFinances_AddIncome(t *testing.T) {
 
 func TestHouseholdFinances_AddDeduction(t *testing.T) {
 
-	spouse1 := NewEmptyIndividialFinances(2018)
+	spouse1 := NewEmptyIndividualFinances(2018)
 
 	spouse1.AddDeduction(DeducSrcRRSP, 6)
 	actual := spouse1.Deductions[DeducSrcRRSP]
@@ -109,30 +109,26 @@ func TestHouseholdFinances_AddDeduction(t *testing.T) {
 
 func TestHouseholdFinances_Sources(t *testing.T) {
 
-	spouse1 := NewEmptyIndividialFinances(2018)
+	spouse1 := NewEmptyIndividualFinances(2018)
 	spouse1.AddIncome(IncSrcEarned, 6)
 	spouse1.AddIncome(IncSrcUCCB, 4)
 	spouse1.AddDeduction(DeducSrcRRSP, 20)
 
 	actualIncSrcs := spouse1.IncomeSources()
-	expectedIncSrcs := map[IncomeSource]struct{}{
-		IncSrcEarned: struct{}{}, IncSrcUCCB: struct{}{},
-	}
+	expectedIncSrcs := NewIncomeSourceSet(IncSrcEarned, IncSrcUCCB)
 	diff := deep.Equal(actualIncSrcs, expectedIncSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
 	actualDeducSrcs := spouse1.DeductionSources()
-	expectedDeducSrcs := map[DeductionSource]struct{}{
-		DeducSrcRRSP: struct{}{},
-	}
+	expectedDeducSrcs := NewDeductionSourceSet(DeducSrcRRSP)
 	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
-	spouse2 := NewEmptyIndividialFinances(2018)
+	spouse2 := NewEmptyIndividualFinances(2018)
 	spouse2.AddIncome(IncSrcEarned, 12)
 	spouse2.AddIncome(IncSrcInterest, 3)
 	spouse2.AddDeduction(DeducSrcRRSP, 25)
@@ -141,18 +137,14 @@ func TestHouseholdFinances_Sources(t *testing.T) {
 	finances := NewHouseholdFinances(spouse1, spouse2)
 
 	actualIncSrcs = finances.IncomeSources()
-	expectedIncSrcs = map[IncomeSource]struct{}{
-		IncSrcEarned: struct{}{}, IncSrcUCCB: struct{}{}, IncSrcInterest: struct{}{},
-	}
+	expectedIncSrcs = NewIncomeSourceSet(IncSrcEarned, IncSrcUCCB, IncSrcInterest)
 	diff = deep.Equal(actualIncSrcs, expectedIncSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
 	actualDeducSrcs = finances.DeductionSources()
-	expectedDeducSrcs = map[DeductionSource]struct{}{
-		DeducSrcRRSP: struct{}{}, DeducSrcMedical: struct{}{},
-	}
+	expectedDeducSrcs = NewDeductionSourceSet(DeducSrcRRSP, DeducSrcMedical)
 	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
@@ -163,14 +155,14 @@ func TestIndividualFinances_Nil_Sources(t *testing.T) {
 
 	var nilFinances *IndividualFinances
 
-	expectedIncSrcs := make(map[IncomeSource]struct{})
+	expectedIncSrcs := make(IncomeSourceSet)
 	actualIncSrcs := nilFinances.IncomeSources()
 	diff := deep.Equal(actualIncSrcs, expectedIncSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
-	expectedDeducSrcs := make(map[DeductionSource]struct{})
+	expectedDeducSrcs := make(DeductionSourceSet)
 	actualDeducSrcs := nilFinances.DeductionSources()
 	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
 	if diff != nil {
@@ -180,7 +172,7 @@ func TestIndividualFinances_Nil_Sources(t *testing.T) {
 
 func TestHouseholdFinances_Clone(t *testing.T) {
 
-	f1 := NewEmptyIndividialFinances(2018)
+	f1 := NewEmptyIndividualFinances(2018)
 	f1.AddIncome(IncSrcEarned, 123)
 	f1.AddDeduction(DeducSrcRRSP, 456)
 	original := HouseholdFinances{f1, nil}

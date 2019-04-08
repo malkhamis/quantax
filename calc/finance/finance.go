@@ -2,6 +2,21 @@
 // Canadian taxes and benefits given financial information
 package finance
 
+type IncomeDeductor interface {
+	// TotalIncome returns the sum of income for the given sources only. If no
+	// sources given, the total income for all sources is returned
+	TotalIncome(sources ...IncomeSource) float64
+	// TotalDeductions returns the sum of TotalDeductionss for the given sources
+	// only. If no sources given, the total deduction for all sources is returned
+	TotalDeductions(sources ...DeductionSource) float64
+	// IncomeSources returns a set of all income sources in this instance. The
+	// returned map is never nil
+	IncomeSources() IncomeSourceSet
+	// DeductionSources returns a set of all deduciton sources in this instance.
+	// The returned map is never nil
+	DeductionSources() DeductionSourceSet
+}
+
 // IndividualFinances represents the financial data of an individual
 type IndividualFinances struct {
 	EOY                     uint
@@ -12,9 +27,9 @@ type IndividualFinances struct {
 	RRSPUnclaimedDeductions float64
 }
 
-// NewEmptyIndividialFinances returns an instance whose EOY is initialized to
+// NewEmptyIndividualFinances returns an instance whose EOY is initialized to
 // endOfYear and whose maps are initialized with no income sources
-func NewEmptyIndividialFinances(endOfYear uint) *IndividualFinances {
+func NewEmptyIndividualFinances(endOfYear uint) *IndividualFinances {
 	return &IndividualFinances{
 		EOY:        endOfYear,
 		Income:     make(IncomeBySource),
@@ -62,38 +77,35 @@ func (f *IndividualFinances) AddDeduction(source DeductionSource, amount float64
 	f.Deductions[source] += amount
 }
 
-// IncomeSources returns a set of all income sources in this instance. The
-// returned map is never nil
-func (f *IndividualFinances) IncomeSources() map[IncomeSource]struct{} {
-
-	set := make(map[IncomeSource]struct{})
+// IncomeSources returns a set of all income sources in this instance
+func (f *IndividualFinances) IncomeSources() IncomeSourceSet {
 
 	if f == nil {
-		return set
+		return NewIncomeSourceSet()
 	}
 
-	for source := range f.Income {
-		set[source] = struct{}{}
+	sources := make([]IncomeSource, 0, len(f.Income))
+	for s := range f.Income {
+		sources = append(sources, s)
 	}
 
-	return set
+	return NewIncomeSourceSet(sources...)
 }
 
 // DeductionSources returns a set of all deduciton sources in this instance.
 // The returned map is never nil
-func (f *IndividualFinances) DeductionSources() map[DeductionSource]struct{} {
-
-	set := make(map[DeductionSource]struct{})
+func (f *IndividualFinances) DeductionSources() DeductionSourceSet {
 
 	if f == nil {
-		return set
+		return NewDeductionSourceSet()
 	}
 
-	for source := range f.Deductions {
-		set[source] = struct{}{}
+	sources := make([]DeductionSource, 0, len(f.Deductions))
+	for s := range f.Deductions {
+		sources = append(sources, s)
 	}
 
-	return set
+	return NewDeductionSourceSet(sources...)
 }
 
 // Clone returns a copy of this instance
@@ -167,32 +179,32 @@ func (hf HouseholdFinances) Cash() float64 {
 
 // IncomeSources returns a set of all income sources in this instance. The
 // returned map is never nil
-func (hf HouseholdFinances) IncomeSources() map[IncomeSource]struct{} {
+func (hf HouseholdFinances) IncomeSources() IncomeSourceSet {
 
-	set := make(map[IncomeSource]struct{})
+	var sources []IncomeSource
 
 	for _, f := range hf {
-		for source := range f.Income {
-			set[source] = struct{}{}
+		for s := range f.Income {
+			sources = append(sources, s)
 		}
 	}
 
-	return set
+	return NewIncomeSourceSet(sources...)
 }
 
 // DeductionSources returns a set of all deduciton sources in this instance.
 // The returned map is never nil
-func (hf HouseholdFinances) DeductionSources() map[DeductionSource]struct{} {
+func (hf HouseholdFinances) DeductionSources() DeductionSourceSet {
 
-	set := make(map[DeductionSource]struct{})
+	var sources []DeductionSource
 
 	for _, f := range hf {
-		for source := range f.Deductions {
-			set[source] = struct{}{}
+		for s := range f.Deductions {
+			sources = append(sources, s)
 		}
 	}
 
-	return set
+	return NewDeductionSourceSet(sources...)
 }
 
 // Clone returns a copy of this instance
