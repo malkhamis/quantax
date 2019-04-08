@@ -6,68 +6,68 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TestGetTaxFormula(t *testing.T) {
+func TestGetTaxParams(t *testing.T) {
 
-	_, err := GetTaxFormula(2018, BC)
+	_, err := GetTaxParams(2018, BC)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestGetTaxFormula_Errors(t *testing.T) {
+func TestGetTaxParams_Errors(t *testing.T) {
 
-	_, err := GetTaxFormula(2018, Jurisdiction("OhCanada"))
+	_, err := GetTaxParams(2018, Jurisdiction("OhCanada"))
 	if errors.Cause(err) != ErrJurisdictionNotExist {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrJurisdictionNotExist, err)
 	}
 
-	_, err = GetTaxFormula(2108, Canada)
-	if errors.Cause(err) != ErrFormulaNotExist {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrFormulaNotExist, err)
+	_, err = GetTaxParams(2108, Canada)
+	if errors.Cause(err) != ErrParamsNotExist {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrParamsNotExist, err)
 	}
 
 }
 
-func TestGetRRSPFormula(t *testing.T) {
+func TestGetRRSPParams(t *testing.T) {
 
-	_, err := GetRRSPFormula(2018, Canada)
+	_, err := GetRRSPParams(2018, Canada)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestGetRRSPFormula_Errors(t *testing.T) {
+func TestGetRRSPParams_Errors(t *testing.T) {
 
-	_, err := GetRRSPFormula(2018, Jurisdiction("OhCanada"))
+	_, err := GetRRSPParams(2018, Jurisdiction("OhCanada"))
 	if errors.Cause(err) != ErrJurisdictionNotExist {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrJurisdictionNotExist, err)
 	}
 
-	_, err = GetRRSPFormula(2108, Canada)
-	if errors.Cause(err) != ErrFormulaNotExist {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrFormulaNotExist, err)
+	_, err = GetRRSPParams(2108, Canada)
+	if errors.Cause(err) != ErrParamsNotExist {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrParamsNotExist, err)
 	}
 
 }
 
-func TestGetChildBenefitFormula(t *testing.T) {
+func TestGetChildBenefitParams(t *testing.T) {
 
-	_, err := GetChildBenefitFormula(2017, Canada)
+	_, err := GetChildBenefitParams(2017, Canada)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestGetChildBenefitFormula_Errors(t *testing.T) {
+func TestGetChildBenefitParams_Errors(t *testing.T) {
 
-	_, err := GetChildBenefitFormula(2018, Jurisdiction("OhCanada"))
+	_, err := GetChildBenefitParams(2018, Jurisdiction("OhCanada"))
 	if errors.Cause(err) != ErrJurisdictionNotExist {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrJurisdictionNotExist, err)
 	}
 
-	_, err = GetChildBenefitFormula(2108, Canada)
-	if errors.Cause(err) != ErrFormulaNotExist {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrFormulaNotExist, err)
+	_, err = GetChildBenefitParams(2108, Canada)
+	if errors.Cause(err) != ErrParamsNotExist {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrParamsNotExist, err)
 	}
 
 }

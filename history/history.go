@@ -1,81 +1,67 @@
 // Package history provides historical tax params for various jurisdictions
 package history
 
-import (
-	"github.com/malkhamis/quantax/calc/benefits"
-	"github.com/malkhamis/quantax/calc/rrsp"
-	"github.com/malkhamis/quantax/calc/tax"
-)
-
-type (
-	yearlyTaxFormulas  = map[uint]tax.Formula
-	yearlyCBFormulas   = map[uint]benefits.ChildBenefitFormula
-	yearlyRRSPFormulas = map[uint]rrsp.Formula
-)
-
-const MonthsInYear = 12
-
 var (
-	taxFormulasAll = map[Jurisdiction]yearlyTaxFormulas{
-		BC:     taxFormulasBC,
-		Canada: taxFormulasCanada,
+	taxParamsAll = map[Jurisdiction]yearlyTaxParams{
+		BC:     taxParamsBC,
+		Canada: taxParamsCanada,
 	}
 
-	cbFormulasAll = map[Jurisdiction]yearlyCBFormulas{
-		BC:     cbFormulasBC,
-		Canada: cbFormulasCanada,
+	cbParamsAll = map[Jurisdiction]yearlyCBParams{
+		BC:     cbParamsBC,
+		Canada: cbParamsCanada,
 	}
 
-	rrspFormulasAll = map[Jurisdiction]yearlyRRSPFormulas{
-		Canada: rrspFormulasCanada,
+	rrspParamsAll = map[Jurisdiction]yearlyRRSPParams{
+		Canada: rrspParamsCanada,
 	}
 )
 
-// GetTaxFormula returns a copy of the tax formula for the given year and region
-func GetTaxFormula(year uint, region Jurisdiction) (tax.Formula, error) {
+// GetTaxParams returns a copy of the tax params for the given year and region
+func GetTaxParams(year uint, region Jurisdiction) (TaxParams, error) {
 
-	jurisdictionFormulas, ok := taxFormulasAll[region]
+	jurisdictionParams, ok := taxParamsAll[region]
 	if !ok {
-		return nil, ErrJurisdictionNotExist
+		return TaxParams{}, ErrJurisdictionNotExist
 	}
 
-	formula, ok := jurisdictionFormulas[year]
+	params, ok := jurisdictionParams[year]
 	if !ok {
-		return nil, ErrFormulaNotExist
+		return TaxParams{}, ErrParamsNotExist
 	}
 
-	return formula.Clone(), nil
+	return params.Clone(), nil
 }
 
-// GetChildBenefitFormula returns a copy of the child benefit formula for the
-// given year and region
-func GetChildBenefitFormula(year uint, region Jurisdiction) (benefits.ChildBenefitFormula, error) {
+// GetChildBenefitParams returns a copy of the child benefit parameters for
+// the given year and region
+func GetChildBenefitParams(year uint, region Jurisdiction) (CBParams, error) {
 
-	jurisdictionFormulas, ok := cbFormulasAll[region]
+	jurisdictionParams, ok := cbParamsAll[region]
 	if !ok {
-		return nil, ErrJurisdictionNotExist
+		return CBParams{}, ErrJurisdictionNotExist
 	}
 
-	formula, ok := jurisdictionFormulas[year]
+	params, ok := jurisdictionParams[year]
 	if !ok {
-		return nil, ErrFormulaNotExist
+		return CBParams{}, ErrParamsNotExist
 	}
 
-	return formula.Clone(), nil
+	return params.Clone(), nil
 }
 
-// GetRRSOFormula returns a copy of the RRSP formula for the given year/region
-func GetRRSPFormula(year uint, region Jurisdiction) (rrsp.Formula, error) {
+// GetRRSOParams returns a copy of the RRSP parameters for the given year/region
+func GetRRSPParams(year uint, region Jurisdiction) (RRSPParams, error) {
 
-	jurisdictionFormulas, ok := rrspFormulasAll[region]
+	jurisdictionParams, ok := rrspParamsAll[region]
 	if !ok {
-		return nil, ErrJurisdictionNotExist
+		return RRSPParams{}, ErrJurisdictionNotExist
 	}
 
-	formula, ok := jurisdictionFormulas[year]
+	params, ok := jurisdictionParams[year]
 	if !ok {
-		return nil, ErrFormulaNotExist
+		return RRSPParams{}, ErrParamsNotExist
 	}
 
-	return formula.Clone(), nil
+	return params.Clone(), nil
 }

@@ -11,22 +11,25 @@ import (
 )
 
 var (
-	taxFormulasCanada = yearlyTaxFormulas{
-		2018: taxFormulaCanada2018,
+	taxParamsCanada = yearlyTaxParams{
+		2018: TaxParams{taxFormulaCanada2018, incomeRecipeNet},
 	}
 
-	cbFormulasCanada = yearlyCBFormulas{
-		2017: cbFormulaCanada2017,
+	cbParamsCanada = yearlyCBParams{
+		2017: CBParams{cbFormulaCanada2017, incomeRecipeAFNI},
 	}
 
-	rrspFormulasCanada = yearlyRRSPFormulas{
-		2018: rrspFormulaCanada2018,
+	rrspParamsCanada = yearlyRRSPParams{
+		2018: RRSPParams{rrspFormulaCanada2018, taxParamsCanada[2018]},
 	}
 )
 
 var rrspFormulaCanada2018 = &rrsp.MaxCapper{
-	Rate: 0.18,
-	Cap:  26230.00,
+	Rate:                           0.18,
+	Cap:                            26230.00,
+	IncomeSources:                  []finance.IncomeSource{finance.IncSrcEarned},
+	IncomeSourceForWithdrawal:      finance.IncSrcRRSP,
+	DeductionSourceForContribution: finance.DeducSrcRRSP,
 }
 
 var taxFormulaCanada2018 = &tax.CanadianFormula{
@@ -38,22 +41,16 @@ var taxFormulaCanada2018 = &tax.CanadianFormula{
 		0.290:  finance.Bracket{144489, 205842},
 		0.330:  finance.Bracket{205842, math.Inf(1)},
 	},
-	ExcludedIncome: []finance.IncomeSource{finance.IncSrcTFSA},
-	IncomeAdjusters: map[finance.IncomeSource]tax.Adjuster{
-		finance.IncSrcCapitalGainCA: tax.CanadianCapitalGainAdjuster{
-			TaxableProportion: 0.50,
-		},
-	},
 }
 
 var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
 	BeneficiaryClasses: []benefits.AgeGroupBenefits{
 		benefits.AgeGroupBenefits{
-			AgesMonths:      human.AgeRange{0, (MonthsInYear * 6) - 1},
+			AgesMonths:      human.AgeRange{0, (monthsInYear * 6) - 1},
 			AmountsPerMonth: finance.Bracket{0, 541.33},
 		},
 		benefits.AgeGroupBenefits{
-			AgesMonths:      human.AgeRange{MonthsInYear * 6, MonthsInYear * 17},
+			AgesMonths:      human.AgeRange{monthsInYear * 6, monthsInYear * 17},
 			AmountsPerMonth: finance.Bracket{0, 456.75},
 		},
 	},
@@ -74,10 +71,5 @@ var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
 			0.230: finance.Bracket{30450, 65976},
 			0.095: finance.Bracket{65976, math.Inf(1)},
 		},
-	},
-	ExcludedIncome: []finance.IncomeSource{
-		finance.IncSrcTFSA,
-		finance.IncSrcUCCB,
-		finance.IncSrcRDSP,
 	},
 }

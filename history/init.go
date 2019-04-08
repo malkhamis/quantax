@@ -4,28 +4,30 @@ import "github.com/pkg/errors"
 
 func init() {
 
-	err := validateAllTaxFormulas()
-	panicIfError(errors.Wrap(err, "invalid tax formula"))
+	err := validateAllTaxParams()
+	panicIfError(errors.Wrap(err, "invalid tax params"))
 
-	err = validateAllRRSPFormulas()
-	panicIfError(errors.Wrap(err, "invalid RRSP formula"))
+	err = validateAllRRSPParams()
+	panicIfError(errors.Wrap(err, "invalid RRSP params"))
 
-	err = validateAllChildBenefitFormulas()
-	panicIfError(errors.Wrap(err, "invalid child benefit formula"))
+	err = validateAllCBParams()
+	panicIfError(errors.Wrap(err, "invalid child benefit params"))
+
+	initIncomeRecipes()
 }
 
-func validateAllTaxFormulas() error {
+func validateAllTaxParams() error {
 
-	for jursdiction, formulasAllYears := range taxFormulasAll {
-		for year, formula := range formulasAllYears {
+	for jursdiction, paramsAllYears := range taxParamsAll {
+		for year, params := range paramsAllYears {
 
-			if formula == nil {
-				return errors.New("history must not contain nil formulas")
+			if params.Formula == nil {
+				return errors.Wrapf(errNilFormula, "%s[%d]", jursdiction, year)
 			}
 
-			err := formula.Validate()
+			err := params.Formula.Validate()
 			if err != nil {
-				return errors.Wrapf(err, "jurisdiction %q, year %d", jursdiction, year)
+				return errors.Wrapf(err, "%s[%d]", jursdiction, year)
 			}
 
 		}
@@ -34,18 +36,18 @@ func validateAllTaxFormulas() error {
 	return nil
 }
 
-func validateAllRRSPFormulas() error {
+func validateAllRRSPParams() error {
 
-	for jursdiction, formulasAllYears := range rrspFormulasAll {
-		for year, formula := range formulasAllYears {
+	for jursdiction, paramsAllYears := range rrspParamsAll {
+		for year, params := range paramsAllYears {
 
-			if formula == nil {
-				return errors.New("history must not contain nil formulas")
+			if params.Formula == nil {
+				return errors.Wrapf(errNilFormula, "%s[%d]", jursdiction, year)
 			}
 
-			err := formula.Validate()
+			err := params.Formula.Validate()
 			if err != nil {
-				return errors.Wrapf(err, "jurisdiction %q, year %d", jursdiction, year)
+				return errors.Wrapf(errNilFormula, "%s[%d]", jursdiction, year)
 			}
 
 		}
@@ -54,18 +56,18 @@ func validateAllRRSPFormulas() error {
 	return nil
 }
 
-func validateAllChildBenefitFormulas() error {
+func validateAllCBParams() error {
 
-	for jursdiction, formulasAllYears := range cbFormulasAll {
-		for year, formula := range formulasAllYears {
+	for jursdiction, paramsAllYears := range cbParamsAll {
+		for year, params := range paramsAllYears {
 
-			if formula == nil {
-				return errors.New("history must not contain nil formulas")
+			if params.Formula == nil {
+				return errors.Wrapf(errNilFormula, "%s[%d]", jursdiction, year)
 			}
 
-			err := formula.Validate()
+			err := params.Formula.Validate()
 			if err != nil {
-				return errors.Wrapf(err, "jurisdiction %q, year %d", jursdiction, year)
+				return errors.Wrapf(errNilFormula, "%s[%d]", jursdiction, year)
 			}
 
 		}
