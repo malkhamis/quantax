@@ -48,7 +48,7 @@ func TestAggregator_Calc(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	actual := aggregator.Calc(finance.NewEmptyIndividialFinances(2019))
+	actual := aggregator.Calc(finance.NewEmptyIndividualFinances(2019))
 	expected := (3000.0 / 2.0) * float64(len(aggregator.calculators))
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)

@@ -20,7 +20,7 @@ func TestCalculator_Calc(t *testing.T) {
 	}
 
 	expected := formula.onApply
-	actual := c.Calc(finance.NewEmptyIndividialFinances(2018))
+	actual := c.Calc(finance.NewEmptyIndividualFinances(2018))
 	if actual != expected {
 		t.Fatalf("unexpected tax\nwant: %.2f\n got: %.2f", expected, actual)
 	}

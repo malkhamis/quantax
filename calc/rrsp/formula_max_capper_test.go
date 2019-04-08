@@ -1,59 +1,43 @@
 package rrsp
 
 import (
-	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
+	"github.com/go-test/deep"
 	"github.com/malkhamis/quantax/calc/finance"
 )
 
 func TestMaxCapper_Contribution(t *testing.T) {
 
-	cases := []struct {
-		maxCapper *MaxCapper
-		income    float64
-		expected  float64
-	}{
-		{
-			maxCapper: &MaxCapper{
-				Rate:          0.15,
-				Cap:           2000.0,
-				IncomeSources: []finance.IncomeSource{finance.IncSrcEarned},
-			},
-			income:   0.0,
-			expected: 0.0,
-		},
-		{
-			maxCapper: &MaxCapper{
-				Rate:          0.15,
-				Cap:           2000.0,
-				IncomeSources: []finance.IncomeSource{finance.IncSrcEarned},
-			},
-			income:   1000.0,
-			expected: 150.0,
-		},
-		{
-			maxCapper: &MaxCapper{
-				Rate:          0.15,
-				Cap:           2000.0,
-				IncomeSources: []finance.IncomeSource{finance.IncSrcEarned},
-			},
-			income:   13333.34,
-			expected: 2000.0,
-		},
+	formula := &MaxCapper{
+		Cap:  1000.0,
+		Rate: 0.10,
 	}
 
-	for i, c := range cases {
-		c := c
-		t.Run(fmt.Sprintf("case-%d", i), func(t *testing.T) {
+	actual := formula.ContributionEarned(500)
+	expected := 50.0
+	if actual != expected {
+		t.Errorf("unexpected contribution\nwant: %.2f\n got: %.2f", expected, actual)
+	}
 
-			actual := c.maxCapper.Contribution(c.income)
-			if actual != c.expected {
-				t.Errorf("unexpected contribution\nwant: %.2f\n got: %.2f", c.expected, actual)
-			}
+	actual = formula.ContributionEarned(1000)
+	expected = 100.0
+	if actual != expected {
+		t.Errorf("unexpected contribution\nwant: %.2f\n got: %.2f", expected, actual)
+	}
 
-		})
+	actual = formula.ContributionEarned(10000)
+	expected = 1000.0
+	if actual != expected {
+		t.Errorf("unexpected contribution\nwant: %.2f\n got: %.2f", expected, actual)
+	}
+
+	actual = formula.ContributionEarned(100000)
+	expected = 1000.0
+	if actual != expected {
+		t.Errorf("unexpected contribution\nwant: %.2f\n got: %.2f", expected, actual)
 	}
 }
 
@@ -67,28 +51,75 @@ func TestMaxCapper_Validate(t *testing.T) {
 func TestMaxCapper_Clone(t *testing.T) {
 
 	original := MaxCapper{
-		Rate:          0.10,
-		Cap:           1000,
-		IncomeSources: []finance.IncomeSource{finance.IncSrcEarned},
+		Rate:                           0.10,
+		Cap:                            1000,
+		IncomeSources:                  []finance.IncomeSource{finance.IncSrcEarned},
+		DeductionSourceForContribution: finance.DeductionSource(2000),
+		IncomeSourceForWithdrawal:      finance.IncomeSource(1000),
 	}
 
 	income := 5000.0
-	originaResults := original.Contribution(income)
+	originaResults := original.ContributionEarned(income)
 
 	clone := original.Clone()
 	original.Rate = 0.25
 
-	cloneResults := clone.Contribution(income)
+	cloneResults := clone.ContributionEarned(income)
 	if cloneResults != originaResults {
 		t.Fatalf("expected changes to original formula to not affect clone formula")
 	}
+}
+
+func TestMaxCapper_AllowedIncomeSources(t *testing.T) {
+
+	expected := []finance.IncomeSource{1, 2, 3, 6}
+	f := &MaxCapper{
+		IncomeSources: expected,
+	}
+	actual := f.AllowedIncomeSources()
+
+	diff := deep.Equal(expected, actual)
+	if diff != nil {
+		t.Fatalf("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+
+}
+
+func TestMaxCapper_TargetSourceForWithdrawl(t *testing.T) {
+
+	expected := finance.IncomeSource(1234)
+	f := &MaxCapper{
+		IncomeSourceForWithdrawal: expected,
+	}
+	actual := f.TargetSourceForWithdrawl()
+
+	diff := deep.Equal(expected, actual)
+	if diff != nil {
+		t.Fatalf("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+
+}
+
+func TestMaxCapper_TargetSourceForContribution(t *testing.T) {
+
+	expected := finance.DeductionSource(1234)
+	f := &MaxCapper{
+		DeductionSourceForContribution: expected,
+	}
+	actual := f.TargetSourceForContribution()
+
+	diff := deep.Equal(expected, actual)
+	if diff != nil {
+		t.Fatalf("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+
 }
 
 func TestMaxCapper_NumFieldsUnchanged(t *testing.T) {
 
 	dummy := MaxCapper{}
 	s := reflect.ValueOf(&dummy).Elem()
-	if s.NumField() != 3 {
+	if s.NumField() != 5 {
 		t.Fatal(
 			"number of struct fields changed. Please update the constructor and the " +
 				"clone method of this type as well as associated test. Next, update " +

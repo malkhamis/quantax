@@ -16,7 +16,7 @@ func ExampleNewTaxFactory() {
 		return
 	}
 
-	finances := finance.NewEmptyIndividialFinances(2018)
+	finances := finance.NewEmptyIndividualFinances(2018)
 	finances.AddIncome(finance.IncSrcEarned, 170000.0)
 	finances.AddIncome(finance.IncSrcCapitalGainCA, 20000)
 	finances.AddDeduction(finance.DeducSrcRRSP, 10000)
@@ -36,8 +36,8 @@ func ExampleNewChildBenefitFactory() {
 	children := []human.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
 	calculator.SetBeneficiaries(children...)
 
-	f1 := finance.NewEmptyIndividialFinances(2017)
-	f2 := finance.NewEmptyIndividialFinances(2017)
+	f1 := finance.NewEmptyIndividualFinances(2017)
+	f2 := finance.NewEmptyIndividualFinances(2017)
 
 	f1.AddIncome(finance.IncSrcEarned, 110000.0)
 	f2.AddIncome(finance.IncSrcEarned, 15000)
@@ -64,7 +64,7 @@ func ExampleNewRRSPFactory() {
 		return
 	}
 
-	finances := finance.NewEmptyIndividialFinances(2018)
+	finances := finance.NewEmptyIndividualFinances(2018)
 	finances.AddIncome(finance.IncSrcEarned, 100000.0)
 	finances.RRSPContributionRoom = 15000.0
 

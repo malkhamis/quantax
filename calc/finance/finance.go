@@ -27,9 +27,9 @@ type IndividualFinances struct {
 	RRSPUnclaimedDeductions float64
 }
 
-// NewEmptyIndividialFinances returns an instance whose EOY is initialized to
+// NewEmptyIndividualFinances returns an instance whose EOY is initialized to
 // endOfYear and whose maps are initialized with no income sources
-func NewEmptyIndividialFinances(endOfYear uint) *IndividualFinances {
+func NewEmptyIndividualFinances(endOfYear uint) *IndividualFinances {
 	return &IndividualFinances{
 		EOY:        endOfYear,
 		Income:     make(IncomeBySource),

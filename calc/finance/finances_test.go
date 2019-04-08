@@ -10,13 +10,13 @@ import (
 
 func TestHouseholdFinances_Full(t *testing.T) {
 
-	spouse1 := NewEmptyIndividialFinances(2018)
+	spouse1 := NewEmptyIndividualFinances(2018)
 	spouse1.AddIncome(IncSrcEarned, 6)
 	spouse1.AddIncome(IncSrcUCCB, 4)
 	spouse1.AddDeduction(DeducSrcRRSP, 20)
 	spouse1.Cash = 24
 
-	spouse2 := NewEmptyIndividialFinances(2018)
+	spouse2 := NewEmptyIndividualFinances(2018)
 	spouse2.AddIncome(IncSrcEarned, 12)
 	spouse2.AddIncome(IncSrcInterest, 3)
 	spouse2.AddDeduction(DeducSrcRRSP, 25)
@@ -73,7 +73,7 @@ func TestHouseholdFinances_Full(t *testing.T) {
 
 func TestHouseholdFinances_AddIncome(t *testing.T) {
 
-	spouse1 := NewEmptyIndividialFinances(2018)
+	spouse1 := NewEmptyIndividualFinances(2018)
 	spouse1.AddIncome(IncSrcEarned, 6)
 
 	actual := spouse1.Income[IncSrcEarned]
@@ -91,7 +91,7 @@ func TestHouseholdFinances_AddIncome(t *testing.T) {
 
 func TestHouseholdFinances_AddDeduction(t *testing.T) {
 
-	spouse1 := NewEmptyIndividialFinances(2018)
+	spouse1 := NewEmptyIndividualFinances(2018)
 
 	spouse1.AddDeduction(DeducSrcRRSP, 6)
 	actual := spouse1.Deductions[DeducSrcRRSP]
@@ -109,7 +109,7 @@ func TestHouseholdFinances_AddDeduction(t *testing.T) {
 
 func TestHouseholdFinances_Sources(t *testing.T) {
 
-	spouse1 := NewEmptyIndividialFinances(2018)
+	spouse1 := NewEmptyIndividualFinances(2018)
 	spouse1.AddIncome(IncSrcEarned, 6)
 	spouse1.AddIncome(IncSrcUCCB, 4)
 	spouse1.AddDeduction(DeducSrcRRSP, 20)
@@ -128,7 +128,7 @@ func TestHouseholdFinances_Sources(t *testing.T) {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
-	spouse2 := NewEmptyIndividialFinances(2018)
+	spouse2 := NewEmptyIndividualFinances(2018)
 	spouse2.AddIncome(IncSrcEarned, 12)
 	spouse2.AddIncome(IncSrcInterest, 3)
 	spouse2.AddDeduction(DeducSrcRRSP, 25)
@@ -172,7 +172,7 @@ func TestIndividualFinances_Nil_Sources(t *testing.T) {
 
 func TestHouseholdFinances_Clone(t *testing.T) {
 
-	f1 := NewEmptyIndividialFinances(2018)
+	f1 := NewEmptyIndividualFinances(2018)
 	f1.AddIncome(IncSrcEarned, 123)
 	f1.AddDeduction(DeducSrcRRSP, 456)
 	original := HouseholdFinances{f1, nil}
