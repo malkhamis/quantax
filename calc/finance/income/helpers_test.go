@@ -2,28 +2,6 @@ package income
 
 import "github.com/malkhamis/quantax/calc/finance"
 
-type testFormula struct {
-	incomeAdjusters map[finance.IncomeSource]Adjuster
-	deducAdjusters  map[finance.DeductionSource]Adjuster
-	err             error
-}
-
-func (tf testFormula) IncomeAdjusters() map[finance.IncomeSource]Adjuster {
-	return tf.incomeAdjusters
-}
-
-func (tf testFormula) DeductionAdjusters() map[finance.DeductionSource]Adjuster {
-	return tf.deducAdjusters
-}
-
-func (tf testFormula) Clone() Formula {
-	return tf
-}
-
-func (tf testFormula) Validate() error {
-	return tf.err
-}
-
 type testIncomeDeductor struct {
 	totalIncome     float64
 	totalDeductions float64

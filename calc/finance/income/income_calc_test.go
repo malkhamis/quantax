@@ -9,16 +9,16 @@ import (
 
 func TestCalculator_NetIncome_Adjusted(t *testing.T) {
 
-	f := testFormula{
-		incomeAdjusters: map[finance.IncomeSource]Adjuster{
+	r := &Recipe{
+		IncomeAdjusters: map[finance.IncomeSource]Adjuster{
 			finance.IncomeSource(1000): testAdjuster{adjusted: 250.0},
 		},
-		deducAdjusters: map[finance.DeductionSource]Adjuster{
+		DeductionAdjusters: map[finance.DeductionSource]Adjuster{
 			finance.DeductionSource(2000): testAdjuster{adjusted: 100.0},
 		},
 	}
 
-	c, err := NewCalculator(f)
+	c, err := NewCalculator(r)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,9 +38,9 @@ func TestCalculator_NetIncome_Adjusted(t *testing.T) {
 
 func TestCalculator_NetIncome_Unadjusted(t *testing.T) {
 
-	f := testFormula{}
+	r := new(Recipe)
 
-	c, err := NewCalculator(f)
+	c, err := NewCalculator(r)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,9 +60,9 @@ func TestCalculator_NetIncome_Unadjusted(t *testing.T) {
 
 func TestCalculator_NilFinances(t *testing.T) {
 
-	f := testFormula{}
+	r := new(Recipe)
 
-	c, err := NewCalculator(f)
+	c, err := NewCalculator(r)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,19 +86,11 @@ func TestCalculator_NilFinances(t *testing.T) {
 func TestNewCalculator_Errors(t *testing.T) {
 
 	_, err := NewCalculator(nil)
-	if errors.Cause(err) != ErrNoFormula {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
+	if errors.Cause(err) != ErrNoRecipe {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoRecipe, err)
 	}
 
-	expectedErr := errors.New("injected error")
-	f := testFormula{err: expectedErr}
-	_, err = NewCalculator(f)
-	if errors.Cause(err) != expectedErr {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", expectedErr, err)
-	}
-
-	f.err = nil
-	c, err := NewCalculator(f)
+	c, err := NewCalculator(new(Recipe))
 	if err != nil {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", nil, err)
 	}
