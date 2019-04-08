@@ -11,11 +11,11 @@ import (
 
 var (
 	taxParamsBC = yearlyTaxParams{
-		2018: TaxParams{taxFormulaBC2018, incomeRecipeNet},
+		2018: TaxParams{taxFormulaBC2018, &incomeRecipeNet},
 	}
 
 	cbParamsBC = yearlyCBParams{
-		2017: CBParams{cbFormulaBC2017, incomeRecipeNet},
+		2017: CBParams{cbFormulaBC2017, &incomeRecipeNet},
 	}
 )
 

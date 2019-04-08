@@ -25,15 +25,13 @@ func (p TaxParams) Clone() TaxParams {
 // RRSPParams represents the RRSP parameters associated with a jurisdiction
 // for a specific tax year
 type RRSPParams struct {
-	Formula   rrsp.Formula
-	TaxParams TaxParams
+	Formula rrsp.Formula
 }
 
 // Clone returns a copy of these parameters
 func (p RRSPParams) Clone() RRSPParams {
 	return RRSPParams{
-		Formula:   p.Formula.Clone(),
-		TaxParams: p.TaxParams.Clone(),
+		Formula: p.Formula.Clone(),
 	}
 }
 

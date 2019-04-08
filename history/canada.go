@@ -12,15 +12,15 @@ import (
 
 var (
 	taxParamsCanada = yearlyTaxParams{
-		2018: TaxParams{taxFormulaCanada2018, incomeRecipeNet},
+		2018: TaxParams{taxFormulaCanada2018, &incomeRecipeNet},
 	}
 
 	cbParamsCanada = yearlyCBParams{
-		2017: CBParams{cbFormulaCanada2017, incomeRecipeAFNI},
+		2017: CBParams{cbFormulaCanada2017, &incomeRecipeAFNI},
 	}
 
 	rrspParamsCanada = yearlyRRSPParams{
-		2018: RRSPParams{rrspFormulaCanada2018, taxParamsCanada[2018]},
+		2018: RRSPParams{rrspFormulaCanada2018},
 	}
 )
 

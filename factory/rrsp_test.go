@@ -32,7 +32,7 @@ func TestRRSPFactory_Errors(t *testing.T) {
 				RRSPRegion: Canada,
 				TaxRegions: []Region{Canada, BC},
 			},
-			err: history.ErrFormulaNotExist,
+			err: history.ErrParamsNotExist,
 		},
 		{
 			name: "invalid-rrsp-region",

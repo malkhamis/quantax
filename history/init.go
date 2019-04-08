@@ -4,6 +4,8 @@ import "github.com/pkg/errors"
 
 func init() {
 
+	initIncomeRecipes()
+
 	err := validateAllTaxParams()
 	panicIfError(errors.Wrap(err, "invalid tax params"))
 
@@ -13,7 +15,6 @@ func init() {
 	err = validateAllCBParams()
 	panicIfError(errors.Wrap(err, "invalid child benefit params"))
 
-	initIncomeRecipes()
 }
 
 func validateAllTaxParams() error {

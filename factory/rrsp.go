@@ -36,13 +36,13 @@ func NewRRSPFactory(config RRSPFactoryConfig) *RRSPFactory {
 		return calcFactory
 	}
 
-	foundFormula, err := history.GetRRSPFormula(config.Year, convertedRegion)
+	foundParams, err := history.GetRRSPParams(config.Year, convertedRegion)
 	if err != nil {
 		calcFactory.setFailingConstructor(errors.Wrap(err, "RRSP formula"))
 		return calcFactory
 	}
 
-	calcFactory.initConstructor(foundFormula)
+	calcFactory.initConstructor(foundParams)
 	return calcFactory
 }
 
@@ -64,14 +64,14 @@ func (f *RRSPFactory) setFailingConstructor(err error) {
 
 // initConstructor initializes this factory's 'newCalculator' function from the
 // given RRSP formula and this factory's internal tax calculator factory
-func (f *RRSPFactory) initConstructor(formula rrsp.Formula) {
+func (f *RRSPFactory) initConstructor(params history.RRSPParams) {
 
 	f.newCalculator = func() (calc.RRSPCalculator, error) {
 		taxCalc, err := f.taxFactory.NewCalculator()
 		if err != nil {
 			return nil, err
 		}
-		return rrsp.NewCalculator(taxCalc, formula)
+		return rrsp.NewCalculator(params.Formula, taxCalc)
 	}
 
 }

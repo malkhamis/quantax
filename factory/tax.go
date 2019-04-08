@@ -2,6 +2,7 @@ package factory
 
 import (
 	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance/income"
 	"github.com/malkhamis/quantax/calc/tax"
 	"github.com/malkhamis/quantax/history"
 
@@ -19,7 +20,7 @@ type TaxFactory struct {
 func NewTaxFactory(year uint, regions ...Region) *TaxFactory {
 
 	calcFactory := &TaxFactory{}
-	formulas := make([]tax.Formula, len(regions))
+	allParams := make([]history.TaxParams, len(regions))
 	for i, r := range regions {
 
 		convertedRegion, ok := knownRegions[r]
@@ -30,7 +31,7 @@ func NewTaxFactory(year uint, regions ...Region) *TaxFactory {
 			return calcFactory
 		}
 
-		foundFormula, err := history.GetTaxFormula(year, convertedRegion)
+		foundParams, err := history.GetTaxParams(year, convertedRegion)
 		if err != nil {
 			calcFactory.setFailingConstructor(
 				errors.Wrapf(err, "tax formula for region %q", r),
@@ -38,10 +39,10 @@ func NewTaxFactory(year uint, regions ...Region) *TaxFactory {
 			return calcFactory
 		}
 
-		formulas[i] = foundFormula
+		allParams[i] = foundParams
 	}
 
-	calcFactory.initConstructor(formulas...)
+	calcFactory.initConstructor(allParams...)
 	return calcFactory
 }
 
@@ -63,22 +64,41 @@ func (f *TaxFactory) setFailingConstructor(err error) {
 
 // initConstructor initializes this factory's 'newCalculator' function from the
 // given formulas
-func (f *TaxFactory) initConstructor(formulas ...tax.Formula) {
+func (f *TaxFactory) initConstructor(allParams ...history.TaxParams) {
 
-	switch len(formulas) {
+	switch len(allParams) {
 	case 0:
 		f.newCalculator = func() (calc.TaxCalculator, error) {
-			return tax.NewCalculator(nil)
+			return tax.NewCalculator(nil, nil)
 		}
 
 	case 1:
 		f.newCalculator = func() (calc.TaxCalculator, error) {
-			return tax.NewCalculator(formulas[0])
+			formula, incomeRecipe := allParams[0].Formula, allParams[0].IncomeRecipe
+			incomeCalc, err := income.NewCalculator(incomeRecipe)
+			if err != nil {
+				return nil, errors.Wrap(err, "error creating income calculator")
+			}
+			return tax.NewCalculator(formula, incomeCalc)
 		}
 
 	default:
 		f.newCalculator = func() (calc.TaxCalculator, error) {
-			return tax.NewAggregator(formulas[0], formulas[1], formulas[2:]...)
+			taxCalcs := make([]calc.TaxCalculator, len(allParams))
+
+			for i, p := range allParams {
+				formula, incomeRecipe := p.Formula, p.IncomeRecipe
+				incomeCalc, err := income.NewCalculator(incomeRecipe)
+				if err != nil {
+					return nil, errors.Wrap(err, "error creating income calculator")
+				}
+				taxCalcs[i], err = tax.NewCalculator(formula, incomeCalc)
+				if err != nil {
+					return nil, errors.Wrap(err, "error creating child benefit calculator")
+				}
+			}
+			return tax.NewAggregator(taxCalcs[0], taxCalcs[1], taxCalcs[2:]...)
 		}
 	}
+
 }

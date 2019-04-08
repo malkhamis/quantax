@@ -46,7 +46,7 @@ func TestTaxFactory_Errors(t *testing.T) {
 			name:    "invalid-year",
 			year:    1000,
 			regions: []Region{BC},
-			err:     history.ErrFormulaNotExist,
+			err:     history.ErrParamsNotExist,
 		},
 		{
 			name:    "invalid-region",

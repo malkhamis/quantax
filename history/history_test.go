@@ -8,9 +8,17 @@ import (
 
 func TestGetTaxParams(t *testing.T) {
 
-	_, err := GetTaxParams(2018, BC)
+	params, err := GetTaxParams(2018, BC)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if params.Formula == nil {
+		t.Fatal("formula must not be nil")
+	}
+
+	if params.IncomeRecipe == nil {
+		t.Fatal("income recipe must not be nil")
 	}
 }
 
