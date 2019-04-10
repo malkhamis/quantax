@@ -26,13 +26,10 @@ type Formula interface {
 // ContraFormula computes reduction on payable taxes for the given finances
 type ContraFormula interface {
 	// Apply applies the contra-formula on the income and the set finances
-	Apply(netIncome float64) map[CreditSource]Credits
+	Apply(finances *finance.IndividualFinances, netIncome float64) map[CreditSource]Credits
 	// OrderOfUse returns the order in which credit sources are used to reduce
 	// tax. Ideally, the returned slice is a superset of what Apply might return
 	OrderOfUse() []CreditSource
-	// SetFinances makes subsequent calculations based on the given finances.
-	// Client Changes to the given finances are reflected on future calls
-	SetFinances(*finance.IndividualFinances)
 	// Clone returns a copy of this contra-formula
 	Clone() ContraFormula
 	// Validate checks if the formula is valid for use
