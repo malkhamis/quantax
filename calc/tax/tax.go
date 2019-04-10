@@ -26,10 +26,10 @@ type Formula interface {
 // ContraFormula computes reduction on payable taxes for the given finances
 type ContraFormula interface {
 	// Apply applies the contra-formula on the income and the set finances
-	Apply(netIncome float64) map[CreditSource]Credit
-	// Order returns the order in which credit sources are used to reduce tax.
-	// Ideally, the returned slice is a superset of what Apply() might return
-	Order() []CreditSource
+	Apply(netIncome float64) map[CreditSource]Credits
+	// OrderOfUse returns the order in which credit sources are used to reduce
+	// tax. Ideally, the returned slice is a superset of what Apply might return
+	OrderOfUse() []CreditSource
 	// SetFinances makes subsequent calculations based on the given finances.
 	// Client Changes to the given finances are reflected on future calls
 	SetFinances(*finance.IndividualFinances)
@@ -39,8 +39,8 @@ type ContraFormula interface {
 	Validate() error
 }
 
-// Credit represent an amount that reduces payable tax
-type Credit struct {
+// credits represent an amount that reduces payable tax
+type Credits struct {
 	IsRefundable bool    // if not used, it is paid back
 	Amount       float64 // the credit amount (owed)
 }
