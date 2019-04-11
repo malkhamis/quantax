@@ -20,3 +20,24 @@ type Credits struct {
 	IsRefundable bool         // if true, the amount is paid back if not used
 	Amount       float64      // the amount owed to tax payer
 }
+
+type creditSources []CreditSource
+
+// makeSet convert 'cs' into a set of unique items. It also returns duplicates
+func (cs creditSources) makeSetAndGetDuplicates() (map[CreditSource]struct{}, creditSources) {
+
+	srcSet := make(map[CreditSource]struct{})
+	srcDup := make(creditSources, 0, len(cs))
+
+	for _, creditSrc := range cs {
+
+		if _, ok := srcSet[creditSrc]; ok {
+			srcDup = append(srcDup, creditSrc)
+			continue
+		}
+
+		srcSet[creditSrc] = struct{}{}
+	}
+
+	return srcSet, srcDup
+}

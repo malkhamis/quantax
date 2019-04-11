@@ -8,9 +8,13 @@ import (
 
 // Sentinel errors that can ben wrapped and returned by this package
 var (
-	ErrNoFormula = errors.New("no formula given/set")
-	ErrNoIncCalc = errors.New("no income calculator given")
-	ErrNoCalc    = errors.New("no benefit calculator given")
+	ErrNoFormula           = errors.New("no formula given/set")
+	ErrNoContraFormula     = errors.New("no contra-formula given/set")
+	ErrNoCreditor          = errors.New("no creditor given/set")
+	ErrDupCreditSource     = errors.New("duplicates are not allowed")
+	ErrUnknownCreditSource = errors.New("unknown credit source")
+	ErrNoIncCalc           = errors.New("no income calculator given")
+	ErrNoCalc              = errors.New("no benefit calculator given")
 )
 
 // Formula computes payable taxes on the given income
