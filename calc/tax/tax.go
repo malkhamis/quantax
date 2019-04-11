@@ -25,30 +25,12 @@ type Formula interface {
 
 // ContraFormula computes reduction on payable taxes for the given finances
 type ContraFormula interface {
-	// Apply applies the contra-formula on the income and the set finances
-	Apply(finances *finance.IndividualFinances, netIncome float64) map[CreditSource]Credits
-	// OrderOfUse returns the order in which credit sources are used to reduce
-	// tax. Ideally, the returned slice is a superset of what Apply might return
-	OrderOfUse() []CreditSource
+	// Apply applies the contra-formula and returns a slice of Credits that is
+	// sorted in a priority-of-use sequence, where the first item has the highest
+	// priority of use before the next item
+	Apply(finances *finance.IndividualFinances, netIncome float64) []Credits
 	// Clone returns a copy of this contra-formula
 	Clone() ContraFormula
 	// Validate checks if the formula is valid for use
 	Validate() error
 }
-
-// credits represent an amount that reduces payable tax
-type Credits struct {
-	IsRefundable bool    // if not used, it is paid back
-	Amount       float64 // the credit amount (owed)
-}
-
-// CreditSource represents a source of tax credits
-type CreditSource int
-
-// credit sources recognized by this package
-const (
-	BeginCanadaCreditSources CreditSource = iota
-	PersonalAmountCA
-	EligibleDividendsCA
-	EndCanadaCreditSources
-)
