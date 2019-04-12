@@ -5,11 +5,11 @@ import "github.com/malkhamis/quantax/calc/finance"
 // Recipe describes required adjustment on finances before incorporating them
 // in the calculation of net income
 type Recipe struct {
-	// IncomeAdjusters returns the income sources that require adjustment before
-	// incorporating them in the net income calculation
+	// IncomeAdjusters represents the income sources that require adjustment
+	// before incorporating them in the net income calculation
 	IncomeAdjusters map[finance.IncomeSource]Adjuster
-	// DeductionAdjusters returns the deduction sources that require adjustment
-	// before incorporating them in the net income
+	// DeductionAdjusters represents the deduction sources that require
+	// adjustment before incorporating them in the net income
 	DeductionAdjusters map[finance.DeductionSource]Adjuster
 }
 

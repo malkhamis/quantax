@@ -3,13 +3,6 @@ package income
 import (
 	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
-
-	"github.com/pkg/errors"
-)
-
-// Sentinel errors that can ben wrapped and returned by this package
-var (
-	ErrNoRecipe = errors.New("no income recipe given/set")
 )
 
 // compile-time check for interface implementation
@@ -72,7 +65,7 @@ func (c *Calculator) TotalIncome(finances finance.IncomeDeductor) float64 {
 	return totalIncome
 }
 
-// TotalDeductions returns the total income of given finances, applying any
+// TotalDeductions returns the total deductions of given finances, applying any
 // needed adjustments as per the underlying recipe without adding income.
 // If the given finances is nil, it returns 0.0
 func (c *Calculator) TotalDeductions(finances finance.IncomeDeductor) float64 {
