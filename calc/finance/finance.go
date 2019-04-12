@@ -71,7 +71,8 @@ func (f *IndividualFinances) TotalIncome(sources ...IncomeSource) float64 {
 }
 
 // TotalDeductions returns the sum of TotalDeductionss for the given sources
-// only. If no sources given, the total deduction for all sources is returned
+// only. If no sources given, the total deduction for all sources is returned.
+// If 'f' is nil, zero is returned
 func (f *IndividualFinances) TotalDeductions(sources ...DeductionSource) float64 {
 
 	if f == nil {
@@ -89,7 +90,8 @@ func (f *IndividualFinances) TotalDeductions(sources ...DeductionSource) float64
 	return total
 }
 
-// MiscAmount returns the amount for the given miscellaneous source
+// MiscAmount returns the amount for the given miscellaneous source. If 'f' is
+// nil zero is returned
 func (f *IndividualFinances) MiscAmount(sources ...MiscSource) float64 {
 
 	if f == nil {
