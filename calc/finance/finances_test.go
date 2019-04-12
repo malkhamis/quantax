@@ -14,6 +14,7 @@ func TestHouseholdFinances_Full(t *testing.T) {
 	spouse1.AddIncome(IncSrcEarned, 6)
 	spouse1.AddIncome(IncSrcUCCB, 4)
 	spouse1.AddDeduction(DeducSrcRRSP, 20)
+	spouse1.AddMiscAmount(MiscSrcMedical, 11)
 	spouse1.Cash = 24
 
 	spouse2 := NewEmptyIndividualFinances(2018)
@@ -21,6 +22,7 @@ func TestHouseholdFinances_Full(t *testing.T) {
 	spouse2.AddIncome(IncSrcInterest, 3)
 	spouse2.AddDeduction(DeducSrcRRSP, 25)
 	spouse2.AddDeduction(DeducSrcMedical, 25)
+	spouse2.AddMiscAmount(MiscSrcUnknown, 12)
 	spouse2.Cash = 66
 
 	finances := NewHouseholdFinances(spouse1, spouse2)
@@ -61,6 +63,24 @@ func TestHouseholdFinances_Full(t *testing.T) {
 		)
 	}
 
+	actualMiscAmount := finances.MiscAmount()
+	expectedMiscAmount := 11.0 + 12.0
+	if actualMiscAmount != expectedMiscAmount {
+		t.Errorf(
+			"unexpected deduction total\nwant: %.2f\n got: %.2f",
+			expectedMiscAmount, actualMiscAmount,
+		)
+	}
+
+	actualMiscAmount = finances.MiscAmount(MiscSrcMedical)
+	expectedMiscAmount = 11.0
+	if actualMiscAmount != expectedMiscAmount {
+		t.Errorf(
+			"unexpected deduction total\nwant: %.2f\n got: %.2f",
+			expectedMiscAmount, actualMiscAmount,
+		)
+	}
+
 	actualCash := finances.Cash()
 	expectedCash := 90.0
 	if actualCash != expectedCash {
@@ -78,13 +98,13 @@ func TestHouseholdFinances_AddIncome(t *testing.T) {
 
 	actual := spouse1.Income[IncSrcEarned]
 	if actual != 6 {
-		t.Fatalf("expected AdddIncome to set the map key, got: %.2f", actual)
+		t.Fatalf("expected AddIncome to set the map key, got: %.2f", actual)
 	}
 
 	spouse1.AddIncome(IncSrcEarned, 6)
 	actual = spouse1.Income[IncSrcEarned]
 	if actual != 12 {
-		t.Fatalf("expected AdddIncome to accumulate amount, got: %.2f", actual)
+		t.Fatalf("expected AddIncome to accumulate amount, got: %.2f", actual)
 	}
 
 }
@@ -107,23 +127,52 @@ func TestHouseholdFinances_AddDeduction(t *testing.T) {
 
 }
 
+func TestHouseholdFinances_AddMiscAmount(t *testing.T) {
+
+	finances := NewEmptyIndividualFinances(2018)
+	finances.AddMiscAmount(MiscSrcMedical, 6)
+
+	actual := finances.MiscAmounts[MiscSrcMedical]
+	if actual != 6 {
+		t.Fatalf("expected AddMiscAmount to set the map key, got: %.2f", actual)
+	}
+
+	finances.AddMiscAmount(MiscSrcMedical, 6)
+	actual = finances.MiscAmounts[MiscSrcMedical]
+	if actual != 12 {
+		t.Fatalf("expected AddMiscAmount to accumulate amount, got: %.2f", actual)
+	}
+
+}
+
 func TestHouseholdFinances_Sources(t *testing.T) {
 
 	spouse1 := NewEmptyIndividualFinances(2018)
 	spouse1.AddIncome(IncSrcEarned, 6)
 	spouse1.AddIncome(IncSrcUCCB, 4)
 	spouse1.AddDeduction(DeducSrcRRSP, 20)
+	spouse1.AddMiscAmount(MiscSrcMedical, 11)
 
 	actualIncSrcs := spouse1.IncomeSources()
-	expectedIncSrcs := NewIncomeSourceSet(IncSrcEarned, IncSrcUCCB)
+	expectedIncSrcs := IncomeSourceSet{
+		IncSrcEarned: struct{}{},
+		IncSrcUCCB:   struct{}{},
+	}
 	diff := deep.Equal(actualIncSrcs, expectedIncSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
 	actualDeducSrcs := spouse1.DeductionSources()
-	expectedDeducSrcs := NewDeductionSourceSet(DeducSrcRRSP)
+	expectedDeducSrcs := DeductionSourceSet{DeducSrcRRSP: struct{}{}}
 	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	actualMiscSrcs := spouse1.MiscSources()
+	expectedMiscSrcs := MiscSourceSet{MiscSrcMedical: struct{}{}}
+	diff = deep.Equal(actualMiscSrcs, expectedMiscSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
@@ -133,22 +182,79 @@ func TestHouseholdFinances_Sources(t *testing.T) {
 	spouse2.AddIncome(IncSrcInterest, 3)
 	spouse2.AddDeduction(DeducSrcRRSP, 25)
 	spouse2.AddDeduction(DeducSrcMedical, 25)
+	spouse2.AddMiscAmount(MiscSrcUnknown, 12)
 
 	finances := NewHouseholdFinances(spouse1, spouse2)
 
 	actualIncSrcs = finances.IncomeSources()
-	expectedIncSrcs = NewIncomeSourceSet(IncSrcEarned, IncSrcUCCB, IncSrcInterest)
+	expectedIncSrcs = IncomeSourceSet{
+		IncSrcEarned:   struct{}{},
+		IncSrcUCCB:     struct{}{},
+		IncSrcInterest: struct{}{},
+	}
 	diff = deep.Equal(actualIncSrcs, expectedIncSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
 	actualDeducSrcs = finances.DeductionSources()
-	expectedDeducSrcs = NewDeductionSourceSet(DeducSrcRRSP, DeducSrcMedical)
+	expectedDeducSrcs = DeductionSourceSet{
+		DeducSrcRRSP:    struct{}{},
+		DeducSrcMedical: struct{}{},
+	}
 	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
+
+	actualMiscSrcs = finances.MiscSources()
+	expectedMiscSrcs = MiscSourceSet{
+		MiscSrcMedical: struct{}{},
+		MiscSrcUnknown: struct{}{},
+	}
+	diff = deep.Equal(actualMiscSrcs, expectedMiscSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+}
+
+func TestIndividualFinances_Remove_xxx(t *testing.T) {
+
+	f1 := NewEmptyIndividualFinances(2019)
+
+	f1.AddIncome(IncSrcTFSA, 1000)
+	_, ok := f1.Income[IncSrcTFSA]
+	if !ok {
+		t.Errorf("expected key to exist")
+	}
+	f1.RemoveIncome(IncSrcTFSA)
+	_, ok = f1.Income[IncSrcTFSA]
+	if ok {
+		t.Errorf("expected key to not exist following a call to remove")
+	}
+
+	f1.AddDeduction(DeducSrcRRSP, 1000)
+	_, ok = f1.Deductions[DeducSrcRRSP]
+	if !ok {
+		t.Errorf("expected key to exist")
+	}
+	f1.RemoveDeduction(DeducSrcRRSP)
+	_, ok = f1.Deductions[DeducSrcRRSP]
+	if ok {
+		t.Errorf("expected key to not exist following a call to remove")
+	}
+
+	f1.AddMiscAmount(MiscSrcMedical, 1000)
+	_, ok = f1.MiscAmounts[MiscSrcMedical]
+	if !ok {
+		t.Errorf("expected key to exist")
+	}
+	f1.RemoveMiscAmount(MiscSrcMedical)
+	_, ok = f1.MiscAmounts[MiscSrcMedical]
+	if ok {
+		t.Errorf("expected key to not exist following a call to remove")
+	}
+
 }
 
 func TestIndividualFinances_Nil_Sources(t *testing.T) {
@@ -168,6 +274,39 @@ func TestIndividualFinances_Nil_Sources(t *testing.T) {
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
+
+	expectedMiscSrcs := make(MiscSourceSet)
+	actualMiscSrcs := nilFinances.MiscSources()
+	diff = deep.Equal(actualMiscSrcs, expectedMiscSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+}
+
+func TestHouseholdFinances_Nil_Sources(t *testing.T) {
+
+	nilFinances := HouseholdFinances{nil, nil}
+
+	expectedIncSrcs := make(IncomeSourceSet)
+	actualIncSrcs := nilFinances.IncomeSources()
+	diff := deep.Equal(actualIncSrcs, expectedIncSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	expectedDeducSrcs := make(DeductionSourceSet)
+	actualDeducSrcs := nilFinances.DeductionSources()
+	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	expectedMiscSrcs := make(MiscSourceSet)
+	actualMiscSrcs := nilFinances.MiscSources()
+	diff = deep.Equal(actualMiscSrcs, expectedMiscSrcs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
 }
 
 func TestHouseholdFinances_Clone(t *testing.T) {
@@ -175,6 +314,7 @@ func TestHouseholdFinances_Clone(t *testing.T) {
 	f1 := NewEmptyIndividualFinances(2018)
 	f1.AddIncome(IncSrcEarned, 123)
 	f1.AddDeduction(DeducSrcRRSP, 456)
+	f1.AddMiscAmount(MiscSrcMedical, 789)
 	original := HouseholdFinances{f1, nil}
 
 	clone := original.Clone()
@@ -184,14 +324,25 @@ func TestHouseholdFinances_Clone(t *testing.T) {
 	}
 
 	f1.AddIncome(IncSrcEarned, 500)
-	diff = deep.Equal(original, clone)
-	if diff == nil {
+	f1.AddDeduction(DeducSrcRRSP, 500)
+	f1.AddMiscAmount(MiscSrcMedical, 500)
+	f1.AddMiscAmount(MiscSrcUnknown, 12)
+
+	if original.TotalIncome() == clone.TotalIncome() {
 		t.Fatal("expected changes made to original to not be reflected in clone")
 	}
 
-	f1.AddDeduction(DeducSrcMedical, 500)
-	diff = deep.Equal(original, clone)
-	if diff == nil {
+	if original.TotalDeductions() == clone.TotalDeductions() {
+		t.Fatal("expected changes made to original to not be reflected in clone")
+	}
+
+	if original.MiscAmount() == clone.MiscAmount() {
+		t.Fatal("expected changes made to original to not be reflected in clone")
+	}
+
+	originalMiscSrcs := original.MiscAmount(MiscSrcMedical, MiscSrcUnknown)
+	cloneMiscSrcs := clone.MiscAmount(MiscSrcMedical, MiscSrcUnknown)
+	if originalMiscSrcs == cloneMiscSrcs {
 		t.Fatal("expected changes made to original to not be reflected in clone")
 	}
 }
@@ -200,7 +351,7 @@ func TestIndividualFinances_NumFieldsUnchanged(t *testing.T) {
 
 	dummy := IndividualFinances{}
 	s := reflect.ValueOf(&dummy).Elem()
-	if s.NumField() != 6 {
+	if s.NumField() != 7 {
 		t.Fatal(
 			"number of struct fields changed. Please update the constructor and the " +
 				"clone method of this type as well as associated test. Next, update " +
