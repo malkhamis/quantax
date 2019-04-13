@@ -109,6 +109,41 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 	}
 }
 
+func TestCanadianContraFormula_creditsFromIncSrcs(t *testing.T) {
+
+	cf := CanadianContraFormula{
+		CreditsFromIncome: map[finance.IncomeSource]Creditor{
+			123: testCreditor{
+				onSource:     1000,
+				onTaxCredits: Credits{Amount: 115, Source: 1000, IsRefundable: true}},
+			456: testCreditor{
+				onSource:     2000,
+				onTaxCredits: Credits{Amount: 95, Source: 2000, IsRefundable: false},
+			},
+			111: testCreditor{
+				onSource:     3000,
+				onTaxCredits: Credits{Amount: 0, Source: 3000, IsRefundable: false},
+			},
+		},
+	}
+
+	finances := finance.NewEmptyIndividualFinances(2019)
+	finances.AddIncome(123, 15000) // has creditor
+	finances.AddIncome(111, 20000) // zero credits
+	finances.AddIncome(999, 8000)  // no creditor
+
+	actual := cf.creditsFromIncSrcs(finances, 0)
+	expected := []Credits{
+		{Amount: 115, Source: 1000, IsRefundable: true},
+	}
+
+	diff := deep.Equal(actual, expected)
+	if diff != nil {
+		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+
+}
+
 func TestCanadianContraFormula_checkMiscSrcCreditorsInSet(t *testing.T) {
 
 	creditor := testCreditor{onSource: 123}
