@@ -1,12 +1,111 @@
 package tax
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/pkg/errors"
 )
+
+func TestCanadianContraFormula_Validate(t *testing.T) {
+
+	cases := []struct {
+		name    string
+		formula *CanadianContraFormula
+		err     error
+	}{
+		//
+		{
+			name: "valid",
+			formula: &CanadianContraFormula{
+				CreditsFromIncome: map[finance.IncomeSource]Creditor{
+					123: testCreditor{onSource: 1000},
+					456: testCreditor{onSource: 2000},
+				},
+				CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+					123: testCreditor{onSource: 1000},
+					456: testCreditor{onSource: 2000},
+				},
+				CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
+					123: testCreditor{onSource: 1000},
+					456: testCreditor{onSource: 2000},
+				},
+				ApplicationOrder: []CreditSource{1000, 2000},
+			},
+			err: nil,
+		},
+		//
+		{
+			name: "duplicates-in-app-order",
+			formula: &CanadianContraFormula{
+				ApplicationOrder: []CreditSource{1000, 1000},
+			},
+			err: ErrDupCreditSource,
+		},
+		//
+		{
+			name: "unknown-income-creditor",
+			formula: &CanadianContraFormula{
+				CreditsFromIncome: map[finance.IncomeSource]Creditor{
+					123: testCreditor{onSource: 1000},
+					456: testCreditor{onSource: 2222},
+				},
+				ApplicationOrder: []CreditSource{1000, 2000},
+			},
+			err: ErrUnknownCreditSource,
+		},
+		//
+		{
+			name: "unknown-deduc-creditor",
+			formula: &CanadianContraFormula{
+				CreditsFromIncome: map[finance.IncomeSource]Creditor{
+					123: testCreditor{onSource: 1000},
+					456: testCreditor{onSource: 2000},
+				},
+				CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+					123: testCreditor{onSource: 1000},
+					456: testCreditor{onSource: 2222},
+				},
+				ApplicationOrder: []CreditSource{1000, 2000},
+			},
+			err: ErrUnknownCreditSource,
+		},
+		//
+		{
+			name: "unknown-misc-creditor",
+			formula: &CanadianContraFormula{
+				CreditsFromIncome: map[finance.IncomeSource]Creditor{
+					123: testCreditor{onSource: 1000},
+					456: testCreditor{onSource: 2000},
+				},
+				CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+					123: testCreditor{onSource: 1000},
+					456: testCreditor{onSource: 2000},
+				},
+				CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
+					123: testCreditor{onSource: 1000},
+					456: testCreditor{onSource: 2222},
+				},
+				ApplicationOrder: []CreditSource{1000, 2000},
+			},
+			err: ErrUnknownCreditSource,
+		},
+	}
+
+	for i, c := range cases {
+		c := c
+		t.Run(fmt.Sprintf("case%d-%s", i, c.name), func(t *testing.T) {
+
+			err := c.formula.Validate()
+			if errors.Cause(err) != c.err {
+				t.Errorf("unexpected error\nwant: %v\n got: %v", c.err, err)
+			}
+
+		})
+	}
+}
 
 func TestCanadianContraFormula_checkMiscSrcCreditorsInSet(t *testing.T) {
 
