@@ -49,3 +49,19 @@ func (tcb testTaxFormula) Validate() error {
 func (tcb testTaxFormula) Clone() Formula {
 	return tcb.onClone
 }
+
+type testCreditor struct {
+	onTaxCredits Credits
+	onSource     CreditSource
+	onClone      Creditor
+}
+
+func (tc testCreditor) TaxCredits(_, _ float64) Credits {
+	return tc.onTaxCredits
+}
+func (tc testCreditor) Source() CreditSource {
+	return tc.onSource
+}
+func (tc testCreditor) Clone() Creditor {
+	return tc.onClone
+}
