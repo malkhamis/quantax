@@ -3,8 +3,10 @@ package tax
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
+	"github.com/go-test/deep"
 	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/pkg/errors"
 )
@@ -195,6 +197,47 @@ func TestCanadianContraFormula_checkIncSrcCreditorsInSet(t *testing.T) {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", nil, err)
 	}
 
+}
+
+func TestCanadianContraFormula_orderCreditGroupInPlace(t *testing.T) {
+
+	cf := &CanadianContraFormula{
+		ApplicationOrder: []CreditSource{1000, 2000, 3000, 5000, 4000},
+	}
+	err := cf.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	crGrp := []Credits{
+		Credits{Source: 3000},
+		Credits{Source: 2000},
+		Credits{Source: 5000},
+		Credits{Source: 1000},
+		Credits{Source: 4000},
+	}
+
+	cf.orderCreditGroupInPlace(crGrp)
+
+	expectedOrder := []Credits{
+		Credits{Source: 1000},
+		Credits{Source: 2000},
+		Credits{Source: 3000},
+		Credits{Source: 5000},
+		Credits{Source: 4000},
+	}
+
+	diff := deep.Equal(crGrp, expectedOrder)
+	if diff != nil {
+		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+
+	var emptyGrp []Credits
+	cf.orderCreditGroupInPlace(emptyGrp)
+	diff = deep.Equal(emptyGrp, []Credits(nil))
+	if diff != nil {
+		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
 }
 
 func TestCanadianContraFormula_Clone(t *testing.T) {
