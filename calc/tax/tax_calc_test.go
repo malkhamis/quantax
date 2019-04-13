@@ -37,38 +37,8 @@ func TestCalculator_Calc(t *testing.T) {
 	}
 
 }
-func TestNewCalculator_InvalidFormula(t *testing.T) {
 
-	simulatedErr := errors.New("test error")
-	invalidFormula := testTaxFormula{onValidate: simulatedErr}
-
-	cfg := CalcConfig{
-		TaxFormula:       invalidFormula,
-		ContraTaxFormula: testTaxContraFormula{},
-		IncomeCalc:       nil,
-	}
-
-	_, err := NewCalculator(cfg)
-	if errors.Cause(err) != simulatedErr {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", simulatedErr, err)
-	}
-
-}
-
-func TestCalculator_NilFormula(t *testing.T) {
-
-	cfg := CalcConfig{
-		TaxFormula:       nil,
-		ContraTaxFormula: testTaxContraFormula{},
-		IncomeCalc:       nil,
-	}
-	_, err := NewCalculator(cfg)
-	if errors.Cause(err) != ErrNoFormula {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
-	}
-}
-
-func TestNewCalculator_NilIncomeCalculator(t *testing.T) {
+func TestNewCalculator_Error(t *testing.T) {
 
 	cfg := CalcConfig{
 		TaxFormula:       testTaxFormula{},
