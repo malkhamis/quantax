@@ -12,10 +12,12 @@ var (
 
 // CanadianContraFormula is used to calculate Canadian tax credits
 type CanadianContraFormula struct {
-	// CreditsFromIncome returns income sources that provide tax credits
+	// CreditsFromIncome stores creditors associated with income sources
 	CreditsFromIncome map[finance.IncomeSource]Creditor
-	// CreditsFromDeduction returns income sources that provide tax credits
+	// CreditsFromDeduction stores creditors associated with deduction sources
 	CreditsFromDeduction map[finance.DeductionSource]Creditor
+	// CreditsFromMiscAmounts stores creditors associated with misc sources
+	CreditsFromMiscAmounts map[finance.MiscSource]Creditor
 	// ApplicationOrder stores the order in which tax credits are used
 	ApplicationOrder []CreditSource
 }
@@ -60,11 +62,16 @@ func (cf *CanadianContraFormula) Clone() ContraFormula {
 		}
 	}
 
+	if cf.CreditsFromMiscAmounts != nil {
+		clone.CreditsFromMiscAmounts = make(map[finance.MiscSource]Creditor)
+		for source, creditor := range cf.CreditsFromMiscAmounts {
+			clone.CreditsFromMiscAmounts[source] = creditor.Clone()
+		}
+	}
+
 	if cf.ApplicationOrder != nil {
 		clone.ApplicationOrder = make([]CreditSource, len(cf.ApplicationOrder))
-		for i, s := range cf.ApplicationOrder {
-			clone.ApplicationOrder[i] = s
-		}
+		copy(clone.ApplicationOrder, cf.ApplicationOrder)
 	}
 
 	return clone
@@ -73,10 +80,54 @@ func (cf *CanadianContraFormula) Clone() ContraFormula {
 // Validate checks if the formula is valid for use
 func (cf *CanadianContraFormula) Validate() error {
 
-	appOrderCreditSrcSet, dups := creditSources(cf.ApplicationOrder).makeSetAndGetDuplicates()
+	appOrderCreditSrcSet, dups := creditSources(
+		cf.ApplicationOrder,
+	).makeSetAndGetDuplicates()
+
 	if len(dups) > 0 {
 		return errors.Wrapf(ErrDupCreditSource, "%v", dups)
 	}
+
+	err := cf.checkIncSrcCreditorsInSet(appOrderCreditSrcSet)
+	if errors.Cause(err) == ErrUnknownCreditSource {
+		err = errors.Wrap(
+			err,
+			"income-source creditors must return credit sources which are known "+
+				"in the application order list",
+		)
+	}
+	if err != nil {
+		return err
+	}
+
+	err = cf.checkDeducSrcCreditorsInSet(appOrderCreditSrcSet)
+	if errors.Cause(err) == ErrUnknownCreditSource {
+		err = errors.Wrap(
+			err,
+			"deduction-source creditors must return credit sources which are known "+
+				"in the application order list",
+		)
+	}
+	if err != nil {
+		return err
+	}
+
+	err = cf.checkMiscSrcCreditorsInSet(appOrderCreditSrcSet)
+	if errors.Cause(err) == ErrUnknownCreditSource {
+		err = errors.Wrap(
+			err,
+			"misc-source creditors must return credit sources which are known "+
+				"in the application order list",
+		)
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cf *CanadianContraFormula) checkIncSrcCreditorsInSet(set map[CreditSource]struct{}) error {
 
 	for incomeSrc, creditor := range cf.CreditsFromIncome {
 
@@ -84,16 +135,21 @@ func (cf *CanadianContraFormula) Validate() error {
 			return errors.Wrapf(ErrNoCreditor, "income source %q", incomeSrc)
 		}
 
-		_, exist := appOrderCreditSrcSet[creditor.Source()]
+		_, exist := set[creditor.Source()]
 		if !exist {
 			return errors.Wrapf(
 				ErrUnknownCreditSource,
-				"income source %q -> credit source %q: must be in application order list",
+				"income source %q -> credit source %q",
 				incomeSrc, creditor.Source(),
 			)
 		}
 
 	}
+
+	return nil
+}
+
+func (cf *CanadianContraFormula) checkDeducSrcCreditorsInSet(set map[CreditSource]struct{}) error {
 
 	for deducSrc, creditor := range cf.CreditsFromDeduction {
 
@@ -101,12 +157,34 @@ func (cf *CanadianContraFormula) Validate() error {
 			return errors.Wrapf(ErrNoCreditor, "deduction source %q", deducSrc)
 		}
 
-		_, exist := appOrderCreditSrcSet[creditor.Source()]
+		_, exist := set[creditor.Source()]
 		if !exist {
 			return errors.Wrapf(
 				ErrUnknownCreditSource,
-				"deduction source %q -> credit source %q: must be in application order list",
+				"deduction source %q -> credit source %q",
 				deducSrc, creditor.Source(),
+			)
+		}
+
+	}
+
+	return nil
+}
+
+func (cf *CanadianContraFormula) checkMiscSrcCreditorsInSet(set map[CreditSource]struct{}) error {
+
+	for miscSrc, creditor := range cf.CreditsFromMiscAmounts {
+
+		if creditor == nil {
+			return errors.Wrapf(ErrNoCreditor, "misc source %q", miscSrc)
+		}
+
+		_, exist := set[creditor.Source()]
+		if !exist {
+			return errors.Wrapf(
+				ErrUnknownCreditSource,
+				"misc source %q -> credit source %q",
+				miscSrc, creditor.Source(),
 			)
 		}
 
