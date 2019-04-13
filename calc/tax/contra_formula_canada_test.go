@@ -11,6 +11,83 @@ import (
 	"github.com/pkg/errors"
 )
 
+func TestCanadianContraFormula_Apply_Nil_finances(t *testing.T) {
+
+	cf := new(CanadianContraFormula)
+	actual := cf.Apply(nil, 0)
+	if actual != nil {
+		t.Errorf("expected nil []credits if finances is nil")
+	}
+
+}
+
+func TestCanadianContraFormula_Apply(t *testing.T) {
+
+	cf := &CanadianContraFormula{
+		CreditsFromIncome: map[finance.IncomeSource]Creditor{
+			123: testCreditor{
+				onSource:     1000,
+				onTaxCredits: Credits{Amount: 1, Source: 1000},
+			},
+			456: testCreditor{
+				onSource:     2000,
+				onTaxCredits: Credits{Amount: 2, Source: 2000},
+			},
+		},
+		CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+			123: testCreditor{
+				onSource:     1000,
+				onTaxCredits: Credits{Amount: 3, Source: 1000},
+			},
+			456: testCreditor{
+				onSource:     2000,
+				onTaxCredits: Credits{Amount: 4, Source: 2000},
+			},
+		},
+		CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
+			123: testCreditor{
+				onSource:     1000,
+				onTaxCredits: Credits{Amount: 5, Source: 1000},
+			},
+			456: testCreditor{
+				onSource:     2000,
+				onTaxCredits: Credits{Amount: 6, Source: 2000},
+			},
+		},
+		ApplicationOrder: []CreditSource{1000, 2000},
+	}
+
+	err := cf.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	finances := finance.NewEmptyIndividualFinances(2019)
+	finances.AddIncome(123, 0)
+	finances.AddIncome(999, 0)
+	finances.AddDeduction(456, 0)
+	finances.AddDeduction(999, 0)
+	finances.AddMiscAmount(123, 0)
+	finances.AddMiscAmount(456, 0)
+
+	actual := cf.Apply(finances, 0)
+	expected := []Credits{
+		Credits{Amount: 1, Source: 1000},
+		Credits{Amount: 5, Source: 1000},
+		Credits{Amount: 4, Source: 2000},
+		Credits{Amount: 6, Source: 2000},
+	}
+
+	// this test might fail if the order of adding income/deductions/misc
+	// was changed. However, the most important thing is that the rewturned
+	// credits are sorted by their source according to cf.ApplicationOrder
+	diff := deep.Equal(actual, expected)
+	if diff != nil {
+		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+
+}
+
 func TestCanadianContraFormula_Validate(t *testing.T) {
 
 	cases := []struct {
