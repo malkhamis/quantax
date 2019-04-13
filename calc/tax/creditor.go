@@ -12,7 +12,7 @@ type Creditor interface {
 }
 
 // CreditSource represents the name of a tax credit source
-type CreditSource string
+type CreditSource int
 
 // credits represent an amount that reduces payable tax
 type Credits struct {
