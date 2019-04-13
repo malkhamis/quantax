@@ -197,6 +197,54 @@ func TestCanadianContraFormula_checkIncSrcCreditorsInSet(t *testing.T) {
 
 }
 
+func TestCanadianContraFormula_Clone(t *testing.T) {
+
+	var original *CanadianContraFormula
+	if original.Clone() != nil {
+		t.Error("cloning nil contra formula should return nil")
+	}
+
+	original = &CanadianContraFormula{
+		CreditsFromIncome: map[finance.IncomeSource]Creditor{
+			123: testCreditor{onSource: 1000},
+			456: testCreditor{onSource: 2000},
+		},
+		CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+			123: testCreditor{onSource: 1000},
+			456: testCreditor{onSource: 2000},
+		},
+		CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
+			123: testCreditor{onSource: 1000},
+			456: testCreditor{onSource: 2000},
+		},
+		ApplicationOrder: []CreditSource{1000, 2000},
+	}
+
+	err := original.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clone := original.Clone()
+	err = clone.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	original.ApplicationOrder[0], original.ApplicationOrder[1] = 1, 2
+	original.CreditsFromIncome[123] = testCreditor{onSource: 1111}
+	original.CreditsFromDeduction[123] = testCreditor{onSource: 1111}
+	original.CreditsFromMiscAmounts[123] = testCreditor{onSource: 1111}
+	err = original.Validate()
+	if err == nil {
+		t.Fatal("invalid formula did not return error when validated")
+	}
+	err = clone.Validate()
+	if err != nil {
+		t.Fatal("changes to original contra formula should not affect clone")
+	}
+}
+
 func TestCanadianContraFormula_NumFieldsUnchanged(t *testing.T) {
 
 	dummy := CanadianContraFormula{}

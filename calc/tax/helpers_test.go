@@ -53,7 +53,6 @@ func (tcb testTaxFormula) Clone() Formula {
 type testCreditor struct {
 	onTaxCredits Credits
 	onSource     CreditSource
-	onClone      Creditor
 }
 
 func (tc testCreditor) TaxCredits(_, _ float64) Credits {
@@ -63,5 +62,5 @@ func (tc testCreditor) Source() CreditSource {
 	return tc.onSource
 }
 func (tc testCreditor) Clone() Creditor {
-	return tc.onClone
+	return tc
 }
