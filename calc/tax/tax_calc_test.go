@@ -38,6 +38,34 @@ func TestCalculator_Calc(t *testing.T) {
 
 }
 
+func TestCalculator_netPayableTax(t *testing.T) {
+
+	crGroup := []Credits{
+		{Amount: 5000, IsRefundable: true},
+		{Amount: 4000, IsRefundable: false},
+		{Amount: 2000, IsRefundable: false},
+		{Amount: 1000, IsRefundable: true},
+		{Amount: 500, IsRefundable: false},
+	}
+
+	actualNetTax, actualLostCr := (&Calculator{}).netPayableTax(10000, crGroup)
+	expectedNetTax, expectedLostCr := -1000.0, 1500.0
+
+	if actualNetTax != expectedNetTax {
+		t.Errorf(
+			"actual net tax does not match expected\nwant: %.2f\ngot: %.2f",
+			expectedNetTax, actualNetTax,
+		)
+	}
+
+	if actualLostCr != expectedLostCr {
+		t.Fatalf(
+			"actual lost credits does not match expected\nwant: %.2f\ngot: %.2f",
+			expectedLostCr, actualLostCr,
+		)
+	}
+}
+
 func TestNewCalculator_Error(t *testing.T) {
 
 	cfg := CalcConfig{
