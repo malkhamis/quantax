@@ -12,9 +12,14 @@ func TestCalculator_Calc(t *testing.T) {
 
 	incCalc := testIncomeCalculator{onTotalIncome: 3000.0}
 	formula := testTaxFormula{onApply: incCalc.TotalIncome(nil) / 2.0}
-	formula.onClone = formula
 
-	c, err := NewCalculator(formula, incCalc)
+	cfg := CalcConfig{
+		TaxFormula:       formula,
+		ContraTaxFormula: testTaxContraFormula{},
+		IncomeCalc:       incCalc,
+	}
+
+	c, err := NewCalculator(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +42,13 @@ func TestNewCalculator_InvalidFormula(t *testing.T) {
 	simulatedErr := errors.New("test error")
 	invalidFormula := testTaxFormula{onValidate: simulatedErr}
 
-	_, err := NewCalculator(invalidFormula, nil)
+	cfg := CalcConfig{
+		TaxFormula:       invalidFormula,
+		ContraTaxFormula: testTaxContraFormula{},
+		IncomeCalc:       nil,
+	}
+
+	_, err := NewCalculator(cfg)
 	if errors.Cause(err) != simulatedErr {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", simulatedErr, err)
 	}
@@ -46,7 +57,12 @@ func TestNewCalculator_InvalidFormula(t *testing.T) {
 
 func TestCalculator_NilFormula(t *testing.T) {
 
-	_, err := NewCalculator(nil, nil)
+	cfg := CalcConfig{
+		TaxFormula:       nil,
+		ContraTaxFormula: testTaxContraFormula{},
+		IncomeCalc:       nil,
+	}
+	_, err := NewCalculator(cfg)
 	if errors.Cause(err) != ErrNoFormula {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
@@ -54,7 +70,12 @@ func TestCalculator_NilFormula(t *testing.T) {
 
 func TestNewCalculator_NilIncomeCalculator(t *testing.T) {
 
-	_, err := NewCalculator(testTaxFormula{}, nil)
+	cfg := CalcConfig{
+		TaxFormula:       testTaxFormula{},
+		ContraTaxFormula: testTaxContraFormula{},
+		IncomeCalc:       nil,
+	}
+	_, err := NewCalculator(cfg)
 	if errors.Cause(err) != ErrNoIncCalc {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoIncCalc, err)
 	}

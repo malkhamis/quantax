@@ -37,7 +37,6 @@ func (tic testIncomeCalculator) NetIncome(_ finance.IncomeDeductor) float64 {
 type testTaxFormula struct {
 	onApply    float64
 	onValidate error
-	onClone    Formula
 }
 
 func (tcb testTaxFormula) Apply(_ float64) float64 {
@@ -47,7 +46,22 @@ func (tcb testTaxFormula) Validate() error {
 	return tcb.onValidate
 }
 func (tcb testTaxFormula) Clone() Formula {
-	return tcb.onClone
+	return tcb
+}
+
+type testTaxContraFormula struct {
+	onApply    []Credits
+	onValidate error
+}
+
+func (tcf testTaxContraFormula) Apply(_ *finance.IndividualFinances, _ float64) []Credits {
+	return tcf.onApply
+}
+func (tcf testTaxContraFormula) Validate() error {
+	return tcf.onValidate
+}
+func (tcf testTaxContraFormula) Clone() ContraFormula {
+	return tcf
 }
 
 type testCreditor struct {

@@ -2,6 +2,7 @@
 package tax
 
 import (
+	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/pkg/errors"
 )
@@ -37,4 +38,39 @@ type ContraFormula interface {
 	Clone() ContraFormula
 	// Validate checks if the formula is valid for use
 	Validate() error
+}
+
+// CalcConfig is used to pass configurations to create new tax calculator
+type CalcConfig struct {
+	IncomeCalc       calc.IncomeCalculator
+	TaxFormula       Formula
+	ContraTaxFormula ContraFormula
+}
+
+// validate checks if the configurations are valid for use by calc constructors
+func (cfg CalcConfig) validate() error {
+
+	if cfg.TaxFormula == nil {
+		return ErrNoFormula
+	}
+
+	err := cfg.TaxFormula.Validate()
+	if err != nil {
+		return errors.Wrap(err, "invalid formula")
+	}
+
+	if cfg.ContraTaxFormula == nil {
+		return ErrNoContraFormula
+	}
+
+	err = cfg.ContraTaxFormula.Validate()
+	if err != nil {
+		return errors.Wrap(err, "invalid contra-formula")
+	}
+
+	if cfg.IncomeCalc == nil {
+		return ErrNoIncCalc
+	}
+
+	return nil
 }
