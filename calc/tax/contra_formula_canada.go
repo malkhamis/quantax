@@ -1,6 +1,8 @@
 package tax
 
 import (
+	"sort"
+
 	"github.com/malkhamis/quantax/calc/finance"
 	"github.com/pkg/errors"
 )
@@ -25,18 +27,110 @@ type CanadianContraFormula struct {
 // Apply applies the contra-formula on the income and the set finances
 func (cf *CanadianContraFormula) Apply(finances *finance.IndividualFinances, netIncome float64) []Credits {
 
-	// creditSources := make(map[CreditSource]Credits)
-	//
-	// for source, srcIncome := range finances.Income {
-	//
-	// 	creditor := cf.CreditsFromIncome[source]
-	// 	credits := creditor.TaxCredits(srcIncome, netIncome)
-	// 	if credits.Amount == 0 {
-	// 		continue
-	// 	}
-	// }
+	if finances == nil {
+		return nil
+	}
 
-	return nil // Not implemented
+	incSrcCredits := cf.creditsFromIncSrcs(finances, netIncome)
+	deducSrcCredits := cf.creditsFromDeducSrcs(finances, netIncome)
+	miscSrcCredits := cf.creditsFromMiscSrcs(finances, netIncome)
+
+	allCredits := append(
+		incSrcCredits,
+		append(
+			deducSrcCredits,
+			miscSrcCredits...)...,
+	)
+
+	cf.orderCreditGroupInPlace(allCredits)
+	return allCredits
+}
+
+// creditsFromIncSrcs returns a list of credits extracted from the income
+// sources in this contra-formula. It assumes that finances is never nil and
+// that the contra formula was validated
+func (cf *CanadianContraFormula) creditsFromIncSrcs(finances *finance.IndividualFinances, netIncome float64) []Credits {
+
+	var creditGroup []Credits
+
+	for source, srcIncome := range finances.Income {
+
+		creditor := cf.CreditsFromIncome[source]
+		credits := creditor.TaxCredits(srcIncome, netIncome)
+
+		if credits.Amount == 0 {
+			continue
+		}
+
+		creditGroup = append(creditGroup, credits)
+	}
+
+	return creditGroup
+}
+
+// creditsFromDeducSrcs returns a list of credits extracted from the deduciton
+// sources in this contra-formula. It assumes that finances is never nil and
+// that the contra formula was validated
+func (cf *CanadianContraFormula) creditsFromDeducSrcs(finances *finance.IndividualFinances, netIncome float64) []Credits {
+
+	var creditGroup []Credits
+
+	for source, srcDeduc := range finances.Deductions {
+
+		creditor := cf.CreditsFromDeduction[source]
+		credits := creditor.TaxCredits(srcDeduc, netIncome)
+
+		if credits.Amount == 0 {
+			continue
+		}
+
+		creditGroup = append(creditGroup, credits)
+	}
+
+	return creditGroup
+}
+
+// creditsFromMiscSrcs returns a list of credits extracted from the misc
+// sources in this contra-formula. It assumes that finances is never nil and
+// that the contra formula was validated
+func (cf *CanadianContraFormula) creditsFromMiscSrcs(finances *finance.IndividualFinances, netIncome float64) []Credits {
+
+	var creditGroup []Credits
+
+	for source, srcMisc := range finances.MiscAmounts {
+
+		creditor := cf.CreditsFromMiscAmounts[source]
+		credits := creditor.TaxCredits(srcMisc, netIncome)
+
+		if credits.Amount == 0 {
+			continue
+		}
+
+		creditGroup = append(creditGroup, credits)
+	}
+
+	return creditGroup
+}
+
+// orderCreditGroupInPlace sort the credit group according to the application
+// order of this contra formula. It assumes that cf wa validated before use.
+func (cf *CanadianContraFormula) orderCreditGroupInPlace(creditGroup []Credits) {
+
+	if len(creditGroup) == 0 {
+		return
+	}
+
+	priority := make(map[CreditSource]int)
+	for i, src := range cf.ApplicationOrder {
+		priority[src] = i
+	}
+
+	sort.SliceStable(creditGroup, func(i int, j int) bool {
+		iSrc := creditGroup[i].Source
+		jSrc := creditGroup[j].Source
+		return priority[iSrc] < priority[jSrc]
+	})
+
 }
 
 // Clone returns a copy of this contra-formula
@@ -127,6 +221,9 @@ func (cf *CanadianContraFormula) Validate() error {
 	return nil
 }
 
+// checkIncSrcCreditorsInSet returns ErrUnknownCreditSource if a single creditor
+// in income-source creditos is not in the given set. If a creditor is nil, it
+// returns ErrNoCreditor
 func (cf *CanadianContraFormula) checkIncSrcCreditorsInSet(set map[CreditSource]struct{}) error {
 
 	for incomeSrc, creditor := range cf.CreditsFromIncome {
@@ -149,6 +246,9 @@ func (cf *CanadianContraFormula) checkIncSrcCreditorsInSet(set map[CreditSource]
 	return nil
 }
 
+// checkDeducSrcCreditorsInSet returns ErrUnknownCreditSource if a single
+// creditor in deduction-source creditos is not in the given set. If a creditor
+// is nil, it returns ErrNoCreditor
 func (cf *CanadianContraFormula) checkDeducSrcCreditorsInSet(set map[CreditSource]struct{}) error {
 
 	for deducSrc, creditor := range cf.CreditsFromDeduction {
@@ -171,6 +271,9 @@ func (cf *CanadianContraFormula) checkDeducSrcCreditorsInSet(set map[CreditSourc
 	return nil
 }
 
+// checkMiscSrcCreditorsInSet returns ErrUnknownCreditSource if a single
+// creditor in misc-source creditos is not in the given set. If a creditor is
+// nil, it returns ErrNoCreditor
 func (cf *CanadianContraFormula) checkMiscSrcCreditorsInSet(set map[CreditSource]struct{}) error {
 
 	for miscSrc, creditor := range cf.CreditsFromMiscAmounts {
