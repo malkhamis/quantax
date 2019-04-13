@@ -56,8 +56,11 @@ func (cf *CanadianContraFormula) creditsFromIncSrcs(finances *finance.Individual
 	for source, srcIncome := range finances.Income {
 
 		creditor := cf.CreditsFromIncome[source]
-		credits := creditor.TaxCredits(srcIncome, netIncome)
+		if creditor == nil {
+			continue
+		}
 
+		credits := creditor.TaxCredits(srcIncome, netIncome)
 		if credits.Amount == 0 {
 			continue
 		}
@@ -78,8 +81,11 @@ func (cf *CanadianContraFormula) creditsFromDeducSrcs(finances *finance.Individu
 	for source, srcDeduc := range finances.Deductions {
 
 		creditor := cf.CreditsFromDeduction[source]
-		credits := creditor.TaxCredits(srcDeduc, netIncome)
+		if creditor == nil {
+			continue
+		}
 
+		credits := creditor.TaxCredits(srcDeduc, netIncome)
 		if credits.Amount == 0 {
 			continue
 		}
@@ -100,8 +106,11 @@ func (cf *CanadianContraFormula) creditsFromMiscSrcs(finances *finance.Individua
 	for source, srcMisc := range finances.MiscAmounts {
 
 		creditor := cf.CreditsFromMiscAmounts[source]
-		credits := creditor.TaxCredits(srcMisc, netIncome)
+		if creditor == nil {
+			continue
+		}
 
+		credits := creditor.TaxCredits(srcMisc, netIncome)
 		if credits.Amount == 0 {
 			continue
 		}
