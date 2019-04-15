@@ -12,9 +12,14 @@ func TestCalculator_Calc(t *testing.T) {
 
 	incCalc := testIncomeCalculator{onTotalIncome: 3000.0}
 	formula := testTaxFormula{onApply: incCalc.TotalIncome(nil) / 2.0}
-	formula.onClone = formula
 
-	c, err := NewCalculator(formula, incCalc)
+	cfg := CalcConfig{
+		TaxFormula:       formula,
+		ContraTaxFormula: testTaxContraFormula{},
+		IncomeCalc:       incCalc,
+	}
+
+	c, err := NewCalculator(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,29 +37,43 @@ func TestCalculator_Calc(t *testing.T) {
 	}
 
 }
-func TestNewCalculator_InvalidFormula(t *testing.T) {
 
-	simulatedErr := errors.New("test error")
-	invalidFormula := testTaxFormula{onValidate: simulatedErr}
+func TestCalculator_netPayableTax(t *testing.T) {
 
-	_, err := NewCalculator(invalidFormula, nil)
-	if errors.Cause(err) != simulatedErr {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", simulatedErr, err)
+	crGroup := []Credits{
+		{Amount: 5000, IsRefundable: true},
+		{Amount: 4000, IsRefundable: false},
+		{Amount: 2000, IsRefundable: false},
+		{Amount: 1000, IsRefundable: true},
+		{Amount: 500, IsRefundable: false},
 	}
 
-}
+	actualNetTax, actualLostCr := (&Calculator{}).netPayableTax(10000, crGroup)
+	expectedNetTax, expectedLostCr := -1000.0, 1500.0
 
-func TestCalculator_NilFormula(t *testing.T) {
+	if actualNetTax != expectedNetTax {
+		t.Errorf(
+			"actual net tax does not match expected\nwant: %.2f\ngot: %.2f",
+			expectedNetTax, actualNetTax,
+		)
+	}
 
-	_, err := NewCalculator(nil, nil)
-	if errors.Cause(err) != ErrNoFormula {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
+	if actualLostCr != expectedLostCr {
+		t.Fatalf(
+			"actual lost credits does not match expected\nwant: %.2f\ngot: %.2f",
+			expectedLostCr, actualLostCr,
+		)
 	}
 }
 
-func TestNewCalculator_NilIncomeCalculator(t *testing.T) {
+func TestNewCalculator_Error(t *testing.T) {
 
-	_, err := NewCalculator(testTaxFormula{}, nil)
+	cfg := CalcConfig{
+		TaxFormula:       testTaxFormula{},
+		ContraTaxFormula: testTaxContraFormula{},
+		IncomeCalc:       nil,
+	}
+	_, err := NewCalculator(cfg)
 	if errors.Cause(err) != ErrNoIncCalc {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoIncCalc, err)
 	}

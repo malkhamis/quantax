@@ -17,6 +17,7 @@ type TaxFactory struct {
 // NewTaxFactory returns a new tax calculator factory from the given params. If
 // multiple regions are specified, the returned calculator aggregates the taxes
 // for all the given regions
+// TODO: make it mandatory to give one region
 func NewTaxFactory(year uint, regions ...Region) *TaxFactory {
 
 	calcFactory := &TaxFactory{}
@@ -69,17 +70,21 @@ func (f *TaxFactory) initConstructor(allParams ...history.TaxParams) {
 	switch len(allParams) {
 	case 0:
 		f.newCalculator = func() (calc.TaxCalculator, error) {
-			return tax.NewCalculator(nil, nil)
+			return tax.NewCalculator(tax.CalcConfig{})
 		}
 
 	case 1:
 		f.newCalculator = func() (calc.TaxCalculator, error) {
-			formula, incomeRecipe := allParams[0].Formula, allParams[0].IncomeRecipe
-			incomeCalc, err := income.NewCalculator(incomeRecipe)
+			incomeCalc, err := income.NewCalculator(allParams[0].IncomeRecipe)
 			if err != nil {
 				return nil, errors.Wrap(err, "error creating income calculator")
 			}
-			return tax.NewCalculator(formula, incomeCalc)
+			cfg := tax.CalcConfig{
+				IncomeCalc:       incomeCalc,
+				TaxFormula:       allParams[0].Formula,
+				ContraTaxFormula: allParams[0].ContraFormula,
+			}
+			return tax.NewCalculator(cfg)
 		}
 
 	default:
@@ -87,12 +92,16 @@ func (f *TaxFactory) initConstructor(allParams ...history.TaxParams) {
 			taxCalcs := make([]calc.TaxCalculator, len(allParams))
 
 			for i, p := range allParams {
-				formula, incomeRecipe := p.Formula, p.IncomeRecipe
-				incomeCalc, err := income.NewCalculator(incomeRecipe)
+				incomeCalc, err := income.NewCalculator(p.IncomeRecipe)
 				if err != nil {
 					return nil, errors.Wrap(err, "error creating income calculator")
 				}
-				taxCalcs[i], err = tax.NewCalculator(formula, incomeCalc)
+				cfg := tax.CalcConfig{
+					IncomeCalc:       incomeCalc,
+					TaxFormula:       p.Formula,
+					ContraTaxFormula: p.ContraFormula,
+				}
+				taxCalcs[i], err = tax.NewCalculator(cfg)
 				if err != nil {
 					return nil, errors.Wrap(err, "error creating child benefit calculator")
 				}

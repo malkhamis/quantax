@@ -26,19 +26,24 @@ func TestAggregator_Calc(t *testing.T) {
 
 	incCalc := testIncomeCalculator{onTotalIncome: 3000.0}
 	formula := testTaxFormula{onApply: incCalc.TotalIncome(nil) / 2.0}
-	formula.onClone = formula
 
-	c0, err := NewCalculator(formula, incCalc)
+	cfg := CalcConfig{
+		TaxFormula:       formula,
+		ContraTaxFormula: testTaxContraFormula{},
+		IncomeCalc:       incCalc,
+	}
+
+	c0, err := NewCalculator(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	c1, err := NewCalculator(formula, incCalc)
+	c1, err := NewCalculator(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	c2, err := NewCalculator(formula, incCalc)
+	c2, err := NewCalculator(cfg)
 	if err != nil {
 		t.Fatal(err)
 	}

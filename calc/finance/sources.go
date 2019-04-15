@@ -79,18 +79,45 @@ func (s DeductionBySource) Clone() DeductionBySource {
 	return clone
 }
 
+// MiscSource represents the source type of any miscellaneous amount that is
+// anything other than income or deduction
+type MiscSource int
+
+const (
+	MiscSrcUnknown MiscSource = iota
+	// recognized sources of miscellaneous amounts
+	MiscSrcMedical // medical expenses
+)
+
+// MiscAmountsBySource represents misc amounts according to their sources
+type MiscAmountsBySource map[MiscSource]float64
+
+// Sum returns the sum of all miscellaneous sources
+func (s MiscAmountsBySource) Sum() float64 {
+	var total float64
+	for _, amount := range s {
+		total += amount
+	}
+	return total
+}
+
+func (s MiscAmountsBySource) Clone() MiscAmountsBySource {
+
+	var clone MiscAmountsBySource
+
+	if s != nil {
+		clone = make(MiscAmountsBySource)
+	}
+
+	for source, amount := range s {
+		clone[source] = amount
+	}
+
+	return clone
+}
+
 // IncomeSourceSet is a convenience type used for income source lookup
 type IncomeSourceSet map[IncomeSource]struct{}
-
-// NewIncomeSourceSet returns a new set from the given income sources
-func NewIncomeSourceSet(sources ...IncomeSource) IncomeSourceSet {
-
-	set := make(IncomeSourceSet)
-	for _, s := range sources {
-		set[s] = struct{}{}
-	}
-	return set
-}
 
 // Has returns true if the given source exists in this set
 func (set IncomeSourceSet) Has(source IncomeSource) bool {
@@ -101,18 +128,17 @@ func (set IncomeSourceSet) Has(source IncomeSource) bool {
 // DeductionSourceSet is a convenience type used for deduction source lookup
 type DeductionSourceSet map[DeductionSource]struct{}
 
-// NewDeductionSourceSet returns a new set from the given deduciton sources
-func NewDeductionSourceSet(sources ...DeductionSource) DeductionSourceSet {
-
-	set := make(DeductionSourceSet)
-	for _, s := range sources {
-		set[s] = struct{}{}
-	}
-	return set
-}
-
 // Has returns true if the given source exists in this set
 func (set DeductionSourceSet) Has(source DeductionSource) bool {
+	_, ok := set[source]
+	return ok
+}
+
+// MiscSourceSet is a convenience type used for misc source lookup
+type MiscSourceSet map[MiscSource]struct{}
+
+// Has returns true if the given source exists in this set
+func (set MiscSourceSet) Has(source MiscSource) bool {
 	_, ok := set[source]
 	return ok
 }

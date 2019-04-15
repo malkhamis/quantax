@@ -31,6 +31,15 @@ func validateAllTaxParams() error {
 				return errors.Wrapf(err, "%s[%d]", jursdiction, year)
 			}
 
+			if params.ContraFormula == nil {
+				return errors.Wrapf(errNilContraFormula, "%s[%d]", jursdiction, year)
+			}
+
+			err = params.ContraFormula.Validate()
+			if err != nil {
+				return errors.Wrapf(err, "%s[%d]", jursdiction, year)
+			}
+
 		}
 	}
 

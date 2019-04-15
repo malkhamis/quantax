@@ -24,8 +24,8 @@ func TestCalculator_NetIncome_Adjusted(t *testing.T) {
 	}
 
 	finances := testIncomeDeductor{
-		deducSrcs:       finance.NewDeductionSourceSet(finance.DeductionSource(2000)),
-		incomeSrcs:      finance.NewIncomeSourceSet(finance.IncomeSource(1000)),
+		deducSrcs:       finance.DeductionSourceSet{finance.DeductionSource(2000): struct{}{}},
+		incomeSrcs:      finance.IncomeSourceSet{finance.IncomeSource(1000): struct{}{}},
 		totalDeductions: 15000.0,
 		totalIncome:     30000.0,
 	}
@@ -46,8 +46,8 @@ func TestCalculator_NetIncome_Unadjusted(t *testing.T) {
 	}
 
 	finances := testIncomeDeductor{
-		deducSrcs:       finance.NewDeductionSourceSet(finance.DeductionSource(2000)),
-		incomeSrcs:      finance.NewIncomeSourceSet(finance.IncomeSource(1000)),
+		deducSrcs:       finance.DeductionSourceSet{finance.DeductionSource(2000): struct{}{}},
+		incomeSrcs:      finance.IncomeSourceSet{finance.IncomeSource(1000): struct{}{}},
 		totalDeductions: 10000.0,
 		totalIncome:     30000.0,
 	}
