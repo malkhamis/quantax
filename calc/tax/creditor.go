@@ -16,9 +16,10 @@ type CreditSource int
 
 // credits represent an amount that reduces payable tax
 type Credits struct {
-	Source       CreditSource // the name of the source of the credits
-	IsRefundable bool         // if true, the amount is paid back if not used
-	Amount       float64      // the amount owed to tax payer
+	Source CreditSource // the name of the source of the credits
+	// TDO: IsRefundable -> CanCarryForward
+	IsRefundable bool    // if true, the amount is paid back if not used
+	Amount       float64 // the amount owed to tax payer
 }
 
 type creditSources []CreditSource

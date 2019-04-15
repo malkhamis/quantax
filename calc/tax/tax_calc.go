@@ -58,14 +58,15 @@ func (c *Calculator) netPayableTax(taxAmount float64, crGroup []Credits) (reduce
 			continue
 		}
 
-		if taxAmount > 0.0 {
-			diff := cr.Amount - taxAmount
-			lostCredits += diff
-			taxAmount = 0.0
+		if taxAmount <= 0.0 {
+			lostCredits += cr.Amount
 			continue
 		}
 
-		lostCredits += cr.Amount
+		// reached once at most
+		diff := cr.Amount - taxAmount
+		lostCredits += diff
+		taxAmount = 0.0
 	}
 
 	return taxAmount, lostCredits
