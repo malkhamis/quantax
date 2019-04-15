@@ -11,7 +11,11 @@ import (
 
 var (
 	taxParamsBC = yearlyTaxParams{
-		2018: TaxParams{taxFormulaBC2018, &incomeRecipeNet},
+		2018: TaxParams{
+			Formula:       taxFormulaBC2018,
+			ContraFormula: taxContraFormulaBC2018,
+			IncomeRecipe:  &incomeRecipeNet,
+		},
 	}
 
 	cbParamsBC = yearlyCBParams{
@@ -30,6 +34,9 @@ var taxFormulaBC2018 = &tax.CanadianFormula{
 		0.1680:  finance.Bracket{150000, math.Inf(1)},
 	},
 }
+
+// TODO
+var taxContraFormulaBC2018 = tax.NopContraFormula{}
 
 var cbFormulaBC2017 = &benefits.BCECTBMaxReducer{
 	BeneficiaryClasses: []benefits.AgeGroupBenefits{

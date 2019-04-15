@@ -10,15 +10,17 @@ import (
 // TaxParams represents the tax parameters associated with a tax jurisdiction
 // for a specific tax year
 type TaxParams struct {
-	Formula      tax.Formula
-	IncomeRecipe *income.Recipe
+	Formula       tax.Formula
+	ContraFormula tax.ContraFormula
+	IncomeRecipe  *income.Recipe
 }
 
 // Clone returns a copy of these parameters
 func (p TaxParams) Clone() TaxParams {
 	return TaxParams{
-		Formula:      p.Formula.Clone(),
-		IncomeRecipe: p.IncomeRecipe.Clone(),
+		Formula:       p.Formula.Clone(),
+		ContraFormula: p.ContraFormula.Clone(),
+		IncomeRecipe:  p.IncomeRecipe.Clone(),
 	}
 }
 
