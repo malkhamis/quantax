@@ -5,7 +5,7 @@ type Creditor interface {
 	// TaxCredits returns the tax credits for the given amount. The net
 	// income may or may not be used by the underlying implementation
 	TaxCredits(amount, netIncome float64) Credits
-	// Source returns the credit source this creditor
+	// Source returns the credit source for this creditor
 	Source() CreditSource
 	// Clone returns a copy of this creditor
 	Clone() Creditor
@@ -20,6 +20,27 @@ type Credits struct {
 	// TDO: IsRefundable -> CanCarryForward
 	IsRefundable bool    // if true, the amount is paid back if not used
 	Amount       float64 // the amount owed to tax payer
+}
+
+// ConstCreditor returns a constant amount of tax credits
+type ConstCreditor struct {
+	Const Credits
+}
+
+// TaxCredits returns constant credits disregarding the given amount to extract
+// credits from and the given net income
+func (cc ConstCreditor) TaxCredits(_, _ float64) Credits {
+	return cc.Const
+}
+
+// Source returns the credit source this creditor
+func (cc ConstCreditor) Source() CreditSource {
+	return cc.Const.Source
+}
+
+// Clone returns a copy of this creditor
+func (cc ConstCreditor) Clone() Creditor {
+	return cc
 }
 
 type creditSources []CreditSource

@@ -61,3 +61,28 @@ func TestCreditSources_makeSetAndGetDuplicates(t *testing.T) {
 	}
 
 }
+
+func TestConstCreditor(t *testing.T) {
+
+	cc := ConstCreditor{
+		Const: Credits{Amount: 1000.0, Source: 2, IsRefundable: true},
+	}
+
+	actualSrc := cc.Source()
+	expectedSrc := CreditSource(2)
+	if actualSrc != expectedSrc {
+		t.Errorf("unexpected source\nwant: %v\n got: %v", expectedSrc, actualSrc)
+	}
+
+	actualCr := cc.TaxCredits(0, 0)
+	expectedCr := Credits{Amount: 1000.0, Source: 2, IsRefundable: true}
+	if actualCr != expectedCr {
+		t.Errorf("unexpected source\nwant: %v\n got: %v", expectedCr, actualCr)
+	}
+
+	clone := cc.Clone()
+	cc.Const = Credits{}
+	if clone.TaxCredits(0, 0) == cc.Const {
+		t.Error("expected change to original to not affect clone")
+	}
+}
