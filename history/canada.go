@@ -38,17 +38,29 @@ var rrspFormulaCanada2018 = &rrsp.MaxCapper{
 
 var taxFormulaCanada2018 = &tax.CanadianFormula{
 	WeightedBrackets: finance.WeightedBrackets{
-		-0.150: finance.Bracket{0, 11809},
-		0.150:  finance.Bracket{0, 46605},
-		0.205:  finance.Bracket{46605, 93208},
-		0.260:  finance.Bracket{93208, 144489},
-		0.290:  finance.Bracket{144489, 205842},
-		0.330:  finance.Bracket{205842, math.Inf(1)},
+		0.150: finance.Bracket{0, 46605},
+		0.205: finance.Bracket{46605, 93208},
+		0.260: finance.Bracket{93208, 144489},
+		0.290: finance.Bracket{144489, 205842},
+		0.330: finance.Bracket{205842, math.Inf(1)},
 	},
 }
 
-// TODO
-var taxContraFormulaCanada2018 = tax.NopContraFormula{}
+const (
+	_ tax.CreditSource = iota // uninitialized default value
+	crSrcPersonalAmountCanada
+)
+
+var taxContraFormulaCanada2018 = &tax.CanadianContraFormula{
+	PersistentCredits: []tax.Credits{
+		tax.Credits{
+			Amount:       0.150 * 11809,
+			Source:       crSrcPersonalAmountCanada,
+			IsRefundable: false,
+		},
+	},
+	ApplicationOrder: []tax.CreditSource{crSrcPersonalAmountCanada},
+}
 
 var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
 	BeneficiaryClasses: []benefits.AgeGroupBenefits{
