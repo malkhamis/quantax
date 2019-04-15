@@ -20,6 +20,9 @@ type CanadianContraFormula struct {
 	CreditsFromDeduction map[finance.DeductionSource]Creditor
 	// CreditsFromMiscAmounts stores creditors associated with misc sources
 	CreditsFromMiscAmounts map[finance.MiscSource]Creditor
+	// PersistentCredits are credits that are available by default in this
+	// contra-formula. They still need to be accounted for in ApplicationOrder
+	PersistentCredits []Credits
 	// ApplicationOrder stores the order in which tax credits are used
 	ApplicationOrder []CreditSource
 }
@@ -35,12 +38,9 @@ func (cf *CanadianContraFormula) Apply(finances *finance.IndividualFinances, net
 	deducSrcCredits := cf.creditsFromDeducSrcs(finances, netIncome)
 	miscSrcCredits := cf.creditsFromMiscSrcs(finances, netIncome)
 
-	allCredits := append(
-		incSrcCredits,
-		append(
-			deducSrcCredits,
-			miscSrcCredits...)...,
-	)
+	allCredits := append(cf.PersistentCredits, incSrcCredits...)
+	allCredits = append(allCredits, deducSrcCredits...)
+	allCredits = append(allCredits, miscSrcCredits...)
 
 	cf.orderCreditGroupInPlace(allCredits)
 	return allCredits
@@ -172,6 +172,11 @@ func (cf *CanadianContraFormula) Clone() ContraFormula {
 		}
 	}
 
+	if cf.PersistentCredits != nil {
+		clone.PersistentCredits = make([]Credits, len(cf.PersistentCredits))
+		copy(clone.PersistentCredits, cf.PersistentCredits)
+	}
+
 	if cf.ApplicationOrder != nil {
 		clone.ApplicationOrder = make([]CreditSource, len(cf.ApplicationOrder))
 		copy(clone.ApplicationOrder, cf.ApplicationOrder)
@@ -221,6 +226,17 @@ func (cf *CanadianContraFormula) Validate() error {
 			err,
 			"misc-source creditors must return credit sources which are known "+
 				"in the application order list",
+		)
+	}
+	if err != nil {
+		return err
+	}
+
+	err = cf.checkPersistentCrSrcsInSet(appOrderCreditSrcSet)
+	if errors.Cause(err) == ErrUnknownCreditSource {
+		err = errors.Wrap(
+			err,
+			"persistent credit sources must be known in the application order list",
 		)
 	}
 	if err != nil {
@@ -297,6 +313,26 @@ func (cf *CanadianContraFormula) checkMiscSrcCreditorsInSet(set map[CreditSource
 				ErrUnknownCreditSource,
 				"misc source %q -> credit source %q",
 				miscSrc, creditor.Source(),
+			)
+		}
+
+	}
+
+	return nil
+}
+
+// checkPersistentCrSrcsInSet returns ErrUnknownCreditSource if a source of
+// credits in cf.PersistentCredits is not in the given set
+func (cf *CanadianContraFormula) checkPersistentCrSrcsInSet(set map[CreditSource]struct{}) error {
+
+	for _, cr := range cf.PersistentCredits {
+
+		_, exist := set[cr.Source]
+		if !exist {
+			return errors.Wrapf(
+				ErrUnknownCreditSource,
+				"persistent credit source: %q",
+				cr.Source,
 			)
 		}
 

@@ -139,10 +139,6 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 		{
 			name: "unknown-deduc-creditor",
 			formula: &CanadianContraFormula{
-				CreditsFromIncome: map[finance.IncomeSource]Creditor{
-					123: testCreditor{onSource: 1000},
-					456: testCreditor{onSource: 2000},
-				},
 				CreditsFromDeduction: map[finance.DeductionSource]Creditor{
 					123: testCreditor{onSource: 1000},
 					456: testCreditor{onSource: 2222},
@@ -155,19 +151,20 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 		{
 			name: "unknown-misc-creditor",
 			formula: &CanadianContraFormula{
-				CreditsFromIncome: map[finance.IncomeSource]Creditor{
-					123: testCreditor{onSource: 1000},
-					456: testCreditor{onSource: 2000},
-				},
-				CreditsFromDeduction: map[finance.DeductionSource]Creditor{
-					123: testCreditor{onSource: 1000},
-					456: testCreditor{onSource: 2000},
-				},
 				CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
 					123: testCreditor{onSource: 1000},
 					456: testCreditor{onSource: 2222},
 				},
 				ApplicationOrder: []CreditSource{1000, 2000},
+			},
+			err: ErrUnknownCreditSource,
+		},
+		//
+		{
+			name: "unknown-persistent-crSrc",
+			formula: &CanadianContraFormula{
+				PersistentCredits: []Credits{{Source: 2222}},
+				ApplicationOrder:  []CreditSource{1000, 2000},
 			},
 			err: ErrUnknownCreditSource,
 		},
@@ -381,6 +378,26 @@ func TestCanadianContraFormula_checkIncSrcCreditorsInSet(t *testing.T) {
 
 }
 
+func TestCanadianContraFormula_checkPersistentCrSrcsInSet(t *testing.T) {
+
+	cf := &CanadianContraFormula{
+		PersistentCredits: []Credits{{Source: 123}},
+	}
+
+	err := cf.checkPersistentCrSrcsInSet(nil)
+	if errors.Cause(err) != ErrUnknownCreditSource {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrUnknownCreditSource, err)
+	}
+
+	set := map[CreditSource]struct{}{123: struct{}{}}
+
+	err = cf.checkPersistentCrSrcsInSet(set)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+}
+
 func TestCanadianContraFormula_orderCreditGroupInPlace(t *testing.T) {
 
 	cf := &CanadianContraFormula{
@@ -442,7 +459,8 @@ func TestCanadianContraFormula_Clone(t *testing.T) {
 			123: testCreditor{onSource: 1000},
 			456: testCreditor{onSource: 2000},
 		},
-		ApplicationOrder: []CreditSource{1000, 2000},
+		PersistentCredits: []Credits{{Source: 1000}},
+		ApplicationOrder:  []CreditSource{1000, 2000},
 	}
 
 	err := original.Validate()
@@ -460,6 +478,7 @@ func TestCanadianContraFormula_Clone(t *testing.T) {
 	original.CreditsFromIncome[123] = testCreditor{onSource: 1111}
 	original.CreditsFromDeduction[123] = testCreditor{onSource: 1111}
 	original.CreditsFromMiscAmounts[123] = testCreditor{onSource: 1111}
+	original.PersistentCredits = []Credits{{Source: 111}}
 	err = original.Validate()
 	if err == nil {
 		t.Fatal("invalid formula did not return error when validated")
@@ -474,7 +493,7 @@ func TestCanadianContraFormula_NumFieldsUnchanged(t *testing.T) {
 
 	dummy := CanadianContraFormula{}
 	s := reflect.ValueOf(&dummy).Elem()
-	if s.NumField() != 4 {
+	if s.NumField() != 5 {
 		t.Fatal(
 			"number of struct fields changed. Please update the constructor and the " +
 				"clone method of this type as well as associated test. Next, update " +
