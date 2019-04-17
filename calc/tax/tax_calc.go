@@ -44,30 +44,44 @@ func (c *Calculator) Calc(finances *finance.IndividualFinances) float64 {
 	netIncome := c.incomeCalculator.NetIncome(finances)
 	totalTax := c.formula.Apply(netIncome)
 	credits := c.contraFormula.Apply(finances, netIncome)
-	netPayableTax, _ := c.netPayableTax(totalTax, credits) // TODO: return lost amount
+	netPayableTax, _ := c.netPayableTax(totalTax, credits)
 
 	return netPayableTax
 }
 
-func (c *Calculator) netPayableTax(taxAmount float64, crGroup []Credits) (reducedTaxAmount float64, lostCredits float64) {
+// TODO: use if statements and panic on unidentified control
+// netPayableTax returns the payable tax and any unsable/remaining credits
+func (c *Calculator) netPayableTax(taxAmount float64, crGroup []TaxCredit) (float64, []finance.TaxCredit) {
+
+	var remainingCredits []finance.TaxCredit
 
 	for _, cr := range crGroup {
 
-		if taxAmount >= cr.Amount || cr.IsRefundable {
+		switch {
+
+		case taxAmount >= cr.Amount, cr.Control == ControlTypeCashable:
 			taxAmount -= cr.Amount
-			continue
-		}
+			newCrBalance := finance.TaxCredit{Amount: 0, Source: cr.Source}
+			remainingCredits = append(remainingCredits, newCrBalance)
 
-		if taxAmount <= 0.0 {
-			lostCredits += cr.Amount
-			continue
-		}
+		case taxAmount <= 0.0 && cr.Control == ControlTypeCanCarryForward:
+			newCrBalance := finance.TaxCredit{Amount: cr.Amount, Source: cr.Source}
+			remainingCredits = append(remainingCredits, newCrBalance)
 
-		// reached once at most
-		diff := cr.Amount - taxAmount
-		lostCredits += diff
-		taxAmount = 0.0
+		case taxAmount <= 0.0 && cr.Control == ControlTypeNotCarryForward:
+			newCrBalance := finance.TaxCredit{Amount: 0, Source: cr.Source}
+			remainingCredits = append(remainingCredits, newCrBalance)
+
+		default:
+			diff := cr.Amount - taxAmount
+			taxAmount = 0.0
+			newCrBalance := finance.TaxCredit{Amount: diff, Source: cr.Source}
+			if cr.Control == ControlTypeNotCarryForward {
+				newCrBalance.Amount = 0.0
+			}
+			remainingCredits = append(remainingCredits, newCrBalance)
+		}
 	}
 
-	return taxAmount, lostCredits
+	return taxAmount, remainingCredits
 }

@@ -1,8 +1,10 @@
 package tax
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/go-test/deep"
 	"github.com/malkhamis/quantax/calc/finance"
 
 	"github.com/pkg/errors"
@@ -40,16 +42,60 @@ func TestCalculator_Calc(t *testing.T) {
 
 func TestCalculator_netPayableTax(t *testing.T) {
 
-	crGroup := []Credits{
-		{Amount: 5000, IsRefundable: true},
-		{Amount: 4000, IsRefundable: false},
-		{Amount: 2000, IsRefundable: false},
-		{Amount: 1000, IsRefundable: true},
-		{Amount: 500, IsRefundable: false},
+	crGroup := []TaxCredit{
+		{
+			Amount: 5000,
+			CreditSourceControl: CreditSourceControl{
+				Source:  1,
+				Control: ControlTypeCashable,
+			},
+		},
+		{
+			Amount: 4000,
+			CreditSourceControl: CreditSourceControl{
+				Source:  2,
+				Control: ControlTypeNotCarryForward,
+			},
+		},
+		{
+			Amount: 2000, CreditSourceControl: CreditSourceControl{
+				Source:  3,
+				Control: ControlTypeNotCarryForward,
+			},
+		},
+		{
+			Amount: 1000,
+			CreditSourceControl: CreditSourceControl{
+				Source:  4,
+				Control: ControlTypeCashable,
+			},
+		},
+		{
+			Amount: 500,
+			CreditSourceControl: CreditSourceControl{
+				Source:  5,
+				Control: ControlTypeNotCarryForward,
+			},
+		},
+		{
+			Amount: 500,
+			CreditSourceControl: CreditSourceControl{
+				Source:  6,
+				Control: ControlTypeCanCarryForward,
+			},
+		},
 	}
 
-	actualNetTax, actualLostCr := (&Calculator{}).netPayableTax(10000, crGroup)
-	expectedNetTax, expectedLostCr := -1000.0, 1500.0
+	actualNetTax, actualRemainingCrs := (&Calculator{}).netPayableTax(10000, crGroup)
+	expectedNetTax := -1000.0
+	expectedRemainingCrs := []finance.TaxCredit{
+		{Source: 1, Amount: 0.0},
+		{Source: 2, Amount: 0.0},
+		{Source: 3, Amount: 0.0},
+		{Source: 4, Amount: 0.0},
+		{Source: 5, Amount: 0.0},
+		{Source: 6, Amount: 500},
+	}
 
 	if actualNetTax != expectedNetTax {
 		t.Errorf(
@@ -58,12 +104,11 @@ func TestCalculator_netPayableTax(t *testing.T) {
 		)
 	}
 
-	if actualLostCr != expectedLostCr {
-		t.Fatalf(
-			"actual lost credits does not match expected\nwant: %.2f\ngot: %.2f",
-			expectedLostCr, actualLostCr,
-		)
+	diff := deep.Equal(actualRemainingCrs, expectedRemainingCrs)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
+
 }
 
 func TestNewCalculator_Error(t *testing.T) {
