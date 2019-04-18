@@ -35,14 +35,18 @@ var taxFormulaBC2018 = &tax.CanadianFormula{
 }
 
 var taxContraFormulaBC2018 = &tax.CanadianContraFormula{
-	PersistentCredits: []tax.Credits{
-		tax.Credits{
-			Amount:       0.0506 * 10412,
-			Source:       crSrcPersonalAmountCanada,
-			IsRefundable: false,
+	PersistentCredits: []finance.TaxCredit{
+		{
+			Amount: 0.0506 * 10412,
+			Source: crSrcPersonalAmountCanada,
 		},
 	},
-	ApplicationOrder: []tax.CreditSource{crSrcPersonalAmountCanada},
+	ApplicationOrder: []tax.CreditSourceControl{
+		{
+			crSrcPersonalAmountCanada,
+			tax.ControlTypeNotCarryForward,
+		},
+	},
 }
 
 var cbFormulaBC2017 = &benefits.BCECTBMaxReducer{
