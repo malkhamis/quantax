@@ -30,12 +30,11 @@ type IncomeDeductor interface {
 
 // IndividualFinances represents the financial data of an individual
 type IndividualFinances struct {
-	EOY         uint
-	Cash        float64
-	Income      IncomeBySource
-	Deductions  DeductionBySource
-	MiscAmounts MiscAmountsBySource
-	// TODO add credits
+	EOY                     uint
+	Cash                    float64
+	Income                  IncomeBySource
+	Deductions              DeductionBySource
+	MiscAmounts             MiscAmountsBySource
 	RRSPContributionRoom    float64
 	RRSPUnclaimedDeductions float64
 }
