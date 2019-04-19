@@ -5,19 +5,23 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
+	"github.com/malkhamis/quantax/calc"
 	"github.com/malkhamis/quantax/calc/finance"
 
 	"github.com/pkg/errors"
 )
 
-func TestCalculator_Calc(t *testing.T) {
+func TestCalculator_TaxPayable(t *testing.T) {
 
 	incCalc := testIncomeCalculator{onTotalIncome: 3000.0}
 	formula := testTaxFormula{onApply: incCalc.TotalIncome(nil) / 2.0}
+	cformula := &testTaxContraFormula{
+		onApply: []*taxCredit{},
+	}
 
 	cfg := CalcConfig{
 		TaxFormula:       formula,
-		ContraTaxFormula: &testTaxContraFormula{},
+		ContraTaxFormula: cformula,
 		IncomeCalc:       incCalc,
 	}
 
@@ -26,13 +30,24 @@ func TestCalculator_Calc(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := formula.onApply
 	c.SetFinances(finance.NewEmptyIndividualFinances(2018))
-	actual, _ := c.TaxPayable()
-	t.Fatal("^^ missing check for credits")
-	if actual != expected {
-		t.Fatalf("unexpected tax\nwant: %.2f\n got: %.2f", expected, actual)
+	actualTax, actualCr := c.TaxPayable()
+
+	expectedTax := formula.onApply
+	expectedCr := []calc.TaxCredit{}
+
+	if actualTax != expectedTax {
+		t.Fatalf("unexpected tax\nwant: %.2f\n got: %.2f", expectedTax, actualTax)
 	}
+
+	if len(actualCr) != len(expectedCr) {
+		t.Fatalf("expected %d credits, got: %d", len(expectedCr), len(actualCr))
+	}
+
+}
+
+func TestCalculator_credits(t *testing.T) {
+	t.Skip("TODO")
 }
 
 func TestCalculator_netPayableTax(t *testing.T) {

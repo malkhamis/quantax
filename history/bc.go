@@ -34,17 +34,18 @@ var taxFormulaBC2018 = &tax.CanadianFormula{
 	},
 }
 
+const (
+	crSrcPersonalAmountBC = "BC-basic-personal-amount"
+)
+
 var taxContraFormulaBC2018 = &tax.CanadianContraFormula{
-	PersistentCredits: []finance.TaxCredit{
-		{
-			Amount: 0.0506 * 10412,
-			Source: crSrcPersonalAmountCanada,
-		},
+	PersistentCredits: map[string]float64{
+		crSrcPersonalAmountBC: 0.0506 * 10412,
 	},
-	ApplicationOrder: []tax.CreditSourceControl{
+	ApplicationOrder: []tax.CreditRule{
 		{
-			crSrcPersonalAmountCanada,
-			tax.ControlTypeNotCarryForward,
+			Source: crSrcPersonalAmountBC,
+			Type:   tax.CrRuleTypeNotCarryForward,
 		},
 	},
 }

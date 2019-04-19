@@ -44,10 +44,9 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 func (c *Calculator) SetFinances(f *finance.IndividualFinances) {
 
 	if f == nil {
-		c.finances = finance.NewEmptyIndividualFinances(0)
-	} else {
-		c.finances = f
+		f = finance.NewEmptyIndividualFinances(0)
 	}
+	c.finances = f
 }
 
 // SetCredits stores relevent credits from the given credits in this calculator.

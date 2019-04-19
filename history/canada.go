@@ -47,21 +47,17 @@ var taxFormulaCanada2018 = &tax.CanadianFormula{
 }
 
 const (
-	_ finance.CreditSource = iota // uninitialized default value
-	crSrcPersonalAmountCanada
+	crSrcPersonalAmountCanada = "Canada-basic-personal-amount"
 )
 
 var taxContraFormulaCanada2018 = &tax.CanadianContraFormula{
-	PersistentCredits: []finance.TaxCredit{
-		{
-			Amount: 0.150 * 11809,
-			Source: crSrcPersonalAmountCanada,
-		},
+	PersistentCredits: map[string]float64{
+		crSrcPersonalAmountCanada: 0.150 * 11809,
 	},
-	ApplicationOrder: []tax.CreditSourceControl{
+	ApplicationOrder: []tax.CreditRule{
 		{
-			crSrcPersonalAmountCanada,
-			tax.ControlTypeNotCarryForward,
+			Source: crSrcPersonalAmountCanada,
+			Type:   tax.CrRuleTypeNotCarryForward,
 		},
 	},
 }
