@@ -17,7 +17,7 @@ func TestCalculator_Calc(t *testing.T) {
 
 	cfg := CalcConfig{
 		TaxFormula:       formula,
-		ContraTaxFormula: testTaxContraFormula{},
+		ContraTaxFormula: &testTaxContraFormula{},
 		IncomeCalc:       incCalc,
 	}
 
@@ -27,74 +27,70 @@ func TestCalculator_Calc(t *testing.T) {
 	}
 
 	expected := formula.onApply
-	actual := c.Calc(finance.NewEmptyIndividualFinances(2018))
+	c.SetFinances(finance.NewEmptyIndividualFinances(2018))
+	actual, _ := c.TaxPayable()
+	t.Fatal("^^ missing check for credits")
 	if actual != expected {
 		t.Fatalf("unexpected tax\nwant: %.2f\n got: %.2f", expected, actual)
 	}
-
-	expected = 0.0
-	actual = c.Calc(nil)
-	if actual != expected {
-		t.Fatalf("unexpected tax\nwant: %.2f\n got: %.2f", expected, actual)
-	}
-
 }
 
 func TestCalculator_netPayableTax(t *testing.T) {
 
-	crGroup := []TaxCredit{
-		{
-			Amount: 5000,
-			CreditSourceControl: CreditSourceControl{
-				Source:  1,
-				Control: ControlTypeCashable,
+	crGroup := []*taxCredit{
+		&taxCredit{
+			amount: 5000,
+			rule: CreditRule{
+				Source: "1",
+				Type:   CrRuleTypeCashable,
 			},
 		},
-		{
-			Amount: 4000,
-			CreditSourceControl: CreditSourceControl{
-				Source:  2,
-				Control: ControlTypeNotCarryForward,
+		&taxCredit{
+			amount: 4000,
+			rule: CreditRule{
+				Source: "2",
+				Type:   CrRuleTypeNotCarryForward,
 			},
 		},
-		{
-			Amount: 2000, CreditSourceControl: CreditSourceControl{
-				Source:  3,
-				Control: ControlTypeNotCarryForward,
+		&taxCredit{
+			amount: 2000,
+			rule: CreditRule{
+				Source: "3",
+				Type:   CrRuleTypeNotCarryForward,
 			},
 		},
-		{
-			Amount: 1000,
-			CreditSourceControl: CreditSourceControl{
-				Source:  4,
-				Control: ControlTypeCashable,
+		&taxCredit{
+			amount: 1000,
+			rule: CreditRule{
+				Source: "4",
+				Type:   CrRuleTypeCashable,
 			},
 		},
-		{
-			Amount: 500,
-			CreditSourceControl: CreditSourceControl{
-				Source:  5,
-				Control: ControlTypeNotCarryForward,
+		&taxCredit{
+			amount: 500,
+			rule: CreditRule{
+				Source: "5",
+				Type:   CrRuleTypeNotCarryForward,
 			},
 		},
-		{
-			Amount: 500,
-			CreditSourceControl: CreditSourceControl{
-				Source:  6,
-				Control: ControlTypeCanCarryForward,
+		&taxCredit{
+			amount: 500,
+			rule: CreditRule{
+				Source: "6",
+				Type:   CrRuleTypeCanCarryForward,
 			},
 		},
 	}
 
 	actualNetTax, actualRemainingCrs := (&Calculator{}).netPayableTax(10000, crGroup)
 	expectedNetTax := -1000.0
-	expectedRemainingCrs := []finance.TaxCredit{
-		{Source: 1, Amount: 0.0},
-		{Source: 2, Amount: 0.0},
-		{Source: 3, Amount: 0.0},
-		{Source: 4, Amount: 0.0},
-		{Source: 5, Amount: 0.0},
-		{Source: 6, Amount: 500},
+	expectedRemainingCrs := []*taxCredit{
+		&taxCredit{rule: CreditRule{Source: "1"}, owner: nil, amount: 0.0},
+		&taxCredit{rule: CreditRule{Source: "2"}, owner: nil, amount: 0.0},
+		&taxCredit{rule: CreditRule{Source: "3"}, owner: nil, amount: 0.0},
+		&taxCredit{rule: CreditRule{Source: "4"}, owner: nil, amount: 0.0},
+		&taxCredit{rule: CreditRule{Source: "5"}, owner: nil, amount: 0.0},
+		&taxCredit{rule: CreditRule{Source: "6"}, owner: nil, amount: 500},
 	}
 
 	if actualNetTax != expectedNetTax {
@@ -115,7 +111,7 @@ func TestNewCalculator_Error(t *testing.T) {
 
 	cfg := CalcConfig{
 		TaxFormula:       testTaxFormula{},
-		ContraTaxFormula: testTaxContraFormula{},
+		ContraTaxFormula: &testTaxContraFormula{},
 		IncomeCalc:       nil,
 	}
 	_, err := NewCalculator(cfg)

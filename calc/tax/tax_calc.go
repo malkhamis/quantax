@@ -14,6 +14,8 @@ type Calculator struct {
 	formula          Formula
 	contraFormula    ContraFormula
 	incomeCalculator calc.IncomeCalculator
+	finances         *finance.IndividualFinances
+	credits          []*taxCredit
 }
 
 // NewCalculator returns a new tax calculator for the given tax formula and the
@@ -29,57 +31,83 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 		formula:          cfg.TaxFormula.Clone(),
 		contraFormula:    cfg.ContraTaxFormula.Clone(),
 		incomeCalculator: cfg.IncomeCalc,
+		finances:         finance.NewEmptyIndividualFinances(0),
 	}
 
 	return c, nil
 }
 
-// Calc computes the tax on the net income for the given finances
-func (c *Calculator) Calc(finances *finance.IndividualFinances) float64 {
+// SetFinances stores the given financial data in this calculator. Subsequent
+// calls to other calculator functions will be based on the the given finances.
+// Changes to the given finances after calling this function will affect future
+// calculations. If finances is nil, a non-nil, empty finances is set
+func (c *Calculator) SetFinances(f *finance.IndividualFinances) {
 
-	if finances == nil {
-		return 0.0
+	if f == nil {
+		c.finances = finance.NewEmptyIndividualFinances(0)
+	} else {
+		c.finances = f
 	}
+}
 
-	netIncome := c.incomeCalculator.NetIncome(finances)
+// SetCredits stores the given credits in this calculator. Subsequent calls to
+// other calculator functions may or may not be be influenced by these credits.
+func (c *Calculator) SetCredits(credits []calc.TaxCredit) {
+
+	c.credits = make([]*taxCredit, 0, len(credits))
+	for _, cr := range credits {
+		typed, ok := cr.(*taxCredit)
+		if ok {
+			c.credits = append(c.credits, typed)
+		}
+	}
+}
+
+// TaxPayable computes the tax on the net income for the previously set finances
+func (c *Calculator) TaxPayable() (float64, []calc.TaxCredit) {
+
+	netIncome := c.incomeCalculator.NetIncome(c.finances)
 	totalTax := c.formula.Apply(netIncome)
-	credits := c.contraFormula.Apply(finances, netIncome)
-	netPayableTax, _ := c.netPayableTax(totalTax, credits)
+	newCredits := c.contraFormula.Apply(c.finances, netIncome)
+	allCredits := append(c.credits, newCredits...) // TODO merge similar based on source and owner?
+	netPayableTax, remainingCredits := c.netPayableTax(totalTax, allCredits)
 
-	return netPayableTax
+	return netPayableTax, taxCreditGroup(remainingCredits).typecast()
 }
 
 // TODO: use if statements and panic on unidentified control
 // netPayableTax returns the payable tax and any unsable/remaining credits
-func (c *Calculator) netPayableTax(taxAmount float64, crGroup []TaxCredit) (float64, []finance.TaxCredit) {
+func (c *Calculator) netPayableTax(taxAmount float64, credits []*taxCredit) (float64, []*taxCredit) {
 
-	var remainingCredits []finance.TaxCredit
+	var remainingCredits []*taxCredit
 
-	for _, cr := range crGroup {
+	for _, cr := range credits {
 
 		switch {
 
-		case taxAmount >= cr.Amount, cr.Control == ControlTypeCashable:
-			taxAmount -= cr.Amount
-			newCrBalance := finance.TaxCredit{Amount: 0, Source: cr.Source}
-			remainingCredits = append(remainingCredits, newCrBalance)
+		case taxAmount >= cr.amount, cr.rule.Type == CrRuleTypeCashable:
+			taxAmount -= cr.amount
+			newCr := cr.clone()
+			newCr.amount = 0
+			remainingCredits = append(remainingCredits, newCr)
 
-		case taxAmount <= 0.0 && cr.Control == ControlTypeCanCarryForward:
-			newCrBalance := finance.TaxCredit{Amount: cr.Amount, Source: cr.Source}
-			remainingCredits = append(remainingCredits, newCrBalance)
+		case taxAmount <= 0.0 && cr.rule.Type == CrRuleTypeCanCarryForward:
+			remainingCredits = append(remainingCredits, cr.clone())
 
-		case taxAmount <= 0.0 && cr.Control == ControlTypeNotCarryForward:
-			newCrBalance := finance.TaxCredit{Amount: 0, Source: cr.Source}
-			remainingCredits = append(remainingCredits, newCrBalance)
+		case taxAmount <= 0.0 && cr.rule.Type == CrRuleTypeNotCarryForward:
+			newCr := cr.clone()
+			newCr.amount = 0
+			remainingCredits = append(remainingCredits, newCr)
 
 		default:
-			diff := cr.Amount - taxAmount
+			diff := cr.amount - taxAmount
 			taxAmount = 0.0
-			newCrBalance := finance.TaxCredit{Amount: diff, Source: cr.Source}
-			if cr.Control == ControlTypeNotCarryForward {
-				newCrBalance.Amount = 0.0
+			newCr := cr.clone()
+			newCr.amount = diff
+			if cr.rule.Type == CrRuleTypeNotCarryForward {
+				newCr.amount = 0.0
 			}
-			remainingCredits = append(remainingCredits, newCrBalance)
+			remainingCredits = append(remainingCredits, newCr)
 		}
 	}
 

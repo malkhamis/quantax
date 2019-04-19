@@ -29,7 +29,7 @@ func TestAggregator_Calc(t *testing.T) {
 
 	cfg := CalcConfig{
 		TaxFormula:       formula,
-		ContraTaxFormula: testTaxContraFormula{},
+		ContraTaxFormula: &testTaxContraFormula{},
 		IncomeCalc:       incCalc,
 	}
 
@@ -53,7 +53,9 @@ func TestAggregator_Calc(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	actual := aggregator.Calc(finance.NewEmptyIndividualFinances(2019))
+	aggregator.SetFinances(finance.NewEmptyIndividualFinances(2019))
+	actual, _ := aggregator.TaxPayable()
+	t.Fatal("^^ missing check for credits")
 	expected := (3000.0 / 2.0) * float64(len(aggregator.calculators))
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)

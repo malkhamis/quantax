@@ -9,7 +9,7 @@ var (
 
 type NopContraFormula struct{}
 
-func (NopContraFormula) Apply(finances *finance.IndividualFinances, netIncome float64) []TaxCredit {
+func (NopContraFormula) Apply(finances *finance.IndividualFinances, netIncome float64) []*taxCredit {
 	return nil
 }
 

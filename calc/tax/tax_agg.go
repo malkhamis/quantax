@@ -33,12 +33,33 @@ func NewAggregator(c0, c1 calc.TaxCalculator, extras ...calc.TaxCalculator) (*Ag
 
 }
 
-// Calc computes the tax on the taxable amount set in this calculator
-func (agg *Aggregator) Calc(finances *finance.IndividualFinances) float64 {
+// TaxPayable returns the sum of payable tax from the underlying calculators
+func (agg *Aggregator) TaxPayable() (float64, []calc.TaxCredit) {
 
-	var payableTax float64
+	var (
+		taxAgg float64
+		crAgg  []calc.TaxCredit
+	)
+
 	for _, c := range agg.calculators {
-		payableTax += c.Calc(finances)
+		taxPayable, credits := c.TaxPayable()
+		taxAgg += taxPayable
+		crAgg = append(crAgg, credits...)
 	}
-	return payableTax
+
+	return taxAgg, crAgg
+}
+
+// SetFinances sets the given finances in all underlying tax calculators
+func (agg *Aggregator) SetFinances(f *finance.IndividualFinances) {
+	for _, c := range agg.calculators {
+		c.SetFinances(f)
+	}
+}
+
+// SetCredits sets the given credits in all underlying tax calculators
+func (agg *Aggregator) SetCredits(cr []calc.TaxCredit) {
+	for _, c := range agg.calculators {
+		c.SetCredits(cr)
+	}
 }

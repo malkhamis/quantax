@@ -1,91 +1,121 @@
 package tax
 
-import "github.com/malkhamis/quantax/calc/finance"
+import (
+	"github.com/malkhamis/quantax/calc"
+)
 
 // Creditor calculates tax credits that reduces payable taxes
 type Creditor interface {
 	// TaxCredits returns the tax credits for the given amount. The net
 	// income may or may not be used by the underlying implementation
-	TaxCredit(amount, netIncome float64) finance.TaxCredit
-	// Source returns the credit source for this creditor
-	Source() finance.CreditSource
+	TaxCredit(fromAmount, netIncome float64) float64
+	// Source returns the name of the credit source for this creditor
+	Source() string
 	// Clone returns a copy of this creditor
 	Clone() Creditor
 }
 
-// ControlType is an enum type for credit source control
-type ControlType int
+// CreditRuleType is an enum type for credit application rules
+type CreditRuleType int
 
 const (
 	// unknown/uninitialized
-	_ ControlType = iota
-	// ControlTypeCashable indicates cashable credits
+	_ CreditRuleType = iota
+	// CrRuleTypeCashable indicates cashable credits
 	// that may result in negative payable tax amount
 	// when used to reduce payable tax
-	ControlTypeCashable
-	// ControlTypeCanCarryForward indicates non-cashable
+	CrRuleTypeCashable
+	// CrRuleTypeCanCarryForward indicates non-cashable
 	// credits which may only reduce payable tax to zero
 	// and the remaining balance may be carried forward
 	// to the future
-	ControlTypeCanCarryForward
-	// ControlTypeNotCarryForward indicates non-cashable
+	CrRuleTypeCanCarryForward
+	// CrRuleTypeNotCarryForward indicates non-cashable
 	// credits which may only reduce payable tax to zero.
 	// Unused balance cannot be carried forward to the future
-	ControlTypeNotCarryForward
+	CrRuleTypeNotCarryForward
 )
 
-// CreditSourceControl is used to constrain/guide a contra-formula user when
-// adding/using the credit amount for a given source
-type CreditSourceControl struct {
-	// the controlled credit source
-	Source  finance.CreditSource
-	Control ControlType
+// CreditRule is used to constrain/guide a contra-formula user when adding or
+// using the credit amount for a given source
+type CreditRule struct {
+	// the credit source which the rule is applied on
+	Source string
+	// the way, or rule, of using the credit source
+	Type CreditRuleType
 }
 
-// TaxCredit represents an amount owed to tax payer alongside the means of
-// of recieving the amount owed (i.e. control)
-type TaxCredit struct {
-	Amount float64
-	CreditSourceControl
+// creditBySource is used to pass around credit amount alongside its source
+type creditBySource struct {
+	source string
+	amount float64
 }
 
-// ConstCreditor returns a constant amount of tax credits
-type ConstCreditor struct {
-	Const finance.TaxCredit
+// compile-time check for interface implementation
+var _ calc.TaxCredit = (*taxCredit)(nil)
+
+// taxCredit represents an amount owed to tax payer
+type taxCredit struct {
+	// the amount owed to the tax payer
+	amount float64
+	// the rule of crediting the amount
+	rule CreditRule
+	// the originator of this tax credit
+	owner ContraFormula // TODO: this should be calculator!!!
 }
 
-// TaxCredits returns constant credits disregarding the given amount to extract
-// credits from and the given net income
-func (cc ConstCreditor) TaxCredit(_, _ float64) finance.TaxCredit {
-	return cc.Const
+// Amount returns the credit amount
+func (cr *taxCredit) Amount() float64 {
+	return cr.amount
 }
 
-// Source returns the credit source this creditor
-func (cc ConstCreditor) Source() finance.CreditSource {
-	return cc.Const.Source
+// Source returns the source name of this tax credit
+func (cr *taxCredit) Source() string {
+	return cr.rule.Source
 }
 
-// Clone returns a copy of this creditor
-func (cc ConstCreditor) Clone() Creditor {
-	return cc
+// clone returns a copy of this tax credit instance
+func (cr *taxCredit) clone() *taxCredit {
+	if cr == nil {
+		return nil
+	}
+	return &taxCredit{
+		amount: cr.amount,
+		rule:   cr.rule,
+		owner:  cr.owner,
+	}
 }
 
-type creditSourceControlGroup []CreditSourceControl
+// taxCreditGroup is a type used to encapsulate slice-specific logic
+type taxCreditGroup []*taxCredit
+
+// typecast convert []*taxCredit to []calc.TaxCredit
+func (tcg taxCreditGroup) typecast() []calc.TaxCredit {
+
+	typed := make([]calc.TaxCredit, len(tcg))
+	for i, cr := range tcg {
+		typed[i] = cr
+	}
+	return typed
+}
+
+// creditRuleGroup is a type used to encapsulate slice-specific logic
+type creditRuleGroup []CreditRule
 
 // makeSet convert 'cs' into a set of unique items. It also returns duplicates
-func (crcg creditSourceControlGroup) makeSrcSetAndGetDuplicates() (map[finance.CreditSource]struct{}, []finance.CreditSource) {
+func (crg creditRuleGroup) makeSrcSetAndGetDuplicates() (map[string]struct{}, []string) {
 
-	srcSet := make(map[finance.CreditSource]struct{})
-	srcDup := make([]finance.CreditSource, 0, len(crcg))
+	srcSet := make(map[string]struct{})
+	srcDup := make([]string, 0, len(crg))
 
-	for _, crc := range crcg {
+	for _, crRule := range crg {
 
-		if _, ok := srcSet[crc.Source]; ok {
-			srcDup = append(srcDup, crc.Source)
+		if _, ok := srcSet[crRule.Source]; ok {
+			srcDup = append(srcDup, crRule.Source)
 			continue
 		}
 
-		srcSet[crc.Source] = struct{}{}
+		srcSet[crRule.Source] = struct{}{}
 	}
 
 	return srcSet, srcDup

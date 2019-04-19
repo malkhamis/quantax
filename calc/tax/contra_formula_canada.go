@@ -20,126 +20,133 @@ type CanadianContraFormula struct {
 	CreditsFromDeduction map[finance.DeductionSource]Creditor
 	// CreditsFromMiscAmounts stores creditors associated with misc sources
 	CreditsFromMiscAmounts map[finance.MiscSource]Creditor
-	// PersistentCredits are credits that are available by default in this
-	// contra-formula. They still need to be accounted for in ApplicationOrder
-	PersistentCredits []finance.TaxCredit
+	// PersistentCredits are source-named credits that are available by default in
+	// this contra-formula. They must be accounted for in ApplicationOrder.
+	PersistentCredits map[string]float64
 	// ApplicationOrder stores the order in which tax credits are used
-	ApplicationOrder []CreditSourceControl
+	ApplicationOrder []CreditRule
 }
 
 // Apply applies the contra-formula on the income and the set finances
-func (cf *CanadianContraFormula) Apply(finances *finance.IndividualFinances, netIncome float64) []TaxCredit {
+func (cf *CanadianContraFormula) Apply(finances *finance.IndividualFinances, netIncome float64) []*taxCredit {
 
 	if finances == nil {
 		return nil
+	}
+
+	pCredits := make([]*creditBySource, 0, len(cf.PersistentCredits))
+	for src, amount := range cf.PersistentCredits {
+		pCredits = append(pCredits, &creditBySource{src, amount})
 	}
 
 	incSrcCredits := cf.creditsFromIncSrcs(finances, netIncome)
 	deducSrcCredits := cf.creditsFromDeducSrcs(finances, netIncome)
 	miscSrcCredits := cf.creditsFromMiscSrcs(finances, netIncome)
 
-	allCredits := append(cf.PersistentCredits, incSrcCredits...)
+	allCredits := append(pCredits, incSrcCredits...)
 	allCredits = append(allCredits, deducSrcCredits...)
 	allCredits = append(allCredits, miscSrcCredits...)
 
-	allCredits = finance.TaxCreditGroup(allCredits).MergeSimilars()
-	controlledCredits := cf.makeControlledTaxCreditsFrom(allCredits)
-	cf.orderCreditGroupInPlace(controlledCredits)
+	convertedCredits := cf.convertCredits(allCredits)
+	cf.orderCredits(convertedCredits)
 
-	return controlledCredits
+	return convertedCredits
 }
 
 // creditsFromIncSrcs returns a list of credits extracted from the income
 // sources in this contra-formula. It assumes that finances is never nil and
 // that the contra formula was validated
-func (cf *CanadianContraFormula) creditsFromIncSrcs(finances *finance.IndividualFinances, netIncome float64) []finance.TaxCredit {
+func (cf *CanadianContraFormula) creditsFromIncSrcs(finances *finance.IndividualFinances, netIncome float64) []*creditBySource {
 
-	var creditGroup []finance.TaxCredit
+	credits := make([]*creditBySource, 0, len(finances.Income))
 
-	for source, srcIncome := range finances.Income {
+	for src, income := range finances.Income {
 
-		creditor := cf.CreditsFromIncome[source]
+		creditor := cf.CreditsFromIncome[src]
 		if creditor == nil {
 			continue
 		}
 
-		credits := creditor.TaxCredit(srcIncome, netIncome)
-		if credits.Amount == 0 {
+		amount := creditor.TaxCredit(income, netIncome)
+		if amount == 0 {
 			continue
 		}
 
-		creditGroup = append(creditGroup, credits)
+		cr := &creditBySource{creditor.Source(), amount}
+		credits = append(credits, cr)
 	}
 
-	return creditGroup
+	return credits
 }
 
 // creditsFromDeducSrcs returns a list of credits extracted from the deduciton
 // sources in this contra-formula. It assumes that finances is never nil and
 // that the contra formula was validated
-func (cf *CanadianContraFormula) creditsFromDeducSrcs(finances *finance.IndividualFinances, netIncome float64) []finance.TaxCredit {
+func (cf *CanadianContraFormula) creditsFromDeducSrcs(finances *finance.IndividualFinances, netIncome float64) []*creditBySource {
 
-	var creditGroup []finance.TaxCredit
+	credits := make([]*creditBySource, 0, len(finances.Deductions))
 
-	for source, srcDeduc := range finances.Deductions {
+	for src, deduc := range finances.Deductions {
 
-		creditor := cf.CreditsFromDeduction[source]
+		creditor := cf.CreditsFromDeduction[src]
 		if creditor == nil {
 			continue
 		}
 
-		credits := creditor.TaxCredit(srcDeduc, netIncome)
-		if credits.Amount == 0 {
+		amount := creditor.TaxCredit(deduc, netIncome)
+		if amount == 0 {
 			continue
 		}
 
-		creditGroup = append(creditGroup, credits)
+		cr := &creditBySource{creditor.Source(), amount}
+		credits = append(credits, cr)
 	}
 
-	return creditGroup
+	return credits
 }
 
 // creditsFromMiscSrcs returns a list of credits extracted from the misc
 // sources in this contra-formula. It assumes that finances is never nil and
 // that the contra formula was validated
-func (cf *CanadianContraFormula) creditsFromMiscSrcs(finances *finance.IndividualFinances, netIncome float64) []finance.TaxCredit {
+func (cf *CanadianContraFormula) creditsFromMiscSrcs(finances *finance.IndividualFinances, netIncome float64) []*creditBySource {
 
-	var creditGroup []finance.TaxCredit
+	credits := make([]*creditBySource, 0, len(finances.MiscAmounts))
 
-	for source, srcMisc := range finances.MiscAmounts {
+	for src, misc := range finances.MiscAmounts {
 
-		creditor := cf.CreditsFromMiscAmounts[source]
+		creditor := cf.CreditsFromMiscAmounts[src]
 		if creditor == nil {
 			continue
 		}
 
-		credits := creditor.TaxCredit(srcMisc, netIncome)
-		if credits.Amount == 0 {
+		amount := creditor.TaxCredit(misc, netIncome)
+		if amount == 0 {
 			continue
 		}
 
-		creditGroup = append(creditGroup, credits)
+		cr := &creditBySource{creditor.Source(), amount}
+		credits = append(credits, cr)
 	}
 
-	return creditGroup
+	return credits
 }
 
-// orderCreditGroupInPlace sort the credit group according to the application
+// orderCredits sort the credit group according to the application
 // order of this contra formula. It assumes that cf wa validated before use.
-func (cf *CanadianContraFormula) orderCreditGroupInPlace(creditGroup []TaxCredit) {
+func (cf *CanadianContraFormula) orderCredits(credits []*taxCredit) {
 
-	if len(creditGroup) == 0 {
+	if len(credits) == 0 {
 		return
 	}
 
-	priority := make(map[finance.CreditSource]int)
-	for i, crSrcCtrl := range cf.ApplicationOrder {
-		priority[crSrcCtrl.Source] = i
+	priority := make(map[string]int)
+	for i, rule := range cf.ApplicationOrder {
+		priority[rule.Source] = i
 	}
 
-	sort.SliceStable(creditGroup, func(i int, j int) bool {
-		iSrc := creditGroup[i].Source
-		jSrc := creditGroup[j].Source
+	sort.SliceStable(credits, func(i int, j int) bool {
+		iSrc := credits[i].Source()
+		jSrc := credits[j].Source()
 		return priority[iSrc] < priority[jSrc]
 	})
 
@@ -176,12 +183,14 @@ func (cf *CanadianContraFormula) Clone() ContraFormula {
 	}
 
 	if cf.PersistentCredits != nil {
-		clone.PersistentCredits = make([]finance.TaxCredit, len(cf.PersistentCredits))
-		copy(clone.PersistentCredits, cf.PersistentCredits)
+		clone.PersistentCredits = make(map[string]float64)
+		for src, amount := range cf.PersistentCredits {
+			clone.PersistentCredits[src] = amount
+		}
 	}
 
 	if cf.ApplicationOrder != nil {
-		clone.ApplicationOrder = make([]CreditSourceControl, len(cf.ApplicationOrder))
+		clone.ApplicationOrder = make([]CreditRule, len(cf.ApplicationOrder))
 		copy(clone.ApplicationOrder, cf.ApplicationOrder)
 	}
 
@@ -191,7 +200,7 @@ func (cf *CanadianContraFormula) Clone() ContraFormula {
 // Validate checks if the formula is valid for use
 func (cf *CanadianContraFormula) Validate() error {
 
-	appOrderCreditSrcSet, dups := creditSourceControlGroup(
+	appOrderCreditSrcSet, dups := creditRuleGroup(
 		cf.ApplicationOrder,
 	).makeSrcSetAndGetDuplicates()
 
@@ -252,7 +261,7 @@ func (cf *CanadianContraFormula) Validate() error {
 // checkIncSrcCreditorsInSet returns ErrUnknownCreditSource if a single creditor
 // in income-source creditos is not in the given set. If a creditor is nil, it
 // returns ErrNoCreditor
-func (cf *CanadianContraFormula) checkIncSrcCreditorsInSet(set map[finance.CreditSource]struct{}) error {
+func (cf *CanadianContraFormula) checkIncSrcCreditorsInSet(set map[string]struct{}) error {
 
 	for incomeSrc, creditor := range cf.CreditsFromIncome {
 
@@ -277,7 +286,7 @@ func (cf *CanadianContraFormula) checkIncSrcCreditorsInSet(set map[finance.Credi
 // checkDeducSrcCreditorsInSet returns ErrUnknownCreditSource if a single
 // creditor in deduction-source creditos is not in the given set. If a creditor
 // is nil, it returns ErrNoCreditor
-func (cf *CanadianContraFormula) checkDeducSrcCreditorsInSet(set map[finance.CreditSource]struct{}) error {
+func (cf *CanadianContraFormula) checkDeducSrcCreditorsInSet(set map[string]struct{}) error {
 
 	for deducSrc, creditor := range cf.CreditsFromDeduction {
 
@@ -302,7 +311,7 @@ func (cf *CanadianContraFormula) checkDeducSrcCreditorsInSet(set map[finance.Cre
 // checkMiscSrcCreditorsInSet returns ErrUnknownCreditSource if a single
 // creditor in misc-source creditos is not in the given set. If a creditor is
 // nil, it returns ErrNoCreditor
-func (cf *CanadianContraFormula) checkMiscSrcCreditorsInSet(set map[finance.CreditSource]struct{}) error {
+func (cf *CanadianContraFormula) checkMiscSrcCreditorsInSet(set map[string]struct{}) error {
 
 	for miscSrc, creditor := range cf.CreditsFromMiscAmounts {
 
@@ -326,16 +335,16 @@ func (cf *CanadianContraFormula) checkMiscSrcCreditorsInSet(set map[finance.Cred
 
 // checkPersistentCrSrcsInSet returns ErrUnknownCreditSource if a source of
 // credits in cf.PersistentCredits is not in the given set
-func (cf *CanadianContraFormula) checkPersistentCrSrcsInSet(set map[finance.CreditSource]struct{}) error {
+func (cf *CanadianContraFormula) checkPersistentCrSrcsInSet(set map[string]struct{}) error {
 
-	for _, cr := range cf.PersistentCredits {
+	for src := range cf.PersistentCredits {
 
-		_, exist := set[cr.Source]
+		_, exist := set[src]
 		if !exist {
 			return errors.Wrapf(
 				ErrUnknownCreditSource,
 				"persistent credit source: %q",
-				cr.Source,
+				src,
 			)
 		}
 
@@ -344,27 +353,30 @@ func (cf *CanadianContraFormula) checkPersistentCrSrcsInSet(set map[finance.Cred
 	return nil
 }
 
-// makeControlledTaxCreditsFrom convert tax credits to controlled tax credtis.
+// convertCredits convert tax credits to controlled tax credtis.
 // Sources that are not present in the application order aren't included
-func (cf *CanadianContraFormula) makeControlledTaxCreditsFrom(credits []finance.TaxCredit) []TaxCredit {
+func (cf *CanadianContraFormula) convertCredits(credits []*creditBySource) []*taxCredit {
 
-	knownCrSrcCtrl := make(map[finance.CreditSource]CreditSourceControl)
-	for _, crSrcCtrl := range cf.ApplicationOrder {
-		knownCrSrcCtrl[crSrcCtrl.Source] = crSrcCtrl
+	knownRules := make(map[string]CreditRule)
+	for _, rule := range cf.ApplicationOrder {
+		knownRules[rule.Source] = rule
 	}
 
-	var controlledCredits []TaxCredit
+	convertedCredits := make([]*taxCredit, 0, len(credits))
 	for _, cr := range credits {
 
-		crSrcCtrl, ok := knownCrSrcCtrl[cr.Source]
-
+		rule, ok := knownRules[cr.source]
 		if !ok {
 			continue
 		}
 
-		ctrlCr := TaxCredit{Amount: cr.Amount, CreditSourceControl: crSrcCtrl}
-		controlledCredits = append(controlledCredits, ctrlCr)
+		newCr := &taxCredit{
+			amount: cr.amount,
+			rule:   rule,
+			owner:  cf,
+		}
+		convertedCredits = append(convertedCredits, newCr)
 	}
 
-	return controlledCredits
+	return convertedCredits
 }
