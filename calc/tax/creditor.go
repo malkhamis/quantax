@@ -4,6 +4,9 @@ import (
 	"github.com/malkhamis/quantax/calc"
 )
 
+// compile-time check for interface implementation
+var _ calc.TaxCredit = (*taxCredit)(nil)
+
 // Creditor calculates tax credits that reduces payable taxes
 type Creditor interface {
 	// TaxCredits returns the tax credits for the given amount. The net
@@ -45,14 +48,34 @@ type CreditRule struct {
 	Type CreditRuleType
 }
 
+// creditRuleGroup is a type used to encapsulate slice-specific logic
+type creditRuleGroup []CreditRule
+
+// makeSrcSetAndGetDuplicates convert 'crg' into a set of unique items and
+// returns duplicates
+func (crg creditRuleGroup) makeSrcSetAndGetDuplicates() (map[string]struct{}, []string) {
+
+	srcSet := make(map[string]struct{})
+	srcDup := make([]string, 0, len(crg))
+
+	for _, crRule := range crg {
+
+		if _, ok := srcSet[crRule.Source]; ok {
+			srcDup = append(srcDup, crRule.Source)
+			continue
+		}
+
+		srcSet[crRule.Source] = struct{}{}
+	}
+
+	return srcSet, srcDup
+}
+
 // creditBySource is used to pass around credit amount alongside its source
 type creditBySource struct {
 	source string
 	amount float64
 }
-
-// compile-time check for interface implementation
-var _ calc.TaxCredit = (*taxCredit)(nil)
 
 // taxCredit represents an amount owed to tax payer
 type taxCredit struct {
@@ -61,7 +84,7 @@ type taxCredit struct {
 	// the rule of crediting the amount
 	rule CreditRule
 	// the originator of this tax credit
-	owner ContraFormula // TODO: this should be calculator!!!
+	owner calc.TaxCalculator
 }
 
 // Amount returns the credit amount
@@ -99,24 +122,16 @@ func (tcg taxCreditGroup) typecast() []calc.TaxCredit {
 	return typed
 }
 
-// creditRuleGroup is a type used to encapsulate slice-specific logic
-type creditRuleGroup []CreditRule
+// clone returns a copy of this tax credit group
+func (tcg taxCreditGroup) clone() []*taxCredit {
 
-// makeSet convert 'cs' into a set of unique items. It also returns duplicates
-func (crg creditRuleGroup) makeSrcSetAndGetDuplicates() (map[string]struct{}, []string) {
-
-	srcSet := make(map[string]struct{})
-	srcDup := make([]string, 0, len(crg))
-
-	for _, crRule := range crg {
-
-		if _, ok := srcSet[crRule.Source]; ok {
-			srcDup = append(srcDup, crRule.Source)
-			continue
-		}
-
-		srcSet[crRule.Source] = struct{}{}
+	if tcg == nil {
+		return nil
 	}
 
-	return srcSet, srcDup
+	c := make([]*taxCredit, len(tcg))
+	for i, cr := range tcg {
+		c[i] = cr.clone()
+	}
+	return c
 }

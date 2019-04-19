@@ -50,66 +50,77 @@ func (c *Calculator) SetFinances(f *finance.IndividualFinances) {
 	}
 }
 
-// SetCredits stores the given credits in this calculator. Subsequent calls to
-// other calculator functions may or may not be be influenced by these credits.
+// SetCredits stores relevent credits from the given credits in this calculator.
+// Subsequent calls to other calculator functions may or may not be influenced
+// by these credits.
 func (c *Calculator) SetCredits(credits []calc.TaxCredit) {
 
 	c.credits = make([]*taxCredit, 0, len(credits))
+
 	for _, cr := range credits {
+
 		typed, ok := cr.(*taxCredit)
-		if ok {
-			c.credits = append(c.credits, typed)
+		if !ok || typed.owner != c {
+			continue
 		}
+
+		c.credits = append(c.credits, typed)
 	}
 }
 
 // TaxPayable computes the tax on the net income for the previously set finances
+// and any relevent credits.
 func (c *Calculator) TaxPayable() (float64, []calc.TaxCredit) {
 
 	netIncome := c.incomeCalculator.NetIncome(c.finances)
 	totalTax := c.formula.Apply(netIncome)
-	newCredits := c.contraFormula.Apply(c.finances, netIncome)
-	allCredits := append(c.credits, newCredits...) // TODO merge similar based on source and owner?
-	netPayableTax, remainingCredits := c.netPayableTax(totalTax, allCredits)
 
+	newCredits := c.contraFormula.Apply(c.finances, netIncome)
+	c.ownCredits(newCredits)
+	allCredits := append(c.credits, newCredits...)
+
+	netPayableTax, remainingCredits := c.netPayableTax(totalTax, allCredits)
 	return netPayableTax, taxCreditGroup(remainingCredits).typecast()
 }
 
-// TODO: use if statements and panic on unidentified control
-// netPayableTax returns the payable tax and any unsable/remaining credits
+// ownCredits sets the owner of the given credits to this calculator
+func (c *Calculator) ownCredits(credits []*taxCredit) {
+	for _, cr := range credits {
+		cr.owner = c
+	}
+}
+
+// netPayableTax returns the payable tax and any unsable/remaining credits. It
+// assumes that the given credits are owned by this calculator
 func (c *Calculator) netPayableTax(taxAmount float64, credits []*taxCredit) (float64, []*taxCredit) {
 
-	var remainingCredits []*taxCredit
+	newCredits := taxCreditGroup(credits).clone()
 
-	for _, cr := range credits {
+	for _, cr := range newCredits {
 
-		switch {
+		if taxAmount <= 0.0 && cr.rule.Type == CrRuleTypeCanCarryForward {
+			continue
+		}
 
-		case taxAmount >= cr.amount, cr.rule.Type == CrRuleTypeCashable:
+		if taxAmount <= 0.0 && cr.rule.Type == CrRuleTypeNotCarryForward {
+			cr.amount = 0
+			continue
+		}
+
+		if taxAmount >= cr.amount || cr.rule.Type == CrRuleTypeCashable {
 			taxAmount -= cr.amount
-			newCr := cr.clone()
-			newCr.amount = 0
-			remainingCredits = append(remainingCredits, newCr)
+			cr.amount = 0
+			continue
+		}
 
-		case taxAmount <= 0.0 && cr.rule.Type == CrRuleTypeCanCarryForward:
-			remainingCredits = append(remainingCredits, cr.clone())
-
-		case taxAmount <= 0.0 && cr.rule.Type == CrRuleTypeNotCarryForward:
-			newCr := cr.clone()
-			newCr.amount = 0
-			remainingCredits = append(remainingCredits, newCr)
-
-		default:
-			diff := cr.amount - taxAmount
-			taxAmount = 0.0
-			newCr := cr.clone()
-			newCr.amount = diff
-			if cr.rule.Type == CrRuleTypeNotCarryForward {
-				newCr.amount = 0.0
-			}
-			remainingCredits = append(remainingCredits, newCr)
+		// reached at most once
+		diff := cr.amount - taxAmount
+		taxAmount = 0.0
+		cr.amount = diff
+		if cr.rule.Type == CrRuleTypeNotCarryForward {
+			cr.amount = 0.0
 		}
 	}
 
-	return taxAmount, remainingCredits
+	return taxAmount, newCredits
 }

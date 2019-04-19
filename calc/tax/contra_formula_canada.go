@@ -27,18 +27,26 @@ type CanadianContraFormula struct {
 	ApplicationOrder []CreditRule
 }
 
-// Apply applies the contra-formula on the income and the set finances
+// Apply applies the contra-formula on the given finances and net income and
+// extracts tax credits from them
 func (cf *CanadianContraFormula) Apply(finances *finance.IndividualFinances, netIncome float64) []*taxCredit {
 
 	if finances == nil {
 		return nil
 	}
 
-	pCredits := make([]*creditBySource, 0, len(cf.PersistentCredits))
-	for src, amount := range cf.PersistentCredits {
-		pCredits = append(pCredits, &creditBySource{src, amount})
-	}
+	allCredits := cf.extractCredits(finances, netIncome)
+	convertedCredits := cf.convertCredits(allCredits)
+	cf.orderCredits(convertedCredits)
 
+	return convertedCredits
+}
+
+// extractCredits extracts tax credits from the given finances and net income.
+// The returns credits also include persistent credits
+func (cf *CanadianContraFormula) extractCredits(finances *finance.IndividualFinances, netIncome float64) []*creditBySource {
+
+	pCredits := cf.persistentCredits()
 	incSrcCredits := cf.creditsFromIncSrcs(finances, netIncome)
 	deducSrcCredits := cf.creditsFromDeducSrcs(finances, netIncome)
 	miscSrcCredits := cf.creditsFromMiscSrcs(finances, netIncome)
@@ -47,10 +55,17 @@ func (cf *CanadianContraFormula) Apply(finances *finance.IndividualFinances, net
 	allCredits = append(allCredits, deducSrcCredits...)
 	allCredits = append(allCredits, miscSrcCredits...)
 
-	convertedCredits := cf.convertCredits(allCredits)
-	cf.orderCredits(convertedCredits)
+	return allCredits
+}
 
-	return convertedCredits
+// persistentCredits converts cf.PersistentCredits to []*creditBySource
+func (cf *CanadianContraFormula) persistentCredits() []*creditBySource {
+
+	pCredits := make([]*creditBySource, 0, len(cf.PersistentCredits))
+	for src, amount := range cf.PersistentCredits {
+		pCredits = append(pCredits, &creditBySource{src, amount})
+	}
+	return pCredits
 }
 
 // creditsFromIncSrcs returns a list of credits extracted from the income
@@ -373,7 +388,6 @@ func (cf *CanadianContraFormula) convertCredits(credits []*creditBySource) []*ta
 		newCr := &taxCredit{
 			amount: cr.amount,
 			rule:   rule,
-			owner:  cf,
 		}
 		convertedCredits = append(convertedCredits, newCr)
 	}
