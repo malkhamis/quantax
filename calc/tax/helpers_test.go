@@ -50,29 +50,29 @@ func (tcb testTaxFormula) Clone() Formula {
 }
 
 type testTaxContraFormula struct {
-	onApply    []Credits
+	onApply    []*taxCredit
 	onValidate error
 }
 
-func (tcf testTaxContraFormula) Apply(_ *finance.IndividualFinances, _ float64) []Credits {
+func (tcf *testTaxContraFormula) Apply(_ *finance.IndividualFinances, _ float64) []*taxCredit {
 	return tcf.onApply
 }
-func (tcf testTaxContraFormula) Validate() error {
+func (tcf *testTaxContraFormula) Validate() error {
 	return tcf.onValidate
 }
-func (tcf testTaxContraFormula) Clone() ContraFormula {
+func (tcf *testTaxContraFormula) Clone() ContraFormula {
 	return tcf
 }
 
 type testCreditor struct {
-	onTaxCredits Credits
-	onSource     CreditSource
+	onTaxCredits float64
+	onSource     string
 }
 
-func (tc testCreditor) TaxCredits(_, _ float64) Credits {
+func (tc testCreditor) TaxCredit(_, _ float64) float64 {
 	return tc.onTaxCredits
 }
-func (tc testCreditor) Source() CreditSource {
+func (tc testCreditor) Source() string {
 	return tc.onSource
 }
 func (tc testCreditor) Clone() Creditor {

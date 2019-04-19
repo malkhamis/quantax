@@ -39,7 +39,7 @@ func TestNewCalculator(t *testing.T) {
 func TestCalculator_TaxPaid(t *testing.T) {
 
 	taxCalc := &testTaxCalculator{
-		onCalc: []float64{1000.0, 1015.0},
+		onTaxPayable: []float64{1000.0, 1015.0},
 	}
 
 	formula := &testFormula{}
@@ -60,7 +60,7 @@ func TestCalculator_TaxPaid(t *testing.T) {
 func TestCalculator_TaxRefund(t *testing.T) {
 
 	taxCalc := &testTaxCalculator{
-		onCalc: []float64{1000.0, 985.0},
+		onTaxPayable: []float64{1000.0, 985.0},
 	}
 
 	formula := &testFormula{}
@@ -129,7 +129,9 @@ func TestCalculator_RefundError(t *testing.T) {
 
 func TestCalculator_SetFinances_Nil(t *testing.T) {
 
-	c := &Calculator{}
+	c := &Calculator{
+		taxCalculator: &testTaxCalculator{},
+	}
 	c.SetFinances(nil)
 	if c.finances == nil {
 		t.Fatal("expected a non nil finances")

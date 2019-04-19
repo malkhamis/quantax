@@ -1,6 +1,8 @@
 package finance
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestSets_Has(t *testing.T) {
 

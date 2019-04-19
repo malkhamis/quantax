@@ -1,16 +1,23 @@
 package rrsp
 
-import "github.com/malkhamis/quantax/calc/finance"
+import (
+	"github.com/malkhamis/quantax/calc"
+	"github.com/malkhamis/quantax/calc/finance"
+)
 
 type testTaxCalculator struct {
 	currentIndex int
-	onCalc       []float64
+	onTaxPayable []float64
 }
 
-func (ttc *testTaxCalculator) Calc(_ *finance.IndividualFinances) float64 {
-	currentVal := ttc.onCalc[ttc.currentIndex]
+func (ttc *testTaxCalculator) TaxPayable() (float64, []calc.TaxCredit) {
+	currentVal := ttc.onTaxPayable[ttc.currentIndex]
 	ttc.currentIndex++
-	return currentVal
+	return currentVal, nil
+}
+func (ttc *testTaxCalculator) SetCredits(_ []calc.TaxCredit) {
+}
+func (ttc *testTaxCalculator) SetFinances(_ *finance.IndividualFinances) {
 }
 
 type testFormula struct {

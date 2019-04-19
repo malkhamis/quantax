@@ -46,13 +46,13 @@ func NewCalculator(formula Formula, taxCalc calc.TaxCalculator) (*Calculator, er
 // calculator for the given withdrawal amount
 func (c *Calculator) TaxPaid(withdrawal float64) float64 {
 
-	taxBefore := c.taxCalculator.Calc(c.finances)
+	taxBefore, _ := c.taxCalculator.TaxPayable()
 
 	incomeSrc := c.formula.TargetSourceForWithdrawl()
 	c.finances.AddIncome(incomeSrc, withdrawal)
 	defer c.finances.AddIncome(incomeSrc, -withdrawal)
 
-	taxAfter := c.taxCalculator.Calc(c.finances)
+	taxAfter, _ := c.taxCalculator.TaxPayable()
 
 	diff := taxAfter - taxBefore
 	return diff
@@ -66,13 +66,13 @@ func (c *Calculator) TaxRefund(contribution float64) (float64, error) {
 		return 0.0, ErrNoRRSPRoom
 	}
 
-	taxBefore := c.taxCalculator.Calc(c.finances)
+	taxBefore, _ := c.taxCalculator.TaxPayable()
 
 	deducSrc := c.formula.TargetSourceForContribution()
 	c.finances.AddDeduction(deducSrc, contribution)
 	defer c.finances.AddDeduction(deducSrc, -contribution)
 
-	taxAfter := c.taxCalculator.Calc(c.finances)
+	taxAfter, _ := c.taxCalculator.TaxPayable()
 
 	diff := taxBefore - taxAfter
 	return diff, nil
@@ -92,10 +92,14 @@ func (c *Calculator) ContributionEarned() float64 {
 }
 
 // SetFinances makes subsequent calculations based on the given finances.
-// if newFinances is nil, an empty finances instance is set
-func (c *Calculator) SetFinances(newFinances *finance.IndividualFinances) {
-	c.finances = newFinances
-	if c.finances == nil {
-		c.finances = finance.NewEmptyIndividualFinances(0)
+// if new finances is nil, an empty finances instance is set. Change to the
+// given finances will affect the results of future calls on this calculator
+func (c *Calculator) SetFinances(f *finance.IndividualFinances) {
+
+	if f == nil {
+		f = finance.NewEmptyIndividualFinances(0)
 	}
+
+	c.finances = f
+	c.taxCalculator.SetFinances(f)
 }

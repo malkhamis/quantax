@@ -20,7 +20,7 @@ func TestCalcConfig_validate(t *testing.T) {
 			cfg: CalcConfig{
 				IncomeCalc:       testIncomeCalculator{},
 				TaxFormula:       testTaxFormula{},
-				ContraTaxFormula: testTaxContraFormula{},
+				ContraTaxFormula: &testTaxContraFormula{},
 			},
 			err: nil,
 		},
@@ -30,7 +30,7 @@ func TestCalcConfig_validate(t *testing.T) {
 			cfg: CalcConfig{
 				IncomeCalc:       testIncomeCalculator{},
 				TaxFormula:       testTaxFormula{onValidate: simulatedErr},
-				ContraTaxFormula: testTaxContraFormula{},
+				ContraTaxFormula: &testTaxContraFormula{},
 			},
 			err: simulatedErr,
 		},
@@ -40,7 +40,7 @@ func TestCalcConfig_validate(t *testing.T) {
 			cfg: CalcConfig{
 				IncomeCalc:       testIncomeCalculator{},
 				TaxFormula:       testTaxFormula{},
-				ContraTaxFormula: testTaxContraFormula{onValidate: simulatedErr},
+				ContraTaxFormula: &testTaxContraFormula{onValidate: simulatedErr},
 			},
 			err: simulatedErr,
 		},
@@ -50,7 +50,7 @@ func TestCalcConfig_validate(t *testing.T) {
 			cfg: CalcConfig{
 				IncomeCalc:       testIncomeCalculator{},
 				TaxFormula:       nil,
-				ContraTaxFormula: testTaxContraFormula{},
+				ContraTaxFormula: &testTaxContraFormula{},
 			},
 			err: ErrNoFormula,
 		},
@@ -70,7 +70,7 @@ func TestCalcConfig_validate(t *testing.T) {
 			cfg: CalcConfig{
 				IncomeCalc:       testIncomeCalculator{},
 				TaxFormula:       nil,
-				ContraTaxFormula: testTaxContraFormula{},
+				ContraTaxFormula: &testTaxContraFormula{},
 			},
 			err: ErrNoFormula,
 		},
@@ -79,7 +79,7 @@ func TestCalcConfig_validate(t *testing.T) {
 			cfg: CalcConfig{
 				IncomeCalc:       nil,
 				TaxFormula:       testTaxFormula{},
-				ContraTaxFormula: testTaxContraFormula{},
+				ContraTaxFormula: &testTaxContraFormula{},
 			},
 			err: ErrNoIncCalc,
 		},
