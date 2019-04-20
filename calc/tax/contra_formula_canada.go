@@ -368,8 +368,8 @@ func (cf *CanadianContraFormula) checkPersistentCrSrcsInSet(set map[string]struc
 	return nil
 }
 
-// convertCredits convert tax credits to controlled tax credtis.
-// Sources that are not present in the application order aren't included
+// convertCredits convert amount-source pairs to tax credtis to include rules.
+// Sources that are not present in the application order are omitted
 func (cf *CanadianContraFormula) convertCredits(credits []*creditBySource) []*taxCredit {
 
 	knownRules := make(map[string]CreditRule)

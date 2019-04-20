@@ -58,8 +58,8 @@ func (agg *Aggregator) SetFinances(f *finance.IndividualFinances) {
 }
 
 // SetCredits sets the given credits in all underlying tax calculators
-func (agg *Aggregator) SetCredits(cr []calc.TaxCredit) {
+func (agg *Aggregator) SetCredits(credits []calc.TaxCredit) {
 	for _, c := range agg.calculators {
-		c.SetCredits(cr)
+		c.SetCredits(credits)
 	}
 }

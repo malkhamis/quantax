@@ -78,3 +78,16 @@ func (tc testCreditor) Source() string {
 func (tc testCreditor) Clone() Creditor {
 	return tc
 }
+
+type testTaxCredit struct {
+	onAmount float64
+	onSource string
+}
+
+func (ttc testTaxCredit) Amount() float64 {
+	return ttc.onAmount
+}
+
+func (ttc testTaxCredit) Source() string {
+	return ttc.onSource
+}
