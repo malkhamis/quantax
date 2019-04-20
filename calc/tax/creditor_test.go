@@ -74,3 +74,74 @@ func TestCreditSources_makeSetAndGetDuplicates(t *testing.T) {
 	}
 
 }
+
+func Test_taxCredit_Amount(t *testing.T) {
+
+	tc := &taxCredit{amount: 10}
+	if tc.Amount() != tc.amount {
+		t.Fatalf(
+			"unexpected tax credit amount\nwant: %.2f\n got: %.2f",
+			tc.amount, tc.Amount(),
+		)
+	}
+}
+
+func Test_taxCredit_Source(t *testing.T) {
+
+	tc := &taxCredit{rule: CreditRule{Source: t.Name()}}
+	if tc.Source() != tc.rule.Source {
+		t.Fatalf(
+			"unexpected tax credit source\nwant: %q\n got: %q",
+			tc.rule.Source, tc.Source(),
+		)
+	}
+}
+
+func Test_taxCredit_clone(t *testing.T) {
+
+	c := new(Calculator)
+	original := &taxCredit{
+		amount: 123,
+		owner:  c,
+		rule:   CreditRule{Source: t.Name(), Type: CrRuleTypeCashable},
+	}
+
+	clone := original.clone()
+	diff := deep.Equal(original, clone)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	original.owner = nil
+	if clone.owner == nil {
+		t.Fatal("expected changes to original to not affect clone")
+	}
+}
+
+func Test_taxCredit_clone_nil(t *testing.T) {
+
+	var nilTaxCredit *taxCredit
+	clone := nilTaxCredit.clone()
+	if clone != nil {
+		t.Fatal("cloning a nil tax credit should return nil")
+	}
+}
+
+func Test_taxCreditGroup_clone(t *testing.T) {
+
+	c := new(Calculator)
+	original := []*taxCredit{
+		&taxCredit{
+			amount: 123,
+			owner:  c,
+			rule:   CreditRule{Source: t.Name(), Type: CrRuleTypeCashable},
+		},
+	}
+
+	clone := taxCreditGroup(original).clone()
+	diff := deep.Equal(original, clone)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+}

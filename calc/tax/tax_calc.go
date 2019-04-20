@@ -57,14 +57,12 @@ func (c *Calculator) SetCredits(credits []calc.TaxCredit) {
 	c.credits = make([]*taxCredit, 0, len(credits))
 
 	for _, cr := range credits {
-
 		typed, ok := cr.(*taxCredit)
-		if !ok || typed.owner != c {
-			continue
+		if ok && typed.owner == c {
+			c.credits = append(c.credits, typed)
 		}
-
-		c.credits = append(c.credits, typed)
 	}
+
 }
 
 // TaxPayable computes the tax on the net income for the previously set finances
