@@ -24,8 +24,8 @@ func ExampleNewTaxFactory() {
 	finances.AddIncome(finance.IncSrcTFSA, 12000)
 	finances.AddDeduction(finance.DeducSrcRRSP, 10000)
 
-	aggTax, _ := calculator.TaxPayable() // TODO print credits
-	fmt.Printf("%.2f", aggTax)           // Output: 52821.09
+	aggTax, _ := calculator.TaxPayable()
+	fmt.Printf("%.2f\n", aggTax) // Output: 52821.09
 }
 
 func ExampleNewChildBenefitFactory() {
