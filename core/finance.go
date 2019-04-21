@@ -24,29 +24,27 @@ type Financer interface {
 	// MiscSources returns a set of all miscellaneous sources in this instance.
 	// The returned map is never nil
 	MiscSources() map[FinancialSource]struct{}
-	// TODO: Version()
+	// Version returns the version, which is the number of changes made
+	Version() uint64
 }
 
 // IndividualFinances represents the financial data of an individual
 type IndividualFinances struct {
-	EOY                     uint
-	Cash                    float64
-	Income                  AmountBySource
-	Deductions              AmountBySource
-	MiscAmounts             AmountBySource
-	RRSPContributionRoom    float64
-	RRSPUnclaimedDeductions float64
-	// TODO: version
+	cash                    float64
+	income                  amountBySource
+	deductions              amountBySource
+	miscAmounts             amountBySource
+	rrspContributionRoom    float64
+	rrspUnclaimedDeductions float64
+	version                 uint64
 }
 
-// NewEmptyIndividualFinances returns an instance whose EOY is initialized to
-// endOfYear and whose maps are initialized with no amounts/sources
-func NewEmptyIndividualFinances(endOfYear uint) *IndividualFinances {
+// NewEmptyIndividualFinances returns an empty instance with version zero
+func NewEmptyIndividualFinances() *IndividualFinances {
 	return &IndividualFinances{
-		EOY:         endOfYear,
-		Income:      make(AmountBySource),
-		Deductions:  make(AmountBySource),
-		MiscAmounts: make(AmountBySource),
+		income:      make(amountBySource),
+		deductions:  make(amountBySource),
+		miscAmounts: make(amountBySource),
 	}
 }
 
@@ -60,12 +58,12 @@ func (f *IndividualFinances) TotalIncome(sources ...FinancialSource) float64 {
 	}
 
 	if len(sources) == 0 {
-		return f.Income.Sum()
+		return f.income.Sum()
 	}
 
 	var total float64
 	for _, source := range sources {
-		total += f.Income[source]
+		total += f.income[source]
 	}
 	return total
 }
@@ -80,12 +78,12 @@ func (f *IndividualFinances) TotalDeductions(sources ...FinancialSource) float64
 	}
 
 	if len(sources) == 0 {
-		return f.Deductions.Sum()
+		return f.deductions.Sum()
 	}
 
 	var total float64
 	for _, source := range sources {
-		total += f.Deductions[source]
+		total += f.deductions[source]
 	}
 	return total
 }
@@ -99,58 +97,40 @@ func (f *IndividualFinances) MiscAmount(sources ...FinancialSource) float64 {
 	}
 
 	if len(sources) == 0 {
-		return f.MiscAmounts.Sum()
+		return f.miscAmounts.Sum()
 	}
 
 	var total float64
 	for _, source := range sources {
-		total += f.MiscAmounts[source]
+		total += f.miscAmounts[source]
 	}
 	return total
 }
 
-// TODO: replace all these AddXXXX with AddAmount(Source, Float64). Depending
-// on where the source is in the iota, we mutate the right map
-// AddIncome adds the given amount to the stored amount of the given source
-func (f *IndividualFinances) AddIncome(source FinancialSource, amount float64) {
-	f.Income[source] += amount
-}
-
-// RemoveIncome removes the given stored income sources. If sources is empty,
-// the function is noop. This operation ensures that subsequent calls to
-// IncomeSources() returns a list that does not contain given income source(s)
-func (f *IndividualFinances) RemoveIncome(sources ...FinancialSource) {
-	for _, s := range sources {
-		delete(f.Income, s)
+// AddAmount adds the given amount to the finances. If the source is within the
+// range of recognized income sources, it is added as an income. If it within
+// the range of recognized deduction sources, it is added as a deduction. Other
+// sources, including unknown ones are added as misc amounts
+func (f *IndividualFinances) AddAmount(source FinancialSource, amount float64) {
+	switch {
+	case source.IsIncomeSource():
+		f.income[source] += amount
+	case source.IsDeductionSource():
+		f.deductions[source] += amount
+	default:
+		f.miscAmounts[source] += amount
 	}
 }
 
-// AddDeduction adds the given amount to the stored amount of the given source
-func (f *IndividualFinances) AddDeduction(source FinancialSource, amount float64) {
-	f.Deductions[source] += amount
-}
-
-// RemoveDeduction removes the given stored deduction sources. If sources is
-// empty, the function is nop. This operation ensures that subsequent calls to
-// DeductionSources() returns a list that does not contain given deduction
+// RemoveAmounts removes the given stored sources. If sources is empty, the call
+// is noop. This operation ensures that subsequent calls to IncomeSources,
+// DeductionSources, and MiscSources returns a list that does not contain given
 // source(s)
-func (f *IndividualFinances) RemoveDeduction(sources ...FinancialSource) {
+func (f *IndividualFinances) RemoveAmounts(sources ...FinancialSource) {
 	for _, s := range sources {
-		delete(f.Deductions, s)
-	}
-}
-
-// AddMiscAmount adds the given amount to the stored amount of the given source
-func (f *IndividualFinances) AddMiscAmount(source FinancialSource, amount float64) {
-	f.MiscAmounts[source] += amount
-}
-
-// RemoveMiscAmount removes the given stored miscellaneous sources. If sources
-// is empty, the function is noop. This operation ensures that subsequent calls
-// to MiscSources() returns a list that does not contain given misc source(s)
-func (f *IndividualFinances) RemoveMiscAmount(sources ...FinancialSource) {
-	for _, s := range sources {
-		delete(f.MiscAmounts, s)
+		delete(f.income, s)
+		delete(f.deductions, s)
+		delete(f.miscAmounts, s)
 	}
 }
 
@@ -163,7 +143,7 @@ func (f *IndividualFinances) IncomeSources() map[FinancialSource]struct{} {
 		return set
 	}
 
-	for source := range f.Income {
+	for source := range f.income {
 		set[source] = struct{}{}
 	}
 
@@ -181,7 +161,7 @@ func (f *IndividualFinances) DeductionSources() map[FinancialSource]struct{} {
 		return set
 	}
 
-	for source := range f.Deductions {
+	for source := range f.deductions {
 		set[source] = struct{}{}
 	}
 
@@ -197,14 +177,28 @@ func (f *IndividualFinances) MiscSources() map[FinancialSource]struct{} {
 		return set
 	}
 
-	for source := range f.MiscAmounts {
+	for source := range f.miscAmounts {
 		set[source] = struct{}{}
 	}
 
 	return set
 }
 
-// TODO update docstrings once version is added and set version of the clone to zero
+// Cash returns the free cash balance set in this instance
+func (f *IndividualFinances) Cash() float64 {
+	return f.cash
+}
+
+// SetCash sets the free cash balance to the given value
+func (f *IndividualFinances) SetCash(amount float64) {
+	f.cash = amount
+}
+
+// Version returns the version of this instance
+func (f *IndividualFinances) Version() uint64 {
+	return f.version
+}
+
 // Clone returns a copy of this instance
 func (f *IndividualFinances) Clone() *IndividualFinances {
 
@@ -213,13 +207,13 @@ func (f *IndividualFinances) Clone() *IndividualFinances {
 	}
 
 	clone := &IndividualFinances{
-		EOY:                     f.EOY,
-		Cash:                    f.Cash,
-		Income:                  f.Income.Clone(),
-		Deductions:              f.Deductions.Clone(),
-		MiscAmounts:             f.MiscAmounts.Clone(),
-		RRSPContributionRoom:    f.RRSPContributionRoom,
-		RRSPUnclaimedDeductions: f.RRSPUnclaimedDeductions,
+		cash:                    f.cash,
+		income:                  f.income.Clone(),
+		deductions:              f.deductions.Clone(),
+		miscAmounts:             f.miscAmounts.Clone(),
+		rrspContributionRoom:    f.rrspContributionRoom,
+		rrspUnclaimedDeductions: f.rrspUnclaimedDeductions,
+		version:                 f.version,
 	}
 
 	return clone
@@ -282,7 +276,7 @@ func (hf HouseholdFinances) MiscAmount(sources ...FinancialSource) float64 {
 func (hf HouseholdFinances) Cash() float64 {
 	var total float64
 	for _, f := range hf {
-		total += f.Cash
+		total += f.Cash()
 	}
 	return total
 }
@@ -299,7 +293,7 @@ func (hf HouseholdFinances) IncomeSources() map[FinancialSource]struct{} {
 			continue
 		}
 
-		for source := range f.Income {
+		for source := range f.income {
 			set[source] = struct{}{}
 		}
 
@@ -320,7 +314,7 @@ func (hf HouseholdFinances) DeductionSources() map[FinancialSource]struct{} {
 			continue
 		}
 
-		for source := range f.Deductions {
+		for source := range f.deductions {
 			set[source] = struct{}{}
 		}
 
@@ -341,13 +335,22 @@ func (hf HouseholdFinances) MiscSources() map[FinancialSource]struct{} {
 			continue
 		}
 
-		for source := range f.MiscAmounts {
+		for source := range f.miscAmounts {
 			set[source] = struct{}{}
 		}
 
 	}
 
 	return set
+}
+
+// Version returns the version of this instance
+func (hf HouseholdFinances) Version() uint64 {
+	var v uint64
+	for _, f := range hf {
+		v += f.Version()
+	}
+	return v
 }
 
 // Clone returns a copy of this instance
