@@ -25,21 +25,15 @@ func TestCanadianContraFormula_Apply_Nil_finances(t *testing.T) {
 func TestCanadianContraFormula_Apply(t *testing.T) {
 
 	cf := &CanadianContraFormula{
-		CreditsFromIncome: map[core.FinancialSource]Creditor{
+		Creditors: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000", onTaxCredits: 1},
 			456: testCreditor{onSource: "2000", onTaxCredits: 2},
-		},
-		CreditsFromDeduction: map[core.FinancialSource]Creditor{
-			123: testCreditor{onSource: "1000", onTaxCredits: 3},
-			456: testCreditor{onSource: "2000", onTaxCredits: 4},
-		},
-		CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
-			123: testCreditor{onSource: "1000", onTaxCredits: 5},
-			456: testCreditor{onSource: "2000", onTaxCredits: 6},
+			789: testCreditor{onSource: "3000", onTaxCredits: 3},
 		},
 		PersistentCredits: map[string]float64{"9999": 7},
 		ApplicationOrder: []CreditRule{
 			{"1000", CrRuleTypeCashable},
+			{"3000", CrRuleTypeCanCarryForward},
 			{"2000", CrRuleTypeCanCarryForward},
 			{"9999", CrRuleTypeNotCarryForward},
 		},
@@ -55,15 +49,16 @@ func TestCanadianContraFormula_Apply(t *testing.T) {
 	finances.AddIncome(999, 0)
 	finances.AddDeduction(456, 0)
 	finances.AddDeduction(999, 0)
-	finances.AddMiscAmount(123, 0)
+	finances.AddMiscAmount(789, 0)
 	finances.AddMiscAmount(456, 0)
 
 	actual := cf.Apply(finances, 0)
+	t.Log(actual[0], actual[1], actual[2], actual[3])
 	expected := []*taxCredit{
 		&taxCredit{amount: 1, rule: CreditRule{"1000", CrRuleTypeCashable}},
-		&taxCredit{amount: 5, rule: CreditRule{"1000", CrRuleTypeCashable}},
-		&taxCredit{amount: 4, rule: CreditRule{"2000", CrRuleTypeCanCarryForward}},
-		&taxCredit{amount: 6, rule: CreditRule{"2000", CrRuleTypeCanCarryForward}},
+		&taxCredit{amount: 3, rule: CreditRule{"3000", CrRuleTypeCanCarryForward}},
+		&taxCredit{amount: 2, rule: CreditRule{"2000", CrRuleTypeCanCarryForward}},
+		&taxCredit{amount: 2, rule: CreditRule{"2000", CrRuleTypeCanCarryForward}},
 		&taxCredit{amount: 7, rule: CreditRule{"9999", CrRuleTypeNotCarryForward}},
 	}
 
@@ -88,15 +83,7 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 		{
 			name: "valid",
 			formula: &CanadianContraFormula{
-				CreditsFromIncome: map[core.FinancialSource]Creditor{
-					123: testCreditor{onSource: "1000"},
-					456: testCreditor{onSource: "2000"},
-				},
-				CreditsFromDeduction: map[core.FinancialSource]Creditor{
-					123: testCreditor{onSource: "1000"},
-					456: testCreditor{onSource: "2000"},
-				},
-				CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
+				Creditors: map[core.FinancialSource]Creditor{
 					123: testCreditor{onSource: "1000"},
 					456: testCreditor{onSource: "2000"},
 				},
@@ -114,33 +101,9 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 		},
 		//
 		{
-			name: "unknown-income-creditor",
+			name: "unknown-creditor",
 			formula: &CanadianContraFormula{
-				CreditsFromIncome: map[core.FinancialSource]Creditor{
-					123: testCreditor{onSource: "1000"},
-					456: testCreditor{onSource: "2222"},
-				},
-				ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
-			},
-			err: ErrUnknownCreditSource,
-		},
-		//
-		{
-			name: "unknown-deduc-creditor",
-			formula: &CanadianContraFormula{
-				CreditsFromDeduction: map[core.FinancialSource]Creditor{
-					123: testCreditor{onSource: "1000"},
-					456: testCreditor{onSource: "2222"},
-				},
-				ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
-			},
-			err: ErrUnknownCreditSource,
-		},
-		//
-		{
-			name: "unknown-misc-creditor",
-			formula: &CanadianContraFormula{
-				CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
+				Creditors: map[core.FinancialSource]Creditor{
 					123: testCreditor{onSource: "1000"},
 					456: testCreditor{onSource: "2222"},
 				},
@@ -175,7 +138,7 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 func TestCanadianContraFormula_creditsFromIncSrcs(t *testing.T) {
 
 	cf := &CanadianContraFormula{
-		CreditsFromIncome: map[core.FinancialSource]Creditor{
+		Creditors: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000", onTaxCredits: 115},
 			456: testCreditor{onSource: "2000", onTaxCredits: 95},
 			111: testCreditor{onSource: "3000", onTaxCredits: 0},
@@ -201,7 +164,7 @@ func TestCanadianContraFormula_creditsFromIncSrcs(t *testing.T) {
 func TestCanadianContraFormula_creditsFromDeducSrcs(t *testing.T) {
 
 	cf := &CanadianContraFormula{
-		CreditsFromDeduction: map[core.FinancialSource]Creditor{
+		Creditors: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000", onTaxCredits: 115},
 			456: testCreditor{onSource: "2000", onTaxCredits: 95},
 			111: testCreditor{onSource: "3000", onTaxCredits: 0},
@@ -253,7 +216,7 @@ func TestCanadianFormula_persistentCredits(t *testing.T) {
 func TestCanadianContraFormula_creditsFromMiscSrcs(t *testing.T) {
 
 	cf := &CanadianContraFormula{
-		CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
+		Creditors: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000", onTaxCredits: 115},
 			456: testCreditor{onSource: "2000", onTaxCredits: 95},
 			111: testCreditor{onSource: "3000", onTaxCredits: 0},
@@ -276,90 +239,30 @@ func TestCanadianContraFormula_creditsFromMiscSrcs(t *testing.T) {
 
 }
 
-func TestCanadianContraFormula_checkMiscSrcCreditorsInSet(t *testing.T) {
+func TestCanadianContraFormula_checkFinSrcCreditorsInSet(t *testing.T) {
 
 	creditor := testCreditor{onSource: "123"}
 	cf := &CanadianContraFormula{
-		CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
+		Creditors: map[core.FinancialSource]Creditor{
 			321: creditor,
 		},
 	}
 
-	err := cf.checkMiscSrcCreditorsInSet(nil)
+	err := cf.checkFinSrcCreditorsInSet(nil)
 	if errors.Cause(err) != ErrUnknownCreditSource {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrUnknownCreditSource, err)
 	}
 
 	set := map[string]struct{}{"123": struct{}{}}
 
-	cf.CreditsFromMiscAmounts[9] = nil
-	err = cf.checkMiscSrcCreditorsInSet(set)
+	cf.Creditors[9] = nil
+	err = cf.checkFinSrcCreditorsInSet(set)
 	if errors.Cause(err) != ErrNoCreditor {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoCreditor, err)
 	}
 
-	delete(cf.CreditsFromMiscAmounts, 9)
-	err = cf.checkMiscSrcCreditorsInSet(set)
-	if err != nil {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", nil, err)
-	}
-
-}
-
-func TestCanadianContraFormula_checkDeducSrcCreditorsInSet(t *testing.T) {
-
-	creditor := testCreditor{onSource: "123"}
-	cf := &CanadianContraFormula{
-		CreditsFromDeduction: map[core.FinancialSource]Creditor{
-			321: creditor,
-		},
-	}
-
-	err := cf.checkDeducSrcCreditorsInSet(nil)
-	if errors.Cause(err) != ErrUnknownCreditSource {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrUnknownCreditSource, err)
-	}
-
-	set := map[string]struct{}{"123": struct{}{}}
-
-	cf.CreditsFromDeduction[9] = nil
-	err = cf.checkDeducSrcCreditorsInSet(set)
-	if errors.Cause(err) != ErrNoCreditor {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoCreditor, err)
-	}
-
-	delete(cf.CreditsFromDeduction, 9)
-	err = cf.checkDeducSrcCreditorsInSet(set)
-	if err != nil {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", nil, err)
-	}
-
-}
-
-func TestCanadianContraFormula_checkIncSrcCreditorsInSet(t *testing.T) {
-
-	creditor := testCreditor{onSource: "123"}
-	cf := &CanadianContraFormula{
-		CreditsFromIncome: map[core.FinancialSource]Creditor{
-			321: creditor,
-		},
-	}
-
-	err := cf.checkIncSrcCreditorsInSet(nil)
-	if errors.Cause(err) != ErrUnknownCreditSource {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrUnknownCreditSource, err)
-	}
-
-	set := map[string]struct{}{"123": struct{}{}}
-
-	cf.CreditsFromIncome[9] = nil
-	err = cf.checkIncSrcCreditorsInSet(set)
-	if errors.Cause(err) != ErrNoCreditor {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoCreditor, err)
-	}
-
-	delete(cf.CreditsFromIncome, 9)
-	err = cf.checkIncSrcCreditorsInSet(set)
+	delete(cf.Creditors, 9)
+	err = cf.checkFinSrcCreditorsInSet(set)
 	if err != nil {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", nil, err)
 	}
@@ -466,15 +369,7 @@ func TestCanadianContraFormula_Clone(t *testing.T) {
 	}
 
 	original = &CanadianContraFormula{
-		CreditsFromIncome: map[core.FinancialSource]Creditor{
-			123: testCreditor{onSource: "1000"},
-			456: testCreditor{onSource: "2000"},
-		},
-		CreditsFromDeduction: map[core.FinancialSource]Creditor{
-			123: testCreditor{onSource: "1000"},
-			456: testCreditor{onSource: "2000"},
-		},
-		CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
+		Creditors: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000"},
 			456: testCreditor{onSource: "2000"},
 		},
@@ -498,9 +393,7 @@ func TestCanadianContraFormula_Clone(t *testing.T) {
 
 	original.ApplicationOrder[0] = CreditRule{}
 	original.ApplicationOrder[1] = CreditRule{}
-	original.CreditsFromIncome[123] = testCreditor{onSource: "1111"}
-	original.CreditsFromDeduction[123] = testCreditor{onSource: "1111"}
-	original.CreditsFromMiscAmounts[123] = testCreditor{onSource: "1111"}
+	original.Creditors[123] = testCreditor{onSource: "1111"}
 	original.PersistentCredits = map[string]float64{"111": 0.0}
 	err = original.Validate()
 	if err == nil {
@@ -516,7 +409,7 @@ func TestCanadianContraFormula_NumFieldsUnchanged(t *testing.T) {
 
 	dummy := CanadianContraFormula{}
 	s := reflect.ValueOf(&dummy).Elem()
-	if s.NumField() != 5 {
+	if s.NumField() != 3 {
 		t.Fatal(
 			"number of struct fields changed. Please update the constructor and the " +
 				"clone method of this type as well as associated test. Next, update " +
