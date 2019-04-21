@@ -3,6 +3,7 @@
 package rrsp
 
 import (
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/finance"
 	"github.com/pkg/errors"
 )
@@ -32,4 +33,29 @@ type Formula interface {
 	Validate() error
 	// Clone returns a copy of the formula
 	Clone() Formula
+}
+
+// CalcConfig is used to pass configurations to create new RRSP calculator
+type CalcConfig struct {
+	Formula Formula
+	TaxCalc core.TaxCalculator
+}
+
+// validate checks if the configurations are valid for use by calc constructors
+func (cfg CalcConfig) validate() error {
+
+	if cfg.Formula == nil {
+		return ErrNoFormula
+	}
+
+	err := cfg.Formula.Validate()
+	if err != nil {
+		return errors.Wrap(err, "invalid formula")
+	}
+
+	if cfg.TaxCalc == nil {
+		return ErrNoTaxCalc
+	}
+
+	return nil
 }

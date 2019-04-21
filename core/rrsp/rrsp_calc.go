@@ -20,23 +20,16 @@ type Calculator struct {
 
 // NewCalculator returns a new RRSP calculator from the given options with
 // an empty finances instance
-func NewCalculator(formula Formula, taxCalc core.TaxCalculator) (*Calculator, error) {
+func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 
-	if formula == nil {
-		return nil, ErrNoFormula
-	}
-
-	err := formula.Validate()
+	err := cfg.validate()
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid formula")
+		return nil, errors.Wrap(err, "invalid configuration")
 	}
 
-	if taxCalc == nil {
-		return nil, ErrNoTaxCalc
-	}
 	c := &Calculator{
-		formula:       formula.Clone(),
-		taxCalculator: taxCalc,
+		formula:       cfg.Formula.Clone(),
+		taxCalculator: cfg.TaxCalc,
 		finances:      finance.NewEmptyIndividualFinances(0),
 	}
 	return c, nil

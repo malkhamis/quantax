@@ -8,28 +8,36 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TestNewCalculator(t *testing.T) {
+func TestNewCalculator_Error(t *testing.T) {
+
+	_, err := NewCalculator(CalcConfig{nil, nil})
+	if errors.Cause(err) != ErrNoFormula {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
+	}
+}
+
+func TestCalcConfig_validate(t *testing.T) {
 
 	formula := &testFormula{}
-	_, err := NewCalculator(formula, nil)
+	err := CalcConfig{formula, nil}.validate()
 	if errors.Cause(err) != ErrNoTaxCalc {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoTaxCalc, err)
 	}
 
 	taxCalc := &testTaxCalculator{}
-	_, err = NewCalculator(formula, taxCalc)
+	err = CalcConfig{formula, taxCalc}.validate()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	_, err = NewCalculator(nil, nil)
+	err = CalcConfig{nil, nil}.validate()
 	if errors.Cause(err) != ErrNoFormula {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
 
 	simulatedErr := errors.New("test error")
 	formula = &testFormula{onValidate: simulatedErr}
-	_, err = NewCalculator(formula, nil)
+	err = CalcConfig{formula, nil}.validate()
 	if errors.Cause(err) != simulatedErr {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", simulatedErr, err)
 	}
@@ -44,7 +52,7 @@ func TestCalculator_TaxPaid(t *testing.T) {
 
 	formula := &testFormula{}
 
-	c, err := NewCalculator(formula, taxCalc)
+	c, err := NewCalculator(CalcConfig{formula, taxCalc})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +73,7 @@ func TestCalculator_TaxRefund(t *testing.T) {
 
 	formula := &testFormula{}
 
-	c, err := NewCalculator(formula, taxCalc)
+	c, err := NewCalculator(CalcConfig{formula, taxCalc})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -93,7 +101,7 @@ func TestCalculator_ContributionEarned(t *testing.T) {
 		onAllowedIncomeSources: []finance.IncomeSource{dummyIncSrc},
 	}
 
-	c, err := NewCalculator(formula, &testTaxCalculator{})
+	c, err := NewCalculator(CalcConfig{formula, &testTaxCalculator{}})
 	if err != nil {
 		t.Fatal(err)
 	}
