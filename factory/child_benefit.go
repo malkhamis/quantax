@@ -1,9 +1,9 @@
 package factory
 
 import (
-	"github.com/malkhamis/quantax/calc"
-	"github.com/malkhamis/quantax/calc/benefits"
-	"github.com/malkhamis/quantax/calc/income"
+	"github.com/malkhamis/quantax/core"
+	"github.com/malkhamis/quantax/core/benefits"
+	"github.com/malkhamis/quantax/core/income"
 	"github.com/malkhamis/quantax/history"
 
 	"github.com/pkg/errors"
@@ -12,7 +12,7 @@ import (
 // ChildBenefitFactory is a type used to conveniently create child benefit
 // calculators
 type ChildBenefitFactory struct {
-	newCalculator func() (calc.ChildBenefitCalculator, error)
+	newCalculator func() (core.ChildBenefitCalculator, error)
 }
 
 // NewChildBenefitFactory returns a new child benefit calculator factory
@@ -49,7 +49,7 @@ func NewChildBenefitFactory(year uint, regions ...Region) *ChildBenefitFactory {
 
 // NewCalculator creates a new child benefit calculator that is configured with
 // the params set in this factory
-func (f *ChildBenefitFactory) NewCalculator() (calc.ChildBenefitCalculator, error) {
+func (f *ChildBenefitFactory) NewCalculator() (core.ChildBenefitCalculator, error) {
 	if f.newCalculator == nil {
 		return nil, ErrFactoryNotInit
 	}
@@ -58,7 +58,7 @@ func (f *ChildBenefitFactory) NewCalculator() (calc.ChildBenefitCalculator, erro
 
 // setFailingConstructor makes calls to NewCalculator returns nil, err
 func (f *ChildBenefitFactory) setFailingConstructor(err error) {
-	f.newCalculator = func() (calc.ChildBenefitCalculator, error) {
+	f.newCalculator = func() (core.ChildBenefitCalculator, error) {
 		return nil, errors.Wrap(err, "child benefit factory error")
 	}
 }
@@ -70,12 +70,12 @@ func (f *ChildBenefitFactory) initConstructor(allParams ...history.CBParams) {
 	switch {
 
 	case len(allParams) == 0:
-		f.newCalculator = func() (calc.ChildBenefitCalculator, error) {
+		f.newCalculator = func() (core.ChildBenefitCalculator, error) {
 			return benefits.NewChildBenefitCalculator(nil, nil)
 		}
 
 	case len(allParams) == 1:
-		f.newCalculator = func() (calc.ChildBenefitCalculator, error) {
+		f.newCalculator = func() (core.ChildBenefitCalculator, error) {
 			formula, incomeRecipe := allParams[0].Formula, allParams[0].IncomeRecipe
 			incomeCalc, err := income.NewCalculator(incomeRecipe)
 			if err != nil {
@@ -85,8 +85,8 @@ func (f *ChildBenefitFactory) initConstructor(allParams ...history.CBParams) {
 		}
 
 	default:
-		f.newCalculator = func() (calc.ChildBenefitCalculator, error) {
-			cbCalcs := make([]calc.ChildBenefitCalculator, len(allParams))
+		f.newCalculator = func() (core.ChildBenefitCalculator, error) {
+			cbCalcs := make([]core.ChildBenefitCalculator, len(allParams))
 
 			for i, p := range allParams {
 				formula, incomeRecipe := p.Formula, p.IncomeRecipe

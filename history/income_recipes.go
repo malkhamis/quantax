@@ -1,8 +1,8 @@
 package history
 
 import (
-	"github.com/malkhamis/quantax/calc/finance"
-	"github.com/malkhamis/quantax/calc/income"
+	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core/income"
 )
 
 var (

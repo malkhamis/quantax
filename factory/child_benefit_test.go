@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/malkhamis/quantax/calc/benefits"
+	"github.com/malkhamis/quantax/core/benefits"
 	"github.com/malkhamis/quantax/history"
 
 	"github.com/pkg/errors"

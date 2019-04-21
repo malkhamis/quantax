@@ -3,11 +3,11 @@ package history
 import (
 	"math"
 
-	"github.com/malkhamis/quantax/calc/benefits"
-	"github.com/malkhamis/quantax/calc/finance"
-	"github.com/malkhamis/quantax/calc/human"
-	"github.com/malkhamis/quantax/calc/rrsp"
-	"github.com/malkhamis/quantax/calc/tax"
+	"github.com/malkhamis/quantax/core/benefits"
+	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core/human"
+	"github.com/malkhamis/quantax/core/rrsp"
+	"github.com/malkhamis/quantax/core/tax"
 )
 
 var (

@@ -1,10 +1,10 @@
 package history
 
 import (
-	"github.com/malkhamis/quantax/calc/benefits"
-	"github.com/malkhamis/quantax/calc/income"
-	"github.com/malkhamis/quantax/calc/rrsp"
-	"github.com/malkhamis/quantax/calc/tax"
+	"github.com/malkhamis/quantax/core/benefits"
+	"github.com/malkhamis/quantax/core/income"
+	"github.com/malkhamis/quantax/core/rrsp"
+	"github.com/malkhamis/quantax/core/tax"
 )
 
 // TaxParams represents the tax parameters associated with a tax jurisdiction
