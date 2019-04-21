@@ -109,6 +109,8 @@ func (f *IndividualFinances) MiscAmount(sources ...FinancialSource) float64 {
 	return total
 }
 
+// TODO: replace all these AddXXXX with AddAmount(Source, Float64). Depending
+// on where the source is in the iota, we mutate the right map
 // AddIncome adds the given amount to the stored amount of the given source
 func (f *IndividualFinances) AddIncome(source FinancialSource, amount float64) {
 	f.Income[source] += amount
