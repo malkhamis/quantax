@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
 
 	"github.com/pkg/errors"
@@ -13,8 +13,8 @@ import (
 
 func TestBCECTBMaxReducer_Apply(t *testing.T) {
 
-	bracket := finance.WeightedBrackets{
-		0.0132: finance.Bracket{100000, math.Inf(1)},
+	bracket := core.WeightedBrackets{
+		0.0132: core.Bracket{100000, math.Inf(1)},
 	}
 
 	mr := &BCECTBMaxReducer{
@@ -22,7 +22,7 @@ func TestBCECTBMaxReducer_Apply(t *testing.T) {
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      human.AgeRange{0, 6*12 - 1},
-				AmountsPerMonth: finance.Bracket{0, 55},
+				AmountsPerMonth: core.Bracket{0, 55},
 			},
 		},
 	}
@@ -63,7 +63,7 @@ func TestBCECTBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 		BeneficiaryClasses: []AgeGroupBenefits{
 			AgeGroupBenefits{
 				AgesMonths:      human.AgeRange{10, 0},
-				AmountsPerMonth: finance.Bracket{0, 55},
+				AmountsPerMonth: core.Bracket{0, 55},
 			},
 		},
 	}
@@ -91,21 +91,21 @@ func TestBCECTBMaxReducer_Validate_NilFormula(t *testing.T) {
 func TestBCECTBMaxReducer_Validate_InvalidFormula(t *testing.T) {
 
 	formula := BCECTBMaxReducer{
-		ReducerFormula: finance.WeightedBrackets{
-			0.0132: finance.Bracket{100000, 1},
+		ReducerFormula: core.WeightedBrackets{
+			0.0132: core.Bracket{100000, 1},
 		},
 	}
 
 	err := formula.Validate()
-	if errors.Cause(err) != finance.ErrBoundsReversed {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", finance.ErrBoundsReversed, err)
+	if errors.Cause(err) != core.ErrBoundsReversed {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", core.ErrBoundsReversed, err)
 	}
 }
 
 func TestBCECTBMaxReducer_Clone(t *testing.T) {
 
-	bracket := finance.WeightedBrackets{
-		0.0132: finance.Bracket{100000, math.Inf(1)},
+	bracket := core.WeightedBrackets{
+		0.0132: core.Bracket{100000, math.Inf(1)},
 	}
 
 	originalFormula := &BCECTBMaxReducer{
@@ -113,7 +113,7 @@ func TestBCECTBMaxReducer_Clone(t *testing.T) {
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      human.AgeRange{0, 6*12 - 1},
-				AmountsPerMonth: finance.Bracket{0, 55},
+				AmountsPerMonth: core.Bracket{0, 55},
 			},
 		},
 	}

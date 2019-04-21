@@ -2,7 +2,6 @@ package rrsp
 
 import (
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 	"github.com/pkg/errors"
 )
 
@@ -15,7 +14,7 @@ var _ core.RRSPCalculator = (*Calculator)(nil)
 type Calculator struct {
 	taxCalculator core.TaxCalculator
 	formula       Formula
-	finances      *finance.IndividualFinances
+	finances      *core.IndividualFinances
 }
 
 // NewCalculator returns a new RRSP calculator from the given options with
@@ -30,7 +29,7 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 	c := &Calculator{
 		formula:       cfg.Formula.Clone(),
 		taxCalculator: cfg.TaxCalc,
-		finances:      finance.NewEmptyIndividualFinances(0),
+		finances:      core.NewEmptyIndividualFinances(0),
 	}
 	return c, nil
 }
@@ -87,10 +86,10 @@ func (c *Calculator) ContributionEarned() float64 {
 // SetFinances makes subsequent calculations based on the given finances.
 // if new finances is nil, an empty finances instance is set. Change to the
 // given finances will affect the results of future calls on this calculator
-func (c *Calculator) SetFinances(f *finance.IndividualFinances) {
+func (c *Calculator) SetFinances(f *core.IndividualFinances) {
 
 	if f == nil {
-		f = finance.NewEmptyIndividualFinances(0)
+		f = core.NewEmptyIndividualFinances(0)
 	}
 
 	c.finances = f

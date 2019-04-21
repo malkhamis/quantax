@@ -5,8 +5,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/malkhamis/quantax/core"
+
 	"github.com/go-test/deep"
-	"github.com/malkhamis/quantax/core/finance"
 )
 
 func TestMaxCapper_Contribution(t *testing.T) {
@@ -53,9 +54,9 @@ func TestMaxCapper_Clone(t *testing.T) {
 	original := MaxCapper{
 		Rate:                           0.10,
 		Cap:                            1000,
-		IncomeSources:                  []finance.IncomeSource{finance.IncSrcEarned},
-		DeductionSourceForContribution: finance.DeductionSource(2000),
-		IncomeSourceForWithdrawal:      finance.IncomeSource(1000),
+		IncomeSources:                  []core.FinancialSource{core.IncSrcEarned},
+		DeductionSourceForContribution: core.FinancialSource(2000),
+		IncomeSourceForWithdrawal:      core.FinancialSource(1000),
 	}
 
 	income := 5000.0
@@ -72,7 +73,7 @@ func TestMaxCapper_Clone(t *testing.T) {
 
 func TestMaxCapper_AllowedIncomeSources(t *testing.T) {
 
-	expected := []finance.IncomeSource{1, 2, 3, 6}
+	expected := []core.FinancialSource{1, 2, 3, 6}
 	f := &MaxCapper{
 		IncomeSources: expected,
 	}
@@ -87,7 +88,7 @@ func TestMaxCapper_AllowedIncomeSources(t *testing.T) {
 
 func TestMaxCapper_TargetSourceForWithdrawl(t *testing.T) {
 
-	expected := finance.IncomeSource(1234)
+	expected := core.FinancialSource(1234)
 	f := &MaxCapper{
 		IncomeSourceForWithdrawal: expected,
 	}
@@ -102,7 +103,7 @@ func TestMaxCapper_TargetSourceForWithdrawl(t *testing.T) {
 
 func TestMaxCapper_TargetSourceForContribution(t *testing.T) {
 
-	expected := finance.DeductionSource(1234)
+	expected := core.FinancialSource(1234)
 	f := &MaxCapper{
 		DeductionSourceForContribution: expected,
 	}

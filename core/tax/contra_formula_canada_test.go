@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 	"github.com/pkg/errors"
 )
 
@@ -25,15 +25,15 @@ func TestCanadianContraFormula_Apply_Nil_finances(t *testing.T) {
 func TestCanadianContraFormula_Apply(t *testing.T) {
 
 	cf := &CanadianContraFormula{
-		CreditsFromIncome: map[finance.IncomeSource]Creditor{
+		CreditsFromIncome: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000", onTaxCredits: 1},
 			456: testCreditor{onSource: "2000", onTaxCredits: 2},
 		},
-		CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+		CreditsFromDeduction: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000", onTaxCredits: 3},
 			456: testCreditor{onSource: "2000", onTaxCredits: 4},
 		},
-		CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
+		CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000", onTaxCredits: 5},
 			456: testCreditor{onSource: "2000", onTaxCredits: 6},
 		},
@@ -50,7 +50,7 @@ func TestCanadianContraFormula_Apply(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	finances := finance.NewEmptyIndividualFinances(2019)
+	finances := core.NewEmptyIndividualFinances(2019)
 	finances.AddIncome(123, 0)
 	finances.AddIncome(999, 0)
 	finances.AddDeduction(456, 0)
@@ -88,15 +88,15 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 		{
 			name: "valid",
 			formula: &CanadianContraFormula{
-				CreditsFromIncome: map[finance.IncomeSource]Creditor{
+				CreditsFromIncome: map[core.FinancialSource]Creditor{
 					123: testCreditor{onSource: "1000"},
 					456: testCreditor{onSource: "2000"},
 				},
-				CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+				CreditsFromDeduction: map[core.FinancialSource]Creditor{
 					123: testCreditor{onSource: "1000"},
 					456: testCreditor{onSource: "2000"},
 				},
-				CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
+				CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
 					123: testCreditor{onSource: "1000"},
 					456: testCreditor{onSource: "2000"},
 				},
@@ -116,7 +116,7 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 		{
 			name: "unknown-income-creditor",
 			formula: &CanadianContraFormula{
-				CreditsFromIncome: map[finance.IncomeSource]Creditor{
+				CreditsFromIncome: map[core.FinancialSource]Creditor{
 					123: testCreditor{onSource: "1000"},
 					456: testCreditor{onSource: "2222"},
 				},
@@ -128,7 +128,7 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 		{
 			name: "unknown-deduc-creditor",
 			formula: &CanadianContraFormula{
-				CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+				CreditsFromDeduction: map[core.FinancialSource]Creditor{
 					123: testCreditor{onSource: "1000"},
 					456: testCreditor{onSource: "2222"},
 				},
@@ -140,7 +140,7 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 		{
 			name: "unknown-misc-creditor",
 			formula: &CanadianContraFormula{
-				CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
+				CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
 					123: testCreditor{onSource: "1000"},
 					456: testCreditor{onSource: "2222"},
 				},
@@ -175,7 +175,7 @@ func TestCanadianContraFormula_Validate(t *testing.T) {
 func TestCanadianContraFormula_creditsFromIncSrcs(t *testing.T) {
 
 	cf := &CanadianContraFormula{
-		CreditsFromIncome: map[finance.IncomeSource]Creditor{
+		CreditsFromIncome: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000", onTaxCredits: 115},
 			456: testCreditor{onSource: "2000", onTaxCredits: 95},
 			111: testCreditor{onSource: "3000", onTaxCredits: 0},
@@ -183,7 +183,7 @@ func TestCanadianContraFormula_creditsFromIncSrcs(t *testing.T) {
 		ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
 	}
 
-	finances := finance.NewEmptyIndividualFinances(2019)
+	finances := core.NewEmptyIndividualFinances(2019)
 	finances.AddIncome(123, 15000) // has creditor
 	finances.AddIncome(111, 20000) // zero credits
 	finances.AddIncome(999, 8000)  // no creditor
@@ -201,7 +201,7 @@ func TestCanadianContraFormula_creditsFromIncSrcs(t *testing.T) {
 func TestCanadianContraFormula_creditsFromDeducSrcs(t *testing.T) {
 
 	cf := &CanadianContraFormula{
-		CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+		CreditsFromDeduction: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000", onTaxCredits: 115},
 			456: testCreditor{onSource: "2000", onTaxCredits: 95},
 			111: testCreditor{onSource: "3000", onTaxCredits: 0},
@@ -209,7 +209,7 @@ func TestCanadianContraFormula_creditsFromDeducSrcs(t *testing.T) {
 		ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
 	}
 
-	finances := finance.NewEmptyIndividualFinances(2019)
+	finances := core.NewEmptyIndividualFinances(2019)
 	finances.AddDeduction(123, 15000) // has creditor
 	finances.AddDeduction(111, 20000) // zero credits
 	finances.AddDeduction(999, 8000)  // no creditor
@@ -253,7 +253,7 @@ func TestCanadianFormula_persistentCredits(t *testing.T) {
 func TestCanadianContraFormula_creditsFromMiscSrcs(t *testing.T) {
 
 	cf := &CanadianContraFormula{
-		CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
+		CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000", onTaxCredits: 115},
 			456: testCreditor{onSource: "2000", onTaxCredits: 95},
 			111: testCreditor{onSource: "3000", onTaxCredits: 0},
@@ -261,7 +261,7 @@ func TestCanadianContraFormula_creditsFromMiscSrcs(t *testing.T) {
 		ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
 	}
 
-	finances := finance.NewEmptyIndividualFinances(2019)
+	finances := core.NewEmptyIndividualFinances(2019)
 	finances.AddMiscAmount(123, 15000) // has creditor
 	finances.AddMiscAmount(111, 20000) // zero credits
 	finances.AddMiscAmount(999, 8000)  // no creditor
@@ -280,7 +280,7 @@ func TestCanadianContraFormula_checkMiscSrcCreditorsInSet(t *testing.T) {
 
 	creditor := testCreditor{onSource: "123"}
 	cf := &CanadianContraFormula{
-		CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
+		CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
 			321: creditor,
 		},
 	}
@@ -310,7 +310,7 @@ func TestCanadianContraFormula_checkDeducSrcCreditorsInSet(t *testing.T) {
 
 	creditor := testCreditor{onSource: "123"}
 	cf := &CanadianContraFormula{
-		CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+		CreditsFromDeduction: map[core.FinancialSource]Creditor{
 			321: creditor,
 		},
 	}
@@ -340,7 +340,7 @@ func TestCanadianContraFormula_checkIncSrcCreditorsInSet(t *testing.T) {
 
 	creditor := testCreditor{onSource: "123"}
 	cf := &CanadianContraFormula{
-		CreditsFromIncome: map[finance.IncomeSource]Creditor{
+		CreditsFromIncome: map[core.FinancialSource]Creditor{
 			321: creditor,
 		},
 	}
@@ -466,15 +466,15 @@ func TestCanadianContraFormula_Clone(t *testing.T) {
 	}
 
 	original = &CanadianContraFormula{
-		CreditsFromIncome: map[finance.IncomeSource]Creditor{
+		CreditsFromIncome: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000"},
 			456: testCreditor{onSource: "2000"},
 		},
-		CreditsFromDeduction: map[finance.DeductionSource]Creditor{
+		CreditsFromDeduction: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000"},
 			456: testCreditor{onSource: "2000"},
 		},
-		CreditsFromMiscAmounts: map[finance.MiscSource]Creditor{
+		CreditsFromMiscAmounts: map[core.FinancialSource]Creditor{
 			123: testCreditor{onSource: "1000"},
 			456: testCreditor{onSource: "2000"},
 		},

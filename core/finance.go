@@ -1,59 +1,59 @@
-// Package finances provides the basic tools and data type needed to compute
-// Canadian taxes and benefits given financial information
-package finance
+package core
 
 var (
-	_ IncomeDeductor = (*IndividualFinances)(nil)
-	_ IncomeDeductor = (HouseholdFinances)(nil)
+	_ Financer = (*IndividualFinances)(nil)
+	_ Financer = (HouseholdFinances)(nil)
 )
 
-type IncomeDeductor interface {
+type Financer interface {
 	// TotalIncome returns the sum of income for the given sources only. If no
 	// sources given, the total income for all sources is returned
-	TotalIncome(sources ...IncomeSource) float64
+	TotalIncome(sources ...FinancialSource) float64
 	// TotalDeductions returns the sum of TotalDeductionss for the given sources
 	// only. If no sources given, the total deduction for all sources is returned
-	TotalDeductions(sources ...DeductionSource) float64
+	TotalDeductions(sources ...FinancialSource) float64
 	// MiscAmount returns the amount of the given miscellaneous sources only.
 	// If no sources given, the total amount for all sources is returned
-	MiscAmount(source ...MiscSource) float64
+	MiscAmount(source ...FinancialSource) float64
 	// IncomeSources returns a set of all income sources in this instance. The
 	// returned map is never nil
-	IncomeSources() IncomeSourceSet
+	IncomeSources() map[FinancialSource]struct{}
 	// DeductionSources returns a set of all deduciton sources in this instance.
 	// The returned map is never nil
-	DeductionSources() DeductionSourceSet
+	DeductionSources() map[FinancialSource]struct{}
 	// MiscSources returns a set of all miscellaneous sources in this instance.
 	// The returned map is never nil
-	MiscSources() MiscSourceSet
+	MiscSources() map[FinancialSource]struct{}
+	// TODO: Version()
 }
 
 // IndividualFinances represents the financial data of an individual
 type IndividualFinances struct {
 	EOY                     uint
 	Cash                    float64
-	Income                  IncomeBySource
-	Deductions              DeductionBySource
-	MiscAmounts             MiscAmountsBySource
+	Income                  AmountBySource
+	Deductions              AmountBySource
+	MiscAmounts             AmountBySource
 	RRSPContributionRoom    float64
 	RRSPUnclaimedDeductions float64
+	// TODO: version
 }
 
 // NewEmptyIndividualFinances returns an instance whose EOY is initialized to
-// endOfYear and whose maps are initialized with no income sources
+// endOfYear and whose maps are initialized with no amounts/sources
 func NewEmptyIndividualFinances(endOfYear uint) *IndividualFinances {
 	return &IndividualFinances{
 		EOY:         endOfYear,
-		Income:      make(IncomeBySource),
-		Deductions:  make(DeductionBySource),
-		MiscAmounts: make(MiscAmountsBySource),
+		Income:      make(AmountBySource),
+		Deductions:  make(AmountBySource),
+		MiscAmounts: make(AmountBySource),
 	}
 }
 
 // TotalIncome returns the sum of income for the given sources only. If no
 // sources given, the total income for all sources is returned. If 'f' is nil
 // zero is returned
-func (f *IndividualFinances) TotalIncome(sources ...IncomeSource) float64 {
+func (f *IndividualFinances) TotalIncome(sources ...FinancialSource) float64 {
 
 	if f == nil {
 		return 0.0
@@ -70,10 +70,10 @@ func (f *IndividualFinances) TotalIncome(sources ...IncomeSource) float64 {
 	return total
 }
 
-// TotalDeductions returns the sum of TotalDeductionss for the given sources
+// TotalDeductions returns the sum of TotalDeductions for the given sources
 // only. If no sources given, the total deduction for all sources is returned.
 // If 'f' is nil, zero is returned
-func (f *IndividualFinances) TotalDeductions(sources ...DeductionSource) float64 {
+func (f *IndividualFinances) TotalDeductions(sources ...FinancialSource) float64 {
 
 	if f == nil {
 		return 0.0
@@ -92,7 +92,7 @@ func (f *IndividualFinances) TotalDeductions(sources ...DeductionSource) float64
 
 // MiscAmount returns the amount for the given miscellaneous source. If 'f' is
 // nil zero is returned
-func (f *IndividualFinances) MiscAmount(sources ...MiscSource) float64 {
+func (f *IndividualFinances) MiscAmount(sources ...FinancialSource) float64 {
 
 	if f == nil {
 		return 0.0
@@ -110,53 +110,52 @@ func (f *IndividualFinances) MiscAmount(sources ...MiscSource) float64 {
 }
 
 // AddIncome adds the given amount to the stored amount of the given source
-func (f *IndividualFinances) AddIncome(source IncomeSource, amount float64) {
+func (f *IndividualFinances) AddIncome(source FinancialSource, amount float64) {
 	f.Income[source] += amount
 }
 
 // RemoveIncome removes the given stored income sources. If sources is empty,
 // the function is noop. This operation ensures that subsequent calls to
 // IncomeSources() returns a list that does not contain given income source(s)
-func (f *IndividualFinances) RemoveIncome(sources ...IncomeSource) {
+func (f *IndividualFinances) RemoveIncome(sources ...FinancialSource) {
 	for _, s := range sources {
 		delete(f.Income, s)
 	}
 }
 
 // AddDeduction adds the given amount to the stored amount of the given source
-func (f *IndividualFinances) AddDeduction(source DeductionSource, amount float64) {
+func (f *IndividualFinances) AddDeduction(source FinancialSource, amount float64) {
 	f.Deductions[source] += amount
 }
 
-// RemoveIncome removes the given stored deduction sources. If sources is empty,
-// the function is noop. This operation ensures that subsequent calls to
-// DeductionSources() returns a list that does not contain given deduciton
+// RemoveDeduction removes the given stored deduction sources. If sources is
+// empty, the function is nop. This operation ensures that subsequent calls to
+// DeductionSources() returns a list that does not contain given deduction
 // source(s)
-func (f *IndividualFinances) RemoveDeduction(sources ...DeductionSource) {
+func (f *IndividualFinances) RemoveDeduction(sources ...FinancialSource) {
 	for _, s := range sources {
 		delete(f.Deductions, s)
 	}
 }
 
-// AddDeduction adds the given amount to the stored amount of the given source
-func (f *IndividualFinances) AddMiscAmount(source MiscSource, amount float64) {
+// AddMiscAmount adds the given amount to the stored amount of the given source
+func (f *IndividualFinances) AddMiscAmount(source FinancialSource, amount float64) {
 	f.MiscAmounts[source] += amount
 }
 
 // RemoveMiscAmount removes the given stored miscellaneous sources. If sources
 // is empty, the function is noop. This operation ensures that subsequent calls
-// to DeductionSources() returns a list that does not contain given misc
-// source(s)
-func (f *IndividualFinances) RemoveMiscAmount(sources ...MiscSource) {
+// to MiscSources() returns a list that does not contain given misc source(s)
+func (f *IndividualFinances) RemoveMiscAmount(sources ...FinancialSource) {
 	for _, s := range sources {
 		delete(f.MiscAmounts, s)
 	}
 }
 
 // IncomeSources returns a set of all income sources in this instance
-func (f *IndividualFinances) IncomeSources() IncomeSourceSet {
+func (f *IndividualFinances) IncomeSources() map[FinancialSource]struct{} {
 
-	set := make(IncomeSourceSet)
+	set := make(map[FinancialSource]struct{})
 
 	if f == nil {
 		return set
@@ -172,9 +171,9 @@ func (f *IndividualFinances) IncomeSources() IncomeSourceSet {
 
 // DeductionSources returns a set of all deduciton sources in this instance.
 // The returned map is never nil
-func (f *IndividualFinances) DeductionSources() DeductionSourceSet {
+func (f *IndividualFinances) DeductionSources() map[FinancialSource]struct{} {
 
-	set := make(DeductionSourceSet)
+	set := make(map[FinancialSource]struct{})
 
 	if f == nil {
 		return set
@@ -188,9 +187,9 @@ func (f *IndividualFinances) DeductionSources() DeductionSourceSet {
 }
 
 // MiscSourceSet returns a set of all miscellaneous sources in this instance
-func (f *IndividualFinances) MiscSources() MiscSourceSet {
+func (f *IndividualFinances) MiscSources() map[FinancialSource]struct{} {
 
-	set := make(MiscSourceSet)
+	set := make(map[FinancialSource]struct{})
 
 	if f == nil {
 		return set
@@ -203,6 +202,7 @@ func (f *IndividualFinances) MiscSources() MiscSourceSet {
 	return set
 }
 
+// TODO update docstrings once version is added and set version of the clone to zero
 // Clone returns a copy of this instance
 func (f *IndividualFinances) Clone() *IndividualFinances {
 
@@ -243,7 +243,7 @@ func NewHouseholdFinances(finances ...*IndividualFinances) HouseholdFinances {
 
 // Income calculate the the total income of the household from the given income
 // sources. if no sources are given, the sum of all income sources is returned
-func (hf HouseholdFinances) TotalIncome(sources ...IncomeSource) float64 {
+func (hf HouseholdFinances) TotalIncome(sources ...FinancialSource) float64 {
 
 	var total float64
 	for _, f := range hf {
@@ -255,7 +255,7 @@ func (hf HouseholdFinances) TotalIncome(sources ...IncomeSource) float64 {
 // Deductions calculate the the total deduciton of the household from the given
 // deduction sources. if no sources are given, the sum of all deduction sources
 // is returned
-func (hf HouseholdFinances) TotalDeductions(sources ...DeductionSource) float64 {
+func (hf HouseholdFinances) TotalDeductions(sources ...FinancialSource) float64 {
 
 	var total float64
 	for _, f := range hf {
@@ -267,7 +267,7 @@ func (hf HouseholdFinances) TotalDeductions(sources ...DeductionSource) float64 
 // MiscAMount calculate the the total miscellaneous amount of the household from
 // the given sources. if no sources are given, the sum of all miscellaneous
 // sources is returned
-func (hf HouseholdFinances) MiscAmount(sources ...MiscSource) float64 {
+func (hf HouseholdFinances) MiscAmount(sources ...FinancialSource) float64 {
 
 	var total float64
 	for _, f := range hf {
@@ -287,9 +287,9 @@ func (hf HouseholdFinances) Cash() float64 {
 
 // IncomeSources returns a set of all income sources in this instance. The
 // returned map is never nil
-func (hf HouseholdFinances) IncomeSources() IncomeSourceSet {
+func (hf HouseholdFinances) IncomeSources() map[FinancialSource]struct{} {
 
-	set := make(IncomeSourceSet)
+	set := make(map[FinancialSource]struct{})
 
 	for _, f := range hf {
 
@@ -306,11 +306,11 @@ func (hf HouseholdFinances) IncomeSources() IncomeSourceSet {
 	return set
 }
 
-// DeductionSources returns a set of all deduciton sources in this instance.
+// DeductionSources returns a set of all deduction sources in this instance.
 // The returned map is never nil
-func (hf HouseholdFinances) DeductionSources() DeductionSourceSet {
+func (hf HouseholdFinances) DeductionSources() map[FinancialSource]struct{} {
 
-	set := make(DeductionSourceSet)
+	set := make(map[FinancialSource]struct{})
 
 	for _, f := range hf {
 
@@ -329,9 +329,9 @@ func (hf HouseholdFinances) DeductionSources() DeductionSourceSet {
 
 // MiscSources returns a set of all miscellaneous sources in this instance.
 // The returned map is never nil
-func (hf HouseholdFinances) MiscSources() MiscSourceSet {
+func (hf HouseholdFinances) MiscSources() map[FinancialSource]struct{} {
 
-	set := make(MiscSourceSet)
+	set := make(map[FinancialSource]struct{})
 
 	for _, f := range hf {
 

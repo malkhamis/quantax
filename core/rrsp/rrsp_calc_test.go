@@ -3,7 +3,7 @@ package rrsp
 import (
 	"testing"
 
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 
 	"github.com/pkg/errors"
 )
@@ -78,7 +78,7 @@ func TestCalculator_TaxRefund(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	finances := finance.NewEmptyIndividualFinances(0)
+	finances := core.NewEmptyIndividualFinances(0)
 	finances.RRSPContributionRoom = 1000.0
 	c.SetFinances(finances)
 
@@ -96,9 +96,9 @@ func TestCalculator_TaxRefund(t *testing.T) {
 
 func TestCalculator_ContributionEarned(t *testing.T) {
 
-	dummyIncSrc := finance.IncomeSource(1111)
+	dummyIncSrc := core.FinancialSource(1111)
 	formula := &testFormula{
-		onAllowedIncomeSources: []finance.IncomeSource{dummyIncSrc},
+		onAllowedIncomeSources: []core.FinancialSource{dummyIncSrc},
 	}
 
 	c, err := NewCalculator(CalcConfig{formula, &testTaxCalculator{}})
@@ -106,7 +106,7 @@ func TestCalculator_ContributionEarned(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	finances := finance.NewEmptyIndividualFinances(0)
+	finances := core.NewEmptyIndividualFinances(0)
 	finances.RRSPContributionRoom = 1000.0
 	finances.AddIncome(dummyIncSrc, 1500.0)
 	c.SetFinances(finances)
@@ -124,7 +124,7 @@ func TestCalculator_ContributionEarned(t *testing.T) {
 func TestCalculator_RefundError(t *testing.T) {
 
 	c := &Calculator{
-		finances: &finance.IndividualFinances{
+		finances: &core.IndividualFinances{
 			RRSPContributionRoom: 1000.0,
 		},
 	}

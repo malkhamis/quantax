@@ -2,7 +2,6 @@ package tax
 
 import (
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 	"github.com/pkg/errors"
 )
 
@@ -14,7 +13,7 @@ type Calculator struct {
 	formula          Formula
 	contraFormula    ContraFormula
 	incomeCalculator core.IncomeCalculator
-	finances         *finance.IndividualFinances
+	finances         *core.IndividualFinances
 	credits          []*taxCredit
 }
 
@@ -31,7 +30,7 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 		formula:          cfg.TaxFormula.Clone(),
 		contraFormula:    cfg.ContraTaxFormula.Clone(),
 		incomeCalculator: cfg.IncomeCalc,
-		finances:         finance.NewEmptyIndividualFinances(0),
+		finances:         core.NewEmptyIndividualFinances(0),
 	}
 
 	return c, nil
@@ -41,10 +40,10 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 // calls to other calculator functions will be based on the the given finances.
 // Changes to the given finances after calling this function will affect future
 // calculations. If finances is nil, a non-nil, empty finances is set
-func (c *Calculator) SetFinances(f *finance.IndividualFinances) {
+func (c *Calculator) SetFinances(f *core.IndividualFinances) {
 
 	if f == nil {
-		f = finance.NewEmptyIndividualFinances(0)
+		f = core.NewEmptyIndividualFinances(0)
 	}
 	c.finances = f
 }

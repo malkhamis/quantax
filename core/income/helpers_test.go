@@ -1,32 +1,32 @@
 package income
 
-import "github.com/malkhamis/quantax/core/finance"
+import "github.com/malkhamis/quantax/core"
 
 type testIncomeDeductor struct {
 	totalIncome     float64
 	totalDeductions float64
 	totalMiscAmount float64
-	incomeSrcs      finance.IncomeSourceSet
-	deducSrcs       finance.DeductionSourceSet
-	miscSrcs        finance.MiscSourceSet
+	incomeSrcs      map[core.FinancialSource]struct{}
+	deducSrcs       map[core.FinancialSource]struct{}
+	miscSrcs        map[core.FinancialSource]struct{}
 }
 
-func (tid testIncomeDeductor) TotalIncome(sources ...finance.IncomeSource) float64 {
+func (tid testIncomeDeductor) TotalIncome(sources ...core.FinancialSource) float64 {
 	return tid.totalIncome
 }
-func (tid testIncomeDeductor) TotalDeductions(sources ...finance.DeductionSource) float64 {
+func (tid testIncomeDeductor) TotalDeductions(sources ...core.FinancialSource) float64 {
 	return tid.totalDeductions
 }
-func (tid testIncomeDeductor) MiscAmount(sources ...finance.MiscSource) float64 {
+func (tid testIncomeDeductor) MiscAmount(sources ...core.FinancialSource) float64 {
 	return tid.totalMiscAmount
 }
-func (tid testIncomeDeductor) IncomeSources() finance.IncomeSourceSet {
+func (tid testIncomeDeductor) IncomeSources() map[core.FinancialSource]struct{} {
 	return tid.incomeSrcs
 }
-func (tid testIncomeDeductor) DeductionSources() finance.DeductionSourceSet {
+func (tid testIncomeDeductor) DeductionSources() map[core.FinancialSource]struct{} {
 	return tid.deducSrcs
 }
-func (tid testIncomeDeductor) MiscSources() finance.MiscSourceSet {
+func (tid testIncomeDeductor) MiscSources() map[core.FinancialSource]struct{} {
 	return tid.miscSrcs
 }
 

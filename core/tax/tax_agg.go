@@ -3,7 +3,6 @@ package tax
 
 import (
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 	"github.com/pkg/errors"
 )
 
@@ -51,7 +50,7 @@ func (agg *Aggregator) TaxPayable() (float64, []core.TaxCredit) {
 }
 
 // SetFinances sets the given finances in all underlying tax calculators
-func (agg *Aggregator) SetFinances(f *finance.IndividualFinances) {
+func (agg *Aggregator) SetFinances(f *core.IndividualFinances) {
 	for _, c := range agg.calculators {
 		c.SetFinances(f)
 	}

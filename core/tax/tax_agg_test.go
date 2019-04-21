@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 	"github.com/pkg/errors"
 )
 
@@ -54,7 +53,7 @@ func TestAggregator_TaxPayable(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	aggregator.SetFinances(finance.NewEmptyIndividualFinances(2019))
+	aggregator.SetFinances(core.NewEmptyIndividualFinances(2019))
 	actual, _ := aggregator.TaxPayable()
 	expected := (3000.0 / 2.0) * float64(len(aggregator.calculators))
 	if actual != expected {

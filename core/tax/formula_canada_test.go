@@ -6,19 +6,19 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 )
 
 func TestCanadianFormula_Apply(t *testing.T) {
 
 	formulaCanada2018 := &CanadianFormula{
-		WeightedBrackets: finance.WeightedBrackets{
-			-0.150: finance.Bracket{0, 11809},
-			0.150:  finance.Bracket{0, 46605},
-			0.205:  finance.Bracket{46606, 93208},
-			0.260:  finance.Bracket{93209, 144489},
-			0.290:  finance.Bracket{144490, 205842},
-			0.330:  finance.Bracket{205843, math.Inf(1)},
+		WeightedBrackets: core.WeightedBrackets{
+			-0.150: core.Bracket{0, 11809},
+			0.150:  core.Bracket{0, 46605},
+			0.205:  core.Bracket{46606, 93208},
+			0.260:  core.Bracket{93209, 144489},
+			0.290:  core.Bracket{144490, 205842},
+			0.330:  core.Bracket{205843, math.Inf(1)},
 		},
 	}
 	err := formulaCanada2018.Validate()
@@ -69,12 +69,12 @@ func TestCanadianFormula_Apply(t *testing.T) {
 func TestCanadianFormula_Clone(t *testing.T) {
 
 	original := &CanadianFormula{
-		WeightedBrackets: finance.WeightedBrackets{0.1: finance.Bracket{0, 10}},
+		WeightedBrackets: core.WeightedBrackets{0.1: core.Bracket{0, 10}},
 	}
 
 	clone := original.Clone()
 	originalResults := original.Apply(5)
-	original.WeightedBrackets[0.1] = finance.Bracket{100, 1000}
+	original.WeightedBrackets[0.1] = core.Bracket{100, 1000}
 	cloneResults := clone.Apply(5)
 	if originalResults != cloneResults {
 		t.Errorf("expected clone results to be equal to results of original formula prior to mutation")

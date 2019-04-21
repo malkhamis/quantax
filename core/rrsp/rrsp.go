@@ -4,7 +4,6 @@ package rrsp
 
 import (
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 	"github.com/pkg/errors"
 )
 
@@ -22,13 +21,13 @@ type Formula interface {
 	ContributionEarned(netIncome float64) float64
 	// AllowedIncomeSources return the allowed income sources
 	// that result in RRSP contribution room increase
-	AllowedIncomeSources() []finance.IncomeSource
+	AllowedIncomeSources() []core.FinancialSource
 	// TargetSourceForWithdrawl returns the affected income
 	// source on withdrawal from an RRSP account
-	TargetSourceForWithdrawl() finance.IncomeSource
+	TargetSourceForWithdrawl() core.FinancialSource
 	// TargetSourceForContribution returns the affected deducion
 	// source on contribution to an RRSP account
-	TargetSourceForContribution() finance.DeductionSource
+	TargetSourceForContribution() core.FinancialSource
 	// Validate checks if the formula is valid for use
 	Validate() error
 	// Clone returns a copy of the formula

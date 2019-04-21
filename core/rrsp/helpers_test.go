@@ -2,7 +2,6 @@ package rrsp
 
 import (
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 )
 
 type testTaxCalculator struct {
@@ -17,27 +16,27 @@ func (ttc *testTaxCalculator) TaxPayable() (float64, []core.TaxCredit) {
 }
 func (ttc *testTaxCalculator) SetCredits(_ []core.TaxCredit) {
 }
-func (ttc *testTaxCalculator) SetFinances(_ *finance.IndividualFinances) {
+func (ttc *testTaxCalculator) SetFinances(_ *core.IndividualFinances) {
 }
 
 type testFormula struct {
 	onValidate                    error
 	onContributionEarned          float64
-	onTargetSourceForWithdrawl    finance.IncomeSource
-	onTargetSourceForContribution finance.DeductionSource
-	onAllowedIncomeSources        []finance.IncomeSource
+	onTargetSourceForWithdrawl    core.FinancialSource
+	onTargetSourceForContribution core.FinancialSource
+	onAllowedIncomeSources        []core.FinancialSource
 }
 
 func (f *testFormula) ContributionEarned(income float64) float64 {
 	return f.onContributionEarned
 }
-func (f *testFormula) TargetSourceForWithdrawl() finance.IncomeSource {
+func (f *testFormula) TargetSourceForWithdrawl() core.FinancialSource {
 	return f.onTargetSourceForWithdrawl
 }
-func (f *testFormula) TargetSourceForContribution() finance.DeductionSource {
+func (f *testFormula) TargetSourceForContribution() core.FinancialSource {
 	return f.onTargetSourceForContribution
 }
-func (f *testFormula) AllowedIncomeSources() []finance.IncomeSource {
+func (f *testFormula) AllowedIncomeSources() []core.FinancialSource {
 	return f.onAllowedIncomeSources
 }
 func (f *testFormula) Validate() error {

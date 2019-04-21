@@ -1,4 +1,4 @@
-package finance
+package core
 
 import (
 	"math"
@@ -36,8 +36,8 @@ func (b Bracket) Upper() float64 {
 }
 
 // WeightedBrackets maps weights (rates) to numeric ranges, e.g. brackets. This
-// type is the most basic formula used by the Canadian government in order to
-// compute taxes and benefits for families and individual tax payers
+// type is the most basic formula used by many governments in order to compute
+// taxes and benefits for families and individual tax payers
 type WeightedBrackets map[float64]Bracket
 
 // Apply slices the given param into this formula's brackets. Then, it applies

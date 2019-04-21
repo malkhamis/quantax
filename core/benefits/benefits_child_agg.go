@@ -2,7 +2,6 @@ package benefits
 
 import (
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 	"github.com/malkhamis/quantax/core/human"
 	"github.com/pkg/errors"
 )
@@ -38,7 +37,7 @@ func NewChildBenefitAggregator(c0, c1 core.ChildBenefitCalculator, extras ...cor
 }
 
 // Calc returns the aggregate recievable amount of child benefits
-func (agg *ChildBenfitAggregator) Calc(finances finance.IncomeDeductor) float64 {
+func (agg *ChildBenfitAggregator) Calc(finances core.Financer) float64 {
 
 	var total float64
 	for _, c := range agg.calculators {

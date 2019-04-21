@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
 
 	"github.com/pkg/errors"
@@ -13,27 +13,27 @@ import (
 
 func TestCCBMaxReducer_Apply(t *testing.T) {
 
-	childCount1 := finance.WeightedBrackets{
-		0.000: finance.Bracket{0, 10000},
-		0.030: finance.Bracket{10000, 50000},
-		0.070: finance.Bracket{50000, math.Inf(1)},
+	childCount1 := core.WeightedBrackets{
+		0.000: core.Bracket{0, 10000},
+		0.030: core.Bracket{10000, 50000},
+		0.070: core.Bracket{50000, math.Inf(1)},
 	}
-	childCount2 := finance.WeightedBrackets{
-		0.000: finance.Bracket{0, 10000},
-		0.050: finance.Bracket{10000, 50000},
-		0.100: finance.Bracket{50000, math.Inf(1)},
+	childCount2 := core.WeightedBrackets{
+		0.000: core.Bracket{0, 10000},
+		0.050: core.Bracket{10000, 50000},
+		0.100: core.Bracket{50000, math.Inf(1)},
 	}
 
 	mr := &CCBMaxReducer{
-		Reducers: []finance.WeightedBrackets{childCount1, childCount2},
+		Reducers: []core.WeightedBrackets{childCount1, childCount2},
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      human.AgeRange{0, 11},
-				AmountsPerMonth: finance.Bracket{0, 500},
+				AmountsPerMonth: core.Bracket{0, 500},
 			},
 			{
 				AgesMonths:      human.AgeRange{12, 23},
-				AmountsPerMonth: finance.Bracket{0, 250},
+				AmountsPerMonth: core.Bracket{0, 250},
 			},
 		},
 	}
@@ -74,7 +74,7 @@ func TestCCBMaxReducer_Validate_InvalidAgeRanges(t *testing.T) {
 		BeneficiaryClasses: []AgeGroupBenefits{
 			AgeGroupBenefits{
 				AgesMonths:      human.AgeRange{10, 0},
-				AmountsPerMonth: finance.Bracket{0, 55},
+				AmountsPerMonth: core.Bracket{0, 55},
 			},
 		},
 	}
@@ -99,7 +99,7 @@ func TestCCBMaxReducer_Validate_NilFormula(t *testing.T) {
 
 	formula = CCBMaxReducer{
 		BeneficiaryClasses: nil,
-		Reducers:           []finance.WeightedBrackets{nil},
+		Reducers:           []core.WeightedBrackets{nil},
 	}
 
 	err = formula.Validate()
@@ -112,40 +112,40 @@ func TestCCBMaxReducer_Validate_NilFormula(t *testing.T) {
 func TestCCBMaxReducer_Validate_InvalidFormula(t *testing.T) {
 
 	formula := CCBMaxReducer{
-		Reducers: []finance.WeightedBrackets{
-			{0.0132: finance.Bracket{100000, 1}},
+		Reducers: []core.WeightedBrackets{
+			{0.0132: core.Bracket{100000, 1}},
 		},
 	}
 
 	err := formula.Validate()
-	if errors.Cause(err) != finance.ErrBoundsReversed {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", finance.ErrBoundsReversed, err)
+	if errors.Cause(err) != core.ErrBoundsReversed {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", core.ErrBoundsReversed, err)
 	}
 }
 
 func TestCCBMaxReducer_Clone(t *testing.T) {
 
-	childCount1 := finance.WeightedBrackets{
-		0.000: finance.Bracket{0, 10000},
-		0.030: finance.Bracket{10000, 50000},
-		0.070: finance.Bracket{50000, math.Inf(1)},
+	childCount1 := core.WeightedBrackets{
+		0.000: core.Bracket{0, 10000},
+		0.030: core.Bracket{10000, 50000},
+		0.070: core.Bracket{50000, math.Inf(1)},
 	}
-	childCount2 := finance.WeightedBrackets{
-		0.000: finance.Bracket{0, 10000},
-		0.050: finance.Bracket{10000, 50000},
-		0.100: finance.Bracket{50000, math.Inf(1)},
+	childCount2 := core.WeightedBrackets{
+		0.000: core.Bracket{0, 10000},
+		0.050: core.Bracket{10000, 50000},
+		0.100: core.Bracket{50000, math.Inf(1)},
 	}
 
 	originalFormula := &CCBMaxReducer{
-		Reducers: []finance.WeightedBrackets{childCount1, childCount2},
+		Reducers: []core.WeightedBrackets{childCount1, childCount2},
 		BeneficiaryClasses: []AgeGroupBenefits{
 			{
 				AgesMonths:      human.AgeRange{0, 11},
-				AmountsPerMonth: finance.Bracket{0, 500},
+				AmountsPerMonth: core.Bracket{0, 500},
 			},
 			{
 				AgesMonths:      human.AgeRange{12, 23},
-				AmountsPerMonth: finance.Bracket{0, 250},
+				AmountsPerMonth: core.Bracket{0, 250},
 			},
 		},
 	}

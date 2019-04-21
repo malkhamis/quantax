@@ -1,7 +1,7 @@
 package benefits
 
 import (
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
 
 	"github.com/pkg/errors"
@@ -19,7 +19,7 @@ type BCECTBMaxReducer struct {
 	// the [min, max] dollar amounts for given age groups (bound-inclusive)
 	BeneficiaryClasses []AgeGroupBenefits
 	// Reducer is the sub-formula used to reduce the maximum benefits
-	ReducerFormula finance.WeightedBrackets
+	ReducerFormula core.WeightedBrackets
 }
 
 // Apply returns the total annual benefits for the children given the net income

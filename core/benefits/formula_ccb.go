@@ -1,7 +1,7 @@
 package benefits
 
 import (
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
 
 	"github.com/pkg/errors"
@@ -20,7 +20,7 @@ type CCBMaxReducer struct {
 	// where the index of the formula represents the number of children.
 	// If the number of children is greater than the number of formulas,
 	// the last formula is used
-	Reducers []finance.WeightedBrackets
+	Reducers []core.WeightedBrackets
 }
 
 // Apply returns the total annual benefits for the children given the net income
@@ -98,7 +98,7 @@ func (mr *CCBMaxReducer) Clone() ChildBenefitFormula {
 	clone := &CCBMaxReducer{}
 
 	if mr.Reducers != nil {
-		clone.Reducers = make([]finance.WeightedBrackets, len(mr.Reducers))
+		clone.Reducers = make([]core.WeightedBrackets, len(mr.Reducers))
 		for i, reducer := range mr.Reducers {
 			clone.Reducers[i] = reducer.Clone()
 		}
@@ -113,7 +113,7 @@ func (mr *CCBMaxReducer) Clone() ChildBenefitFormula {
 }
 
 // reducerFormula returns the reduction formula based on the child count
-func (mr *CCBMaxReducer) reducerFormula(childCount int) finance.WeightedBrackets {
+func (mr *CCBMaxReducer) reducerFormula(childCount int) core.WeightedBrackets {
 
 	var reducerIndex int
 

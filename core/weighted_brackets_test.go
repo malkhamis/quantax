@@ -1,4 +1,4 @@
-package finance
+package core
 
 import (
 	"math"

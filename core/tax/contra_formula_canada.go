@@ -3,7 +3,7 @@ package tax
 import (
 	"sort"
 
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 	"github.com/pkg/errors"
 )
 
@@ -15,11 +15,11 @@ var (
 // CanadianContraFormula is used to calculate Canadian tax credits
 type CanadianContraFormula struct {
 	// CreditsFromIncome stores creditors associated with income sources
-	CreditsFromIncome map[finance.IncomeSource]Creditor
+	CreditsFromIncome map[core.FinancialSource]Creditor
 	// CreditsFromDeduction stores creditors associated with deduction sources
-	CreditsFromDeduction map[finance.DeductionSource]Creditor
+	CreditsFromDeduction map[core.FinancialSource]Creditor
 	// CreditsFromMiscAmounts stores creditors associated with misc sources
-	CreditsFromMiscAmounts map[finance.MiscSource]Creditor
+	CreditsFromMiscAmounts map[core.FinancialSource]Creditor
 	// PersistentCredits are source-named credits that are available by default in
 	// this contra-formula. They must be accounted for in ApplicationOrder.
 	PersistentCredits map[string]float64
@@ -29,7 +29,7 @@ type CanadianContraFormula struct {
 
 // Apply applies the contra-formula on the given finances and net income and
 // extracts tax credits from them
-func (cf *CanadianContraFormula) Apply(finances *finance.IndividualFinances, netIncome float64) []*taxCredit {
+func (cf *CanadianContraFormula) Apply(finances *core.IndividualFinances, netIncome float64) []*taxCredit {
 
 	if finances == nil {
 		return nil
@@ -44,7 +44,7 @@ func (cf *CanadianContraFormula) Apply(finances *finance.IndividualFinances, net
 
 // extractCredits extracts tax credits from the given finances and net income.
 // The returns credits also include persistent credits
-func (cf *CanadianContraFormula) extractCredits(finances *finance.IndividualFinances, netIncome float64) []*creditBySource {
+func (cf *CanadianContraFormula) extractCredits(finances *core.IndividualFinances, netIncome float64) []*creditBySource {
 
 	pCredits := cf.persistentCredits()
 	incSrcCredits := cf.creditsFromIncSrcs(finances, netIncome)
@@ -71,7 +71,7 @@ func (cf *CanadianContraFormula) persistentCredits() []*creditBySource {
 // creditsFromIncSrcs returns a list of credits extracted from the income
 // sources in this contra-formula. It assumes that finances is never nil and
 // that the contra formula was validated
-func (cf *CanadianContraFormula) creditsFromIncSrcs(finances *finance.IndividualFinances, netIncome float64) []*creditBySource {
+func (cf *CanadianContraFormula) creditsFromIncSrcs(finances *core.IndividualFinances, netIncome float64) []*creditBySource {
 
 	credits := make([]*creditBySource, 0, len(finances.Income))
 
@@ -97,7 +97,7 @@ func (cf *CanadianContraFormula) creditsFromIncSrcs(finances *finance.Individual
 // creditsFromDeducSrcs returns a list of credits extracted from the deduciton
 // sources in this contra-formula. It assumes that finances is never nil and
 // that the contra formula was validated
-func (cf *CanadianContraFormula) creditsFromDeducSrcs(finances *finance.IndividualFinances, netIncome float64) []*creditBySource {
+func (cf *CanadianContraFormula) creditsFromDeducSrcs(finances *core.IndividualFinances, netIncome float64) []*creditBySource {
 
 	credits := make([]*creditBySource, 0, len(finances.Deductions))
 
@@ -123,7 +123,7 @@ func (cf *CanadianContraFormula) creditsFromDeducSrcs(finances *finance.Individu
 // creditsFromMiscSrcs returns a list of credits extracted from the misc
 // sources in this contra-formula. It assumes that finances is never nil and
 // that the contra formula was validated
-func (cf *CanadianContraFormula) creditsFromMiscSrcs(finances *finance.IndividualFinances, netIncome float64) []*creditBySource {
+func (cf *CanadianContraFormula) creditsFromMiscSrcs(finances *core.IndividualFinances, netIncome float64) []*creditBySource {
 
 	credits := make([]*creditBySource, 0, len(finances.MiscAmounts))
 
@@ -177,21 +177,21 @@ func (cf *CanadianContraFormula) Clone() ContraFormula {
 	clone := new(CanadianContraFormula)
 
 	if cf.CreditsFromDeduction != nil {
-		clone.CreditsFromDeduction = make(map[finance.DeductionSource]Creditor)
+		clone.CreditsFromDeduction = make(map[core.FinancialSource]Creditor)
 		for source, creditor := range cf.CreditsFromDeduction {
 			clone.CreditsFromDeduction[source] = creditor.Clone()
 		}
 	}
 
 	if cf.CreditsFromIncome != nil {
-		clone.CreditsFromIncome = make(map[finance.IncomeSource]Creditor)
+		clone.CreditsFromIncome = make(map[core.FinancialSource]Creditor)
 		for source, creditor := range cf.CreditsFromIncome {
 			clone.CreditsFromIncome[source] = creditor.Clone()
 		}
 	}
 
 	if cf.CreditsFromMiscAmounts != nil {
-		clone.CreditsFromMiscAmounts = make(map[finance.MiscSource]Creditor)
+		clone.CreditsFromMiscAmounts = make(map[core.FinancialSource]Creditor)
 		for source, creditor := range cf.CreditsFromMiscAmounts {
 			clone.CreditsFromMiscAmounts[source] = creditor.Clone()
 		}

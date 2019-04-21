@@ -1,4 +1,4 @@
-package finance
+package core
 
 import (
 	"reflect"
@@ -22,7 +22,7 @@ func TestHouseholdFinances_Full(t *testing.T) {
 	spouse2.AddIncome(IncSrcInterest, 3)
 	spouse2.AddDeduction(DeducSrcRRSP, 25)
 	spouse2.AddDeduction(DeducSrcMedical, 25)
-	spouse2.AddMiscAmount(MiscSrcUnknown, 12)
+	spouse2.AddMiscAmount(SrcUnknown, 12)
 	spouse2.Cash = 66
 
 	finances := NewHouseholdFinances(spouse1, spouse2)
@@ -154,7 +154,7 @@ func TestHouseholdFinances_Sources(t *testing.T) {
 	spouse1.AddMiscAmount(MiscSrcMedical, 11)
 
 	actualIncSrcs := spouse1.IncomeSources()
-	expectedIncSrcs := IncomeSourceSet{
+	expectedIncSrcs := map[FinancialSource]struct{}{
 		IncSrcEarned: struct{}{},
 		IncSrcUCCB:   struct{}{},
 	}
@@ -164,14 +164,14 @@ func TestHouseholdFinances_Sources(t *testing.T) {
 	}
 
 	actualDeducSrcs := spouse1.DeductionSources()
-	expectedDeducSrcs := DeductionSourceSet{DeducSrcRRSP: struct{}{}}
+	expectedDeducSrcs := map[FinancialSource]struct{}{DeducSrcRRSP: struct{}{}}
 	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
 	actualMiscSrcs := spouse1.MiscSources()
-	expectedMiscSrcs := MiscSourceSet{MiscSrcMedical: struct{}{}}
+	expectedMiscSrcs := map[FinancialSource]struct{}{MiscSrcMedical: struct{}{}}
 	diff = deep.Equal(actualMiscSrcs, expectedMiscSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
@@ -182,12 +182,12 @@ func TestHouseholdFinances_Sources(t *testing.T) {
 	spouse2.AddIncome(IncSrcInterest, 3)
 	spouse2.AddDeduction(DeducSrcRRSP, 25)
 	spouse2.AddDeduction(DeducSrcMedical, 25)
-	spouse2.AddMiscAmount(MiscSrcUnknown, 12)
+	spouse2.AddMiscAmount(SrcUnknown, 12)
 
 	finances := NewHouseholdFinances(spouse1, spouse2)
 
 	actualIncSrcs = finances.IncomeSources()
-	expectedIncSrcs = IncomeSourceSet{
+	expectedIncSrcs = map[FinancialSource]struct{}{
 		IncSrcEarned:   struct{}{},
 		IncSrcUCCB:     struct{}{},
 		IncSrcInterest: struct{}{},
@@ -198,7 +198,7 @@ func TestHouseholdFinances_Sources(t *testing.T) {
 	}
 
 	actualDeducSrcs = finances.DeductionSources()
-	expectedDeducSrcs = DeductionSourceSet{
+	expectedDeducSrcs = map[FinancialSource]struct{}{
 		DeducSrcRRSP:    struct{}{},
 		DeducSrcMedical: struct{}{},
 	}
@@ -208,9 +208,9 @@ func TestHouseholdFinances_Sources(t *testing.T) {
 	}
 
 	actualMiscSrcs = finances.MiscSources()
-	expectedMiscSrcs = MiscSourceSet{
+	expectedMiscSrcs = map[FinancialSource]struct{}{
 		MiscSrcMedical: struct{}{},
-		MiscSrcUnknown: struct{}{},
+		SrcUnknown:     struct{}{},
 	}
 	diff = deep.Equal(actualMiscSrcs, expectedMiscSrcs)
 	if diff != nil {
@@ -261,21 +261,21 @@ func TestIndividualFinances_Nil_Sources(t *testing.T) {
 
 	var nilFinances *IndividualFinances
 
-	expectedIncSrcs := make(IncomeSourceSet)
+	expectedIncSrcs := make(map[FinancialSource]struct{})
 	actualIncSrcs := nilFinances.IncomeSources()
 	diff := deep.Equal(actualIncSrcs, expectedIncSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
-	expectedDeducSrcs := make(DeductionSourceSet)
+	expectedDeducSrcs := make(map[FinancialSource]struct{})
 	actualDeducSrcs := nilFinances.DeductionSources()
 	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
-	expectedMiscSrcs := make(MiscSourceSet)
+	expectedMiscSrcs := make(map[FinancialSource]struct{})
 	actualMiscSrcs := nilFinances.MiscSources()
 	diff = deep.Equal(actualMiscSrcs, expectedMiscSrcs)
 	if diff != nil {
@@ -287,21 +287,21 @@ func TestHouseholdFinances_Nil_Sources(t *testing.T) {
 
 	nilFinances := HouseholdFinances{nil, nil}
 
-	expectedIncSrcs := make(IncomeSourceSet)
+	expectedIncSrcs := make(map[FinancialSource]struct{})
 	actualIncSrcs := nilFinances.IncomeSources()
 	diff := deep.Equal(actualIncSrcs, expectedIncSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
-	expectedDeducSrcs := make(DeductionSourceSet)
+	expectedDeducSrcs := make(map[FinancialSource]struct{})
 	actualDeducSrcs := nilFinances.DeductionSources()
 	diff = deep.Equal(actualDeducSrcs, expectedDeducSrcs)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
-	expectedMiscSrcs := make(MiscSourceSet)
+	expectedMiscSrcs := make(map[FinancialSource]struct{})
 	actualMiscSrcs := nilFinances.MiscSources()
 	diff = deep.Equal(actualMiscSrcs, expectedMiscSrcs)
 	if diff != nil {
@@ -326,7 +326,7 @@ func TestHouseholdFinances_Clone(t *testing.T) {
 	f1.AddIncome(IncSrcEarned, 500)
 	f1.AddDeduction(DeducSrcRRSP, 500)
 	f1.AddMiscAmount(MiscSrcMedical, 500)
-	f1.AddMiscAmount(MiscSrcUnknown, 12)
+	f1.AddMiscAmount(SrcUnknown, 12)
 
 	if original.TotalIncome() == clone.TotalIncome() {
 		t.Fatal("expected changes made to original to not be reflected in clone")
@@ -340,8 +340,8 @@ func TestHouseholdFinances_Clone(t *testing.T) {
 		t.Fatal("expected changes made to original to not be reflected in clone")
 	}
 
-	originalMiscSrcs := original.MiscAmount(MiscSrcMedical, MiscSrcUnknown)
-	cloneMiscSrcs := clone.MiscAmount(MiscSrcMedical, MiscSrcUnknown)
+	originalMiscSrcs := original.MiscAmount(MiscSrcMedical, SrcUnknown)
+	cloneMiscSrcs := clone.MiscAmount(MiscSrcMedical, SrcUnknown)
 	if originalMiscSrcs == cloneMiscSrcs {
 		t.Fatal("expected changes made to original to not be reflected in clone")
 	}

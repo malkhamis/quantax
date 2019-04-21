@@ -1,6 +1,8 @@
 package rrsp
 
-import "github.com/malkhamis/quantax/core/finance"
+import (
+	"github.com/malkhamis/quantax/core"
+)
 
 // compile-time check for interface implementation
 var _ Formula = (*MaxCapper)(nil)
@@ -14,11 +16,11 @@ type MaxCapper struct {
 	// the maximum contributable amount
 	Cap float64
 	// sources that add to contribution room
-	IncomeSources []finance.IncomeSource
+	IncomeSources []core.FinancialSource
 	// affected income source when making withdrawal
-	IncomeSourceForWithdrawal finance.IncomeSource
+	IncomeSourceForWithdrawal core.FinancialSource
 	// affected deduction source when making contribution
-	DeductionSourceForContribution finance.DeductionSource
+	DeductionSourceForContribution core.FinancialSource
 }
 
 // ContributionEarned returns the max contribution room acquired given the net
@@ -35,19 +37,19 @@ func (mc *MaxCapper) ContributionEarned(netIncome float64) float64 {
 
 // AllowedIncomeSources returns the sources which this formula expects as part
 // of the net income when calculating the contribution
-func (mc *MaxCapper) AllowedIncomeSources() []finance.IncomeSource {
+func (mc *MaxCapper) AllowedIncomeSources() []core.FinancialSource {
 	return mc.IncomeSources
 }
 
 // TargetSourceForWithdrawl returns the affected income source when making a
 // withdrawal from an RRSP account
-func (mc *MaxCapper) TargetSourceForWithdrawl() finance.IncomeSource {
+func (mc *MaxCapper) TargetSourceForWithdrawl() core.FinancialSource {
 	return mc.IncomeSourceForWithdrawal
 }
 
 // TargetSourceForContribution returns the affected deducion source when making
 // contribution to an RRSP account
-func (mc *MaxCapper) TargetSourceForContribution() finance.DeductionSource {
+func (mc *MaxCapper) TargetSourceForContribution() core.FinancialSource {
 	return mc.DeductionSourceForContribution
 }
 
@@ -62,7 +64,7 @@ func (mc *MaxCapper) Clone() Formula {
 	clone := *mc
 
 	if mc.IncomeSources != nil {
-		clone.IncomeSources = make([]finance.IncomeSource, len(mc.IncomeSources))
+		clone.IncomeSources = make([]core.FinancialSource, len(mc.IncomeSources))
 		copy(clone.IncomeSources, mc.IncomeSources)
 	}
 

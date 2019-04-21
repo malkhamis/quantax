@@ -3,18 +3,19 @@ package income
 import (
 	"testing"
 
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
+
 	"github.com/pkg/errors"
 )
 
 func TestCalculator_NetIncome_Adjusted(t *testing.T) {
 
 	r := &Recipe{
-		IncomeAdjusters: map[finance.IncomeSource]Adjuster{
-			finance.IncomeSource(1000): testAdjuster{adjusted: 250.0},
+		IncomeAdjusters: map[core.FinancialSource]Adjuster{
+			core.FinancialSource(1000): testAdjuster{adjusted: 250.0},
 		},
-		DeductionAdjusters: map[finance.DeductionSource]Adjuster{
-			finance.DeductionSource(2000): testAdjuster{adjusted: 100.0},
+		DeductionAdjusters: map[core.FinancialSource]Adjuster{
+			core.FinancialSource(2000): testAdjuster{adjusted: 100.0},
 		},
 	}
 
@@ -24,8 +25,8 @@ func TestCalculator_NetIncome_Adjusted(t *testing.T) {
 	}
 
 	finances := testIncomeDeductor{
-		deducSrcs:       finance.DeductionSourceSet{finance.DeductionSource(2000): struct{}{}},
-		incomeSrcs:      finance.IncomeSourceSet{finance.IncomeSource(1000): struct{}{}},
+		deducSrcs:       map[core.FinancialSource]struct{}{core.FinancialSource(2000): struct{}{}},
+		incomeSrcs:      map[core.FinancialSource]struct{}{core.FinancialSource(1000): struct{}{}},
 		totalDeductions: 15000.0,
 		totalIncome:     30000.0,
 	}
@@ -46,8 +47,8 @@ func TestCalculator_NetIncome_Unadjusted(t *testing.T) {
 	}
 
 	finances := testIncomeDeductor{
-		deducSrcs:       finance.DeductionSourceSet{finance.DeductionSource(2000): struct{}{}},
-		incomeSrcs:      finance.IncomeSourceSet{finance.IncomeSource(1000): struct{}{}},
+		deducSrcs:       map[core.FinancialSource]struct{}{core.FinancialSource(2000): struct{}{}},
+		incomeSrcs:      map[core.FinancialSource]struct{}{core.FinancialSource(1000): struct{}{}},
 		totalDeductions: 10000.0,
 		totalIncome:     30000.0,
 	}

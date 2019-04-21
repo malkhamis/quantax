@@ -3,7 +3,7 @@ package factory
 import (
 	"fmt"
 
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
 )
 
@@ -16,13 +16,13 @@ func ExampleNewTaxFactory() {
 		return
 	}
 
-	finances := finance.NewEmptyIndividualFinances(2018)
+	finances := core.NewEmptyIndividualFinances(2018)
 	calculator.SetFinances(finances)
 
-	finances.AddIncome(finance.IncSrcEarned, 170000.0)
-	finances.AddIncome(finance.IncSrcCapitalGainCA, 20000)
-	finances.AddIncome(finance.IncSrcTFSA, 12000)
-	finances.AddDeduction(finance.DeducSrcRRSP, 10000)
+	finances.AddIncome(core.IncSrcEarned, 170000.0)
+	finances.AddIncome(core.IncSrcCapitalGainCA, 20000)
+	finances.AddIncome(core.IncSrcTFSA, 12000)
+	finances.AddDeduction(core.DeducSrcRRSP, 10000)
 
 	aggTax, _ := calculator.TaxPayable()
 	fmt.Printf("%.2f\n", aggTax) // Output: 52821.09
@@ -40,18 +40,18 @@ func ExampleNewChildBenefitFactory() {
 	children := []human.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
 	calculator.SetBeneficiaries(children...)
 
-	f1 := finance.NewEmptyIndividualFinances(2017)
-	f2 := finance.NewEmptyIndividualFinances(2017)
+	f1 := core.NewEmptyIndividualFinances(2017)
+	f2 := core.NewEmptyIndividualFinances(2017)
 
-	f1.AddIncome(finance.IncSrcEarned, 109500.0)
-	f1.AddIncome(finance.IncSrcCapitalGainCA, 1000)
+	f1.AddIncome(core.IncSrcEarned, 109500.0)
+	f1.AddIncome(core.IncSrcCapitalGainCA, 1000)
 
-	f2.AddIncome(finance.IncSrcEarned, 14750)
-	f2.AddIncome(finance.IncSrcTFSA, 32000)
-	f1.AddIncome(finance.IncSrcCapitalGainCA, 500)
-	f2.AddDeduction(finance.DeducSrcRRSP, 15000)
+	f2.AddIncome(core.IncSrcEarned, 14750)
+	f2.AddIncome(core.IncSrcTFSA, 32000)
+	f1.AddIncome(core.IncSrcCapitalGainCA, 500)
+	f2.AddDeduction(core.DeducSrcRRSP, 15000)
 
-	finances := finance.NewHouseholdFinances(f1, f2)
+	finances := core.NewHouseholdFinances(f1, f2)
 	total := calculator.Calc(finances)
 
 	fmt.Printf("%.2f", total) // Output: 6742.54
@@ -72,8 +72,8 @@ func ExampleNewRRSPFactory() {
 		return
 	}
 
-	finances := finance.NewEmptyIndividualFinances(2018)
-	finances.AddIncome(finance.IncSrcEarned, 100000.0)
+	finances := core.NewEmptyIndividualFinances(2018)
+	finances.AddIncome(core.IncSrcEarned, 100000.0)
 	finances.RRSPContributionRoom = 15000.0
 
 	calculator.SetFinances(finances)

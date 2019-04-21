@@ -1,6 +1,6 @@
 package tax
 
-import "github.com/malkhamis/quantax/core/finance"
+import "github.com/malkhamis/quantax/core"
 
 var (
 	// compile-time check for interface implementation
@@ -9,7 +9,7 @@ var (
 
 type NopContraFormula struct{}
 
-func (NopContraFormula) Apply(finances *finance.IndividualFinances, netIncome float64) []*taxCredit {
+func (NopContraFormula) Apply(finances *core.IndividualFinances, netIncome float64) []*taxCredit {
 	return nil
 }
 

@@ -1,7 +1,7 @@
 package benefits
 
 import (
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
 )
 
@@ -11,13 +11,13 @@ type testIncomeCalculator struct {
 	onTotalIncome     float64
 }
 
-func (tic testIncomeCalculator) TotalIncome(_ finance.IncomeDeductor) float64 {
+func (tic testIncomeCalculator) TotalIncome(_ core.Financer) float64 {
 	return tic.onTotalIncome
 }
-func (tic testIncomeCalculator) TotalDeductions(_ finance.IncomeDeductor) float64 {
+func (tic testIncomeCalculator) TotalDeductions(_ core.Financer) float64 {
 	return tic.onTotalDeductions
 }
-func (tic testIncomeCalculator) NetIncome(_ finance.IncomeDeductor) float64 {
+func (tic testIncomeCalculator) NetIncome(_ core.Financer) float64 {
 	return tic.onNetIncome
 }
 

@@ -2,7 +2,6 @@ package benefits
 
 import (
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 	"github.com/malkhamis/quantax/core/human"
 
 	"github.com/pkg/errors"
@@ -37,7 +36,7 @@ func NewChildBenefitCalculator(cfg CalcConfigCB) (*ChildBenfitCalculator, error)
 }
 
 // Calc returns the recievable amount of child benefits
-func (c *ChildBenfitCalculator) Calc(finances finance.IncomeDeductor) float64 {
+func (c *ChildBenfitCalculator) Calc(finances core.Financer) float64 {
 
 	netIncome := c.incomeCalculator.NetIncome(finances)
 	benefits := c.formula.Apply(netIncome, c.children...)

@@ -1,7 +1,7 @@
 package benefits
 
 import (
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
 
 	"github.com/pkg/errors"
@@ -10,7 +10,7 @@ import (
 // AgeGroupBenefits represents the min/max benefit amounts for an age group
 type AgeGroupBenefits struct {
 	AgesMonths      human.AgeRange
-	AmountsPerMonth finance.Bracket
+	AmountsPerMonth core.Bracket
 }
 
 type multiAgeGroupBenefits []AgeGroupBenefits
@@ -58,7 +58,7 @@ func (ma multiAgeGroupBenefits) MinAnnualAmount(child human.Person) float64 {
 // NewAgeGroupBenefits returns a new age group benefit instance. The age range
 // is expected to be in months (not years). If the given arguments are invalid,
 // an error is returned
-func NewAgeGroupBenefits(ages human.AgeRange, minmaxAmnts finance.Bracket) (AgeGroupBenefits, error) {
+func NewAgeGroupBenefits(ages human.AgeRange, minmaxAmnts core.Bracket) (AgeGroupBenefits, error) {
 
 	benf := AgeGroupBenefits{
 		AgesMonths:      ages,

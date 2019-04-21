@@ -3,7 +3,6 @@ package tax
 
 import (
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 	"github.com/pkg/errors"
 )
 
@@ -33,7 +32,7 @@ type ContraFormula interface {
 	// Apply applies the contra-formula and returns a slice of Credits that is
 	// sorted in a priority-of-use sequence, where the first item has the highest
 	// priority of use before the next item
-	Apply(finances *finance.IndividualFinances, netIncome float64) []*taxCredit
+	Apply(finances *core.IndividualFinances, netIncome float64) []*taxCredit
 	// Clone returns a copy of this contra-formula
 	Clone() ContraFormula
 	// Validate checks if the formula is valid for use

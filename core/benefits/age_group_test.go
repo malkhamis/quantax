@@ -3,7 +3,7 @@ package benefits
 import (
 	"testing"
 
-	"github.com/malkhamis/quantax/core/finance"
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
 
 	"github.com/pkg/errors"
@@ -11,7 +11,7 @@ import (
 
 func TestAgeGroupBenefits_IsInAgeGroup(t *testing.T) {
 
-	agb, err := NewAgeGroupBenefits(human.AgeRange{10, 20}, finance.Bracket{0, 100})
+	agb, err := NewAgeGroupBenefits(human.AgeRange{10, 20}, core.Bracket{0, 100})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,11 +39,11 @@ func TestMultiAgeGroupBenefits_MinAnnualAmount(t *testing.T) {
 	agb := multiAgeGroupBenefits{
 		{
 			AgesMonths:      human.AgeRange{0, 10},
-			AmountsPerMonth: finance.Bracket{50, 100},
+			AmountsPerMonth: core.Bracket{50, 100},
 		},
 		{
 			AgesMonths:      human.AgeRange{11, 20},
-			AmountsPerMonth: finance.Bracket{25, 50},
+			AmountsPerMonth: core.Bracket{25, 50},
 		},
 	}
 
@@ -63,11 +63,11 @@ func TestMultiAgeGroupBenefits_MaxAnnualAmount(t *testing.T) {
 	agb := multiAgeGroupBenefits{
 		{
 			AgesMonths:      human.AgeRange{0, 10},
-			AmountsPerMonth: finance.Bracket{50, 100},
+			AmountsPerMonth: core.Bracket{50, 100},
 		},
 		{
 			AgesMonths:      human.AgeRange{11, 20},
-			AmountsPerMonth: finance.Bracket{25, 50},
+			AmountsPerMonth: core.Bracket{25, 50},
 		},
 	}
 
@@ -86,7 +86,7 @@ func TestAgeGroupBenefits_Validate(t *testing.T) {
 
 	agb := AgeGroupBenefits{
 		AgesMonths:      human.AgeRange{20, 10},
-		AmountsPerMonth: finance.Bracket{0, 100},
+		AmountsPerMonth: core.Bracket{0, 100},
 	}
 
 	err := agb.Validate()
@@ -96,11 +96,11 @@ func TestAgeGroupBenefits_Validate(t *testing.T) {
 
 	agb = AgeGroupBenefits{
 		AgesMonths:      human.AgeRange{0, 10},
-		AmountsPerMonth: finance.Bracket{200, 100},
+		AmountsPerMonth: core.Bracket{200, 100},
 	}
 
 	err = agb.Validate()
-	if errors.Cause(err) != finance.ErrBoundsReversed {
-		t.Errorf("unexpected error\nwant: %v\n got: %v", finance.ErrBoundsReversed, err)
+	if errors.Cause(err) != core.ErrBoundsReversed {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", core.ErrBoundsReversed, err)
 	}
 }

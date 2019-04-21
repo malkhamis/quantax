@@ -1,10 +1,10 @@
 package tax
 
-import "github.com/malkhamis/quantax/core/finance"
+import "github.com/malkhamis/quantax/core"
 
 // CanadianFormula is used to calculate Canadian federal and provincial taxes
 type CanadianFormula struct {
-	finance.WeightedBrackets
+	core.WeightedBrackets
 }
 
 // Apply applies this formula on the given net income and returns payable tax

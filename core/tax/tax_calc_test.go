@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 
 	"github.com/pkg/errors"
 )
@@ -86,7 +85,7 @@ func TestCalculator_TaxPayable(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c.SetFinances(finance.NewEmptyIndividualFinances(2018))
+	c.SetFinances(core.NewEmptyIndividualFinances(2018))
 	actualTax, actualCr := c.TaxPayable()
 
 	expectedTax := formula.onApply - 50.0
