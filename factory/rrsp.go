@@ -1,8 +1,8 @@
 package factory
 
 import (
-	"github.com/malkhamis/quantax/calc"
-	"github.com/malkhamis/quantax/calc/rrsp"
+	"github.com/malkhamis/quantax/core"
+	"github.com/malkhamis/quantax/core/rrsp"
 	"github.com/malkhamis/quantax/history"
 
 	"github.com/pkg/errors"
@@ -17,7 +17,7 @@ type RRSPFactoryConfig struct {
 
 // RRSPFactory is a type used to conveniently create RRSP calculators
 type RRSPFactory struct {
-	newCalculator func() (calc.RRSPCalculator, error)
+	newCalculator func() (core.RRSPCalculator, error)
 	taxFactory    *TaxFactory
 }
 
@@ -48,7 +48,7 @@ func NewRRSPFactory(config RRSPFactoryConfig) *RRSPFactory {
 
 // NewCalculator creates a new RRSP calculator that is configured with params
 // set in this factory
-func (f *RRSPFactory) NewCalculator() (calc.RRSPCalculator, error) {
+func (f *RRSPFactory) NewCalculator() (core.RRSPCalculator, error) {
 	if f.newCalculator == nil {
 		return nil, ErrFactoryNotInit
 	}
@@ -57,7 +57,7 @@ func (f *RRSPFactory) NewCalculator() (calc.RRSPCalculator, error) {
 
 // setFailingConstructor makes calls to NewCalculator returns nil, wrapped(err)
 func (f *RRSPFactory) setFailingConstructor(err error) {
-	f.newCalculator = func() (calc.RRSPCalculator, error) {
+	f.newCalculator = func() (core.RRSPCalculator, error) {
 		return nil, errors.Wrap(err, "RRSP factory error")
 	}
 }
@@ -66,12 +66,13 @@ func (f *RRSPFactory) setFailingConstructor(err error) {
 // given RRSP formula and this factory's internal tax calculator factory
 func (f *RRSPFactory) initConstructor(params history.RRSPParams) {
 
-	f.newCalculator = func() (calc.RRSPCalculator, error) {
+	f.newCalculator = func() (core.RRSPCalculator, error) {
 		taxCalc, err := f.taxFactory.NewCalculator()
 		if err != nil {
 			return nil, err
 		}
-		return rrsp.NewCalculator(params.Formula, taxCalc)
+		cfg := rrsp.CalcConfig{params.Formula, taxCalc}
+		return rrsp.NewCalculator(cfg)
 	}
 
 }
