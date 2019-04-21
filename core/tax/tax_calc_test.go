@@ -85,7 +85,7 @@ func TestCalculator_TaxPayable(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c.SetFinances(core.NewEmptyIndividualFinances(2018))
+	c.SetFinances(core.NewEmptyIndividualFinances())
 	actualTax, actualCr := c.TaxPayable()
 
 	expectedTax := formula.onApply - 50.0

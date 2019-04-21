@@ -26,9 +26,9 @@ func TestCanadianContraFormula_Apply(t *testing.T) {
 
 	cf := &CanadianContraFormula{
 		Creditors: map[core.FinancialSource]Creditor{
-			123: testCreditor{onSource: "1000", onTaxCredits: 1},
-			456: testCreditor{onSource: "2000", onTaxCredits: 2},
-			789: testCreditor{onSource: "3000", onTaxCredits: 3},
+			core.IncSrcEarned:   testCreditor{onSource: "1000", onTaxCredits: 1},
+			core.DeducSrcRRSP:   testCreditor{onSource: "2000", onTaxCredits: 2},
+			core.MiscSrcMedical: testCreditor{onSource: "3000", onTaxCredits: 3},
 		},
 		PersistentCredits: map[string]float64{"9999": 7},
 		ApplicationOrder: []CreditRule{
@@ -44,20 +44,16 @@ func TestCanadianContraFormula_Apply(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	finances := core.NewEmptyIndividualFinances(2019)
-	finances.AddIncome(123, 0)
-	finances.AddIncome(999, 0)
-	finances.AddDeduction(456, 0)
-	finances.AddDeduction(999, 0)
-	finances.AddMiscAmount(789, 0)
-	finances.AddMiscAmount(456, 0)
+	finances := core.NewEmptyIndividualFinances()
+	finances.AddAmount(core.IncSrcEarned, 10)
+	finances.AddAmount(core.DeducSrcRRSP, 20)
+	finances.AddAmount(core.MiscSrcMedical, 30)
+	finances.AddAmount(456, 40)
 
 	actual := cf.Apply(finances, 0)
-	t.Log(actual[0], actual[1], actual[2], actual[3])
 	expected := []*taxCredit{
 		&taxCredit{amount: 1, rule: CreditRule{"1000", CrRuleTypeCashable}},
 		&taxCredit{amount: 3, rule: CreditRule{"3000", CrRuleTypeCanCarryForward}},
-		&taxCredit{amount: 2, rule: CreditRule{"2000", CrRuleTypeCanCarryForward}},
 		&taxCredit{amount: 2, rule: CreditRule{"2000", CrRuleTypeCanCarryForward}},
 		&taxCredit{amount: 7, rule: CreditRule{"9999", CrRuleTypeNotCarryForward}},
 	}
@@ -139,17 +135,17 @@ func TestCanadianContraFormula_creditsFromIncSrcs(t *testing.T) {
 
 	cf := &CanadianContraFormula{
 		Creditors: map[core.FinancialSource]Creditor{
-			123: testCreditor{onSource: "1000", onTaxCredits: 115},
-			456: testCreditor{onSource: "2000", onTaxCredits: 95},
-			111: testCreditor{onSource: "3000", onTaxCredits: 0},
+			core.IncSrcEarned:   testCreditor{onSource: "1000", onTaxCredits: 115},
+			core.IncSrcInterest: testCreditor{onSource: "2000", onTaxCredits: 95},
+			core.IncSrcTFSA:     testCreditor{onSource: "3000", onTaxCredits: 0},
 		},
 		ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
 	}
 
-	finances := core.NewEmptyIndividualFinances(2019)
-	finances.AddIncome(123, 15000) // has creditor
-	finances.AddIncome(111, 20000) // zero credits
-	finances.AddIncome(999, 8000)  // no creditor
+	finances := core.NewEmptyIndividualFinances()
+	finances.AddAmount(core.IncSrcEarned, 15000) // has creditor
+	finances.AddAmount(core.IncSrcTFSA, 20000)   // zero credits
+	finances.AddAmount(core.IncSrcUCCB, 8000)    // no creditor
 
 	actual := cf.creditsFromIncSrcs(finances, 0)
 	expected := []*creditBySource{&creditBySource{amount: 115, source: "1000"}}
@@ -165,19 +161,43 @@ func TestCanadianContraFormula_creditsFromDeducSrcs(t *testing.T) {
 
 	cf := &CanadianContraFormula{
 		Creditors: map[core.FinancialSource]Creditor{
-			123: testCreditor{onSource: "1000", onTaxCredits: 115},
-			456: testCreditor{onSource: "2000", onTaxCredits: 95},
-			111: testCreditor{onSource: "3000", onTaxCredits: 0},
+			core.DeducSrcRRSP:   testCreditor{onSource: "1000", onTaxCredits: 115},
+			core.DeducSrcOthers: testCreditor{onSource: "2000", onTaxCredits: 0},
+		},
+		ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}, {Source: "3000"}},
+	}
+
+	finances := core.NewEmptyIndividualFinances()
+	finances.AddAmount(core.DeducSrcOthers, 1000)  // zero creditor
+	finances.AddAmount(core.DeducSrcRRSP, 15000)   // has creditor
+	finances.AddAmount(core.DeducSrcMedical, 8000) // no creditor
+
+	actual := cf.creditsFromDeducSrcs(finances, 0)
+	expected := []*creditBySource{&creditBySource{amount: 115, source: "1000"}}
+
+	diff := deep.Equal(actual, expected)
+	if diff != nil {
+		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+
+}
+
+func TestCanadianContraFormula_creditsFromMiscSrcs(t *testing.T) {
+
+	cf := &CanadianContraFormula{
+		Creditors: map[core.FinancialSource]Creditor{
+			core.MiscSrcTuition: testCreditor{onSource: "1000", onTaxCredits: 115},
+			core.MiscSrcOthers:  testCreditor{onSource: "3000", onTaxCredits: 0},
 		},
 		ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
 	}
 
-	finances := core.NewEmptyIndividualFinances(2019)
-	finances.AddDeduction(123, 15000) // has creditor
-	finances.AddDeduction(111, 20000) // zero credits
-	finances.AddDeduction(999, 8000)  // no creditor
+	finances := core.NewEmptyIndividualFinances()
+	finances.AddAmount(core.MiscSrcTuition, 8000)  // has creditor
+	finances.AddAmount(core.MiscSrcMedical, 15000) // no creditor
+	finances.AddAmount(core.MiscSrcOthers, 8000)   // zero creditor
 
-	actual := cf.creditsFromDeducSrcs(finances, 0)
+	actual := cf.creditsFromMiscSrcs(finances, 0)
 	expected := []*creditBySource{&creditBySource{amount: 115, source: "1000"}}
 
 	diff := deep.Equal(actual, expected)
@@ -205,32 +225,6 @@ func TestCanadianFormula_persistentCredits(t *testing.T) {
 	sort.Slice(expected, func(i int, j int) bool {
 		return expected[i].source > expected[j].source
 	})
-
-	diff := deep.Equal(actual, expected)
-	if diff != nil {
-		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
-	}
-
-}
-
-func TestCanadianContraFormula_creditsFromMiscSrcs(t *testing.T) {
-
-	cf := &CanadianContraFormula{
-		Creditors: map[core.FinancialSource]Creditor{
-			123: testCreditor{onSource: "1000", onTaxCredits: 115},
-			456: testCreditor{onSource: "2000", onTaxCredits: 95},
-			111: testCreditor{onSource: "3000", onTaxCredits: 0},
-		},
-		ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
-	}
-
-	finances := core.NewEmptyIndividualFinances(2019)
-	finances.AddMiscAmount(123, 15000) // has creditor
-	finances.AddMiscAmount(111, 20000) // zero credits
-	finances.AddMiscAmount(999, 8000)  // no creditor
-
-	actual := cf.creditsFromMiscSrcs(finances, 0)
-	expected := []*creditBySource{&creditBySource{amount: 115, source: "1000"}}
 
 	diff := deep.Equal(actual, expected)
 	if diff != nil {

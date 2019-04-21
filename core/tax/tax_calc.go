@@ -30,7 +30,7 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 		formula:          cfg.TaxFormula.Clone(),
 		contraFormula:    cfg.ContraTaxFormula.Clone(),
 		incomeCalculator: cfg.IncomeCalc,
-		finances:         core.NewEmptyIndividualFinances(0),
+		finances:         core.NewEmptyIndividualFinances(),
 	}
 
 	return c, nil
@@ -43,7 +43,7 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 func (c *Calculator) SetFinances(f *core.IndividualFinances) {
 
 	if f == nil {
-		f = core.NewEmptyIndividualFinances(0)
+		f = core.NewEmptyIndividualFinances()
 	}
 	c.finances = f
 }
