@@ -29,7 +29,7 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 	c := &Calculator{
 		formula:       cfg.Formula.Clone(),
 		taxCalculator: cfg.TaxCalc,
-		finances:      core.NewEmptyIndividualFinances(0),
+		finances:      core.NewEmptyIndividualFinances(),
 	}
 	return c, nil
 }
@@ -38,12 +38,15 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 // calculator for the given withdrawal amount
 func (c *Calculator) TaxPaid(withdrawal float64) float64 {
 
-	taxBefore, _ := c.taxCalculator.TaxPayable()
+	original := c.finances
+	clone := original.Clone()
+	c.SetFinances(clone)
+	defer c.SetFinances(original)
 
 	incomeSrc := c.formula.TargetSourceForWithdrawl()
-	c.finances.AddIncome(incomeSrc, withdrawal)
-	defer c.finances.AddIncome(incomeSrc, -withdrawal)
 
+	taxBefore, _ := c.taxCalculator.TaxPayable()
+	c.finances.AddAmount(incomeSrc, withdrawal)
 	taxAfter, _ := c.taxCalculator.TaxPayable()
 
 	diff := taxAfter - taxBefore
@@ -54,16 +57,19 @@ func (c *Calculator) TaxPaid(withdrawal float64) float64 {
 // given the finances set in this calculator
 func (c *Calculator) TaxRefund(contribution float64) (float64, error) {
 
-	if contribution > c.finances.RRSPContributionRoom {
+	if contribution > c.finances.RRSPAmounts().ContributionRoom {
 		return 0.0, ErrNoRRSPRoom
 	}
 
-	taxBefore, _ := c.taxCalculator.TaxPayable()
+	original := c.finances
+	clone := original.Clone()
+	c.SetFinances(clone)
+	defer c.SetFinances(original)
 
 	deducSrc := c.formula.TargetSourceForContribution()
-	c.finances.AddDeduction(deducSrc, contribution)
-	defer c.finances.AddDeduction(deducSrc, -contribution)
 
+	taxBefore, _ := c.taxCalculator.TaxPayable()
+	c.finances.AddAmount(deducSrc, contribution)
 	taxAfter, _ := c.taxCalculator.TaxPayable()
 
 	diff := taxBefore - taxAfter
@@ -89,7 +95,7 @@ func (c *Calculator) ContributionEarned() float64 {
 func (c *Calculator) SetFinances(f *core.IndividualFinances) {
 
 	if f == nil {
-		f = core.NewEmptyIndividualFinances(0)
+		f = core.NewEmptyIndividualFinances()
 	}
 
 	c.finances = f

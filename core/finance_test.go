@@ -351,6 +351,19 @@ func TestHouseholdFinances_Clone(t *testing.T) {
 	}
 }
 
+func TestIndividualFinances_RRSPAmounts(t *testing.T) {
+
+	f := NewEmptyIndividualFinances()
+	rrspAmounts := RRSPAmounts{ContributionRoom: 1000, UnclaimedDeductions: 2000}
+
+	f.SetRRSPAmounts(rrspAmounts)
+	actual := f.RRSPAmounts()
+	if actual != rrspAmounts {
+		t.Fatalf("actual does not match expected\nwant: %v\n got: %v", rrspAmounts, actual)
+	}
+
+}
+
 func TestHouseholdFinances_Version(t *testing.T) {
 
 	f1 := NewEmptyIndividualFinances()
@@ -368,9 +381,19 @@ func TestHouseholdFinances_Version(t *testing.T) {
 
 func TestIndividualFinances_NumFieldsUnchanged(t *testing.T) {
 
-	dummy := IndividualFinances{}
-	s := reflect.ValueOf(&dummy).Elem()
-	if s.NumField() != 7 {
+	fDummy := IndividualFinances{}
+	sf := reflect.ValueOf(&fDummy).Elem()
+	if sf.NumField() != 6 {
+		t.Fatal(
+			"number of struct fields changed. Please update the constructor and the " +
+				"clone method of this type as well as associated test. Next, update " +
+				"this test with the new number of fields",
+		)
+	}
+
+	rrspDummy := RRSPAmounts{}
+	sr := reflect.ValueOf(&rrspDummy).Elem()
+	if sr.NumField() != 2 {
 		t.Fatal(
 			"number of struct fields changed. Please update the constructor and the " +
 				"clone method of this type as well as associated test. Next, update " +

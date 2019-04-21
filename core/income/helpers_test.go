@@ -9,6 +9,7 @@ type testIncomeDeductor struct {
 	incomeSrcs      map[core.FinancialSource]struct{}
 	deducSrcs       map[core.FinancialSource]struct{}
 	miscSrcs        map[core.FinancialSource]struct{}
+	version         uint64
 }
 
 func (tid testIncomeDeductor) TotalIncome(sources ...core.FinancialSource) float64 {
@@ -28,6 +29,9 @@ func (tid testIncomeDeductor) DeductionSources() map[core.FinancialSource]struct
 }
 func (tid testIncomeDeductor) MiscSources() map[core.FinancialSource]struct{} {
 	return tid.miscSrcs
+}
+func (tid testIncomeDeductor) Version() uint64 {
+	return tid.version
 }
 
 type testAdjuster struct {

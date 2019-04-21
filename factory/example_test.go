@@ -16,13 +16,13 @@ func ExampleNewTaxFactory() {
 		return
 	}
 
-	finances := core.NewEmptyIndividualFinances(2018)
+	finances := core.NewEmptyIndividualFinances()
 	calculator.SetFinances(finances)
 
-	finances.AddIncome(core.IncSrcEarned, 170000.0)
-	finances.AddIncome(core.IncSrcCapitalGainCA, 20000)
-	finances.AddIncome(core.IncSrcTFSA, 12000)
-	finances.AddDeduction(core.DeducSrcRRSP, 10000)
+	finances.AddAmount(core.IncSrcEarned, 170000.0)
+	finances.AddAmount(core.IncSrcCapitalGainCA, 20000)
+	finances.AddAmount(core.IncSrcTFSA, 12000)
+	finances.AddAmount(core.DeducSrcRRSP, 10000)
 
 	aggTax, _ := calculator.TaxPayable()
 	fmt.Printf("%.2f\n", aggTax) // Output: 52821.09
@@ -40,16 +40,16 @@ func ExampleNewChildBenefitFactory() {
 	children := []human.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
 	calculator.SetBeneficiaries(children...)
 
-	f1 := core.NewEmptyIndividualFinances(2017)
-	f2 := core.NewEmptyIndividualFinances(2017)
+	f1 := core.NewEmptyIndividualFinances()
+	f2 := core.NewEmptyIndividualFinances()
 
-	f1.AddIncome(core.IncSrcEarned, 109500.0)
-	f1.AddIncome(core.IncSrcCapitalGainCA, 1000)
+	f1.AddAmount(core.IncSrcEarned, 109500.0)
+	f1.AddAmount(core.IncSrcCapitalGainCA, 1000)
 
-	f2.AddIncome(core.IncSrcEarned, 14750)
-	f2.AddIncome(core.IncSrcTFSA, 32000)
-	f1.AddIncome(core.IncSrcCapitalGainCA, 500)
-	f2.AddDeduction(core.DeducSrcRRSP, 15000)
+	f2.AddAmount(core.IncSrcEarned, 14750)
+	f2.AddAmount(core.IncSrcTFSA, 32000)
+	f1.AddAmount(core.IncSrcCapitalGainCA, 500)
+	f2.AddAmount(core.DeducSrcRRSP, 15000)
 
 	finances := core.NewHouseholdFinances(f1, f2)
 	total := calculator.Calc(finances)
@@ -72,9 +72,9 @@ func ExampleNewRRSPFactory() {
 		return
 	}
 
-	finances := core.NewEmptyIndividualFinances(2018)
-	finances.AddIncome(core.IncSrcEarned, 100000.0)
-	finances.RRSPContributionRoom = 15000.0
+	finances := core.NewEmptyIndividualFinances()
+	finances.AddAmount(core.IncSrcEarned, 100000.0)
+	finances.SetRRSPAmounts(core.RRSPAmounts{ContributionRoom: 15000.0})
 
 	calculator.SetFinances(finances)
 	taxRecievable, err := calculator.TaxRefund(15000.0)

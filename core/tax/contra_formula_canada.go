@@ -137,15 +137,17 @@ func (cf *CanadianContraFormula) persistentCredits() []*creditBySource {
 // that the contra formula was validated
 func (cf *CanadianContraFormula) creditsFromIncSrcs(finances *core.IndividualFinances, netIncome float64) []*creditBySource {
 
-	credits := make([]*creditBySource, 0, len(finances.Income))
+	incSrcs := finances.IncomeSources()
+	credits := make([]*creditBySource, 0, len(incSrcs))
 
-	for src, income := range finances.Income {
+	for src := range incSrcs {
 
 		creditor := cf.Creditors[src]
 		if creditor == nil {
 			continue
 		}
 
+		income := finances.TotalIncome(src)
 		amount := creditor.TaxCredit(income, netIncome)
 		if amount == 0 {
 			continue
@@ -163,15 +165,17 @@ func (cf *CanadianContraFormula) creditsFromIncSrcs(finances *core.IndividualFin
 // that the contra formula was validated
 func (cf *CanadianContraFormula) creditsFromDeducSrcs(finances *core.IndividualFinances, netIncome float64) []*creditBySource {
 
-	credits := make([]*creditBySource, 0, len(finances.Deductions))
+	deducSrcs := finances.DeductionSources()
+	credits := make([]*creditBySource, 0, len(deducSrcs))
 
-	for src, deduc := range finances.Deductions {
+	for src := range deducSrcs {
 
 		creditor := cf.Creditors[src]
 		if creditor == nil {
 			continue
 		}
 
+		deduc := finances.TotalDeductions(src)
 		amount := creditor.TaxCredit(deduc, netIncome)
 		if amount == 0 {
 			continue
@@ -189,16 +193,18 @@ func (cf *CanadianContraFormula) creditsFromDeducSrcs(finances *core.IndividualF
 // that the contra formula was validated
 func (cf *CanadianContraFormula) creditsFromMiscSrcs(finances *core.IndividualFinances, netIncome float64) []*creditBySource {
 
-	credits := make([]*creditBySource, 0, len(finances.MiscAmounts))
+	miscSrcs := finances.MiscSources()
+	credits := make([]*creditBySource, 0, len(miscSrcs))
 
-	for src, misc := range finances.MiscAmounts {
+	for src := range miscSrcs {
 
 		creditor := cf.Creditors[src]
 		if creditor == nil {
 			continue
 		}
 
-		amount := creditor.TaxCredit(misc, netIncome)
+		miscAmnt := finances.MiscAmount(src)
+		amount := creditor.TaxCredit(miscAmnt, netIncome)
 		if amount == 0 {
 			continue
 		}

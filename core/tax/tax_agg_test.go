@@ -53,7 +53,7 @@ func TestAggregator_TaxPayable(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	aggregator.SetFinances(core.NewEmptyIndividualFinances(2019))
+	aggregator.SetFinances(core.NewEmptyIndividualFinances())
 	actual, _ := aggregator.TaxPayable()
 	expected := (3000.0 / 2.0) * float64(len(aggregator.calculators))
 	if actual != expected {

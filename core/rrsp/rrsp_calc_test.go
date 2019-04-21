@@ -78,8 +78,8 @@ func TestCalculator_TaxRefund(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	finances := core.NewEmptyIndividualFinances(0)
-	finances.RRSPContributionRoom = 1000.0
+	finances := core.NewEmptyIndividualFinances()
+	finances.SetRRSPAmounts(core.RRSPAmounts{ContributionRoom: 1000.0})
 	c.SetFinances(finances)
 
 	expected := 15.0
@@ -96,9 +96,8 @@ func TestCalculator_TaxRefund(t *testing.T) {
 
 func TestCalculator_ContributionEarned(t *testing.T) {
 
-	dummyIncSrc := core.FinancialSource(1111)
 	formula := &testFormula{
-		onAllowedIncomeSources: []core.FinancialSource{dummyIncSrc},
+		onAllowedIncomeSources: []core.FinancialSource{core.IncSrcEarned},
 	}
 
 	c, err := NewCalculator(CalcConfig{formula, &testTaxCalculator{}})
@@ -106,11 +105,11 @@ func TestCalculator_ContributionEarned(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	finances := core.NewEmptyIndividualFinances(0)
-	finances.RRSPContributionRoom = 1000.0
-	finances.AddIncome(dummyIncSrc, 1500.0)
+	finances := core.NewEmptyIndividualFinances()
+	finances.SetRRSPAmounts(core.RRSPAmounts{ContributionRoom: 1000})
+	finances.AddAmount(core.IncSrcEarned, 1500.0)
 	c.SetFinances(finances)
-	formula.onContributionEarned = finances.TotalIncome(dummyIncSrc)
+	formula.onContributionEarned = finances.TotalIncome(core.IncSrcEarned)
 
 	actual := c.ContributionEarned()
 	expected := formula.onContributionEarned
@@ -123,11 +122,9 @@ func TestCalculator_ContributionEarned(t *testing.T) {
 
 func TestCalculator_RefundError(t *testing.T) {
 
-	c := &Calculator{
-		finances: &core.IndividualFinances{
-			RRSPContributionRoom: 1000.0,
-		},
-	}
+	f := core.NewEmptyIndividualFinances()
+	f.SetRRSPAmounts(core.RRSPAmounts{ContributionRoom: 1000})
+	c := &Calculator{finances: f}
 
 	_, err := c.TaxRefund(2000.0)
 	if err != ErrNoRRSPRoom {
@@ -145,7 +142,4 @@ func TestCalculator_SetFinances_Nil(t *testing.T) {
 		t.Fatal("expected a non nil finances")
 	}
 
-	if c.finances.EOY != 0 {
-		t.Fatalf("expected EOY to be initialized to zero, got: %d", c.finances.EOY)
-	}
 }

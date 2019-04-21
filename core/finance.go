@@ -28,15 +28,20 @@ type Financer interface {
 	Version() uint64
 }
 
+// RRSPAmounts represent amounts related to RRSP
+type RRSPAmounts struct {
+	ContributionRoom    float64
+	UnclaimedDeductions float64
+}
+
 // IndividualFinances represents the financial data of an individual
 type IndividualFinances struct {
-	cash                    float64
-	income                  amountBySource
-	deductions              amountBySource
-	miscAmounts             amountBySource
-	rrspContributionRoom    float64
-	rrspUnclaimedDeductions float64
-	version                 uint64
+	cash        float64
+	income      amountBySource
+	deductions  amountBySource
+	miscAmounts amountBySource
+	rrspAmounts RRSPAmounts
+	version     uint64
 }
 
 // NewEmptyIndividualFinances returns an empty instance with version zero
@@ -184,6 +189,16 @@ func (f *IndividualFinances) MiscSources() map[FinancialSource]struct{} {
 	return set
 }
 
+// RRSPAmounts returns the RRSP information in this instance
+func (f *IndividualFinances) RRSPAmounts() RRSPAmounts {
+	return f.rrspAmounts
+}
+
+// SetRRSPAmounts sets the RRSP information in this instance
+func (f *IndividualFinances) SetRRSPAmounts(amounts RRSPAmounts) {
+	f.rrspAmounts = amounts
+}
+
 // Cash returns the free cash balance set in this instance
 func (f *IndividualFinances) Cash() float64 {
 	return f.cash
@@ -207,13 +222,12 @@ func (f *IndividualFinances) Clone() *IndividualFinances {
 	}
 
 	clone := &IndividualFinances{
-		cash:                    f.cash,
-		income:                  f.income.Clone(),
-		deductions:              f.deductions.Clone(),
-		miscAmounts:             f.miscAmounts.Clone(),
-		rrspContributionRoom:    f.rrspContributionRoom,
-		rrspUnclaimedDeductions: f.rrspUnclaimedDeductions,
-		version:                 f.version,
+		cash:        f.cash,
+		income:      f.income.Clone(),
+		deductions:  f.deductions.Clone(),
+		miscAmounts: f.miscAmounts.Clone(),
+		rrspAmounts: f.rrspAmounts,
+		version:     f.version,
 	}
 
 	return clone

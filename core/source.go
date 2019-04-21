@@ -18,11 +18,14 @@ const (
 
 	DeductionSourcesBegin
 	DeducSrcRRSP    // contribution to RRSP
-	DeducSrcMedical // medical expenses
+	DeducSrcMedical // medical deductions
+	DeducSrcOthers  // other deduction
 	DeductionSourcesEnd
 
 	MiscSourcesBegin
 	MiscSrcMedical // medical expenses
+	MiscSrcTuition // tuition expenses
+	MiscSrcOthers  // other amounts
 	MiscSourcesEnd
 )
 
