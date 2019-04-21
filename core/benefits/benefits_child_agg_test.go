@@ -28,17 +28,17 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 	formula := testCBFormula{onApply: incCalc.TotalIncome(nil) / 2.0}
 	formula.onClone = formula
 
-	c0, err := NewChildBenefitCalculator(formula, incCalc)
+	c0, err := NewChildBenefitCalculator(CalcConfigCB{formula, incCalc})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	c1, err := NewChildBenefitCalculator(formula, incCalc)
+	c1, err := NewChildBenefitCalculator(CalcConfigCB{formula, incCalc})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	c2, err := NewChildBenefitCalculator(formula, incCalc)
+	c2, err := NewChildBenefitCalculator(CalcConfigCB{formula, incCalc})
 	if err != nil {
 		t.Fatal(err)
 	}

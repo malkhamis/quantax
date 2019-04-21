@@ -22,24 +22,16 @@ var _ core.ChildBenefitCalculator = (*ChildBenfitCalculator)(nil)
 
 // NewChildBenefitCalculator returns a new child benefit calculator for the
 // given formula and the income calculator
-func NewChildBenefitCalculator(formula ChildBenefitFormula, incCalc core.IncomeCalculator) (*ChildBenfitCalculator, error) {
+func NewChildBenefitCalculator(cfg CalcConfigCB) (*ChildBenfitCalculator, error) {
 
-	if formula == nil {
-		return nil, ErrNoFormula
-	}
-
-	err := formula.Validate()
+	err := cfg.validate()
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid formula")
-	}
-
-	if incCalc == nil {
-		return nil, ErrNoIncCalc
+		return nil, errors.Wrap(err, "invalid configuration")
 	}
 
 	c := &ChildBenfitCalculator{
-		formula:          formula.Clone(),
-		incomeCalculator: incCalc,
+		formula:          cfg.Formula.Clone(),
+		incomeCalculator: cfg.IncomeCalc,
 	}
 	return c, nil
 }

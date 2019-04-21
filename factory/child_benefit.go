@@ -71,7 +71,8 @@ func (f *ChildBenefitFactory) initConstructor(allParams ...history.CBParams) {
 
 	case len(allParams) == 0:
 		f.newCalculator = func() (core.ChildBenefitCalculator, error) {
-			return benefits.NewChildBenefitCalculator(nil, nil)
+			cfg := benefits.CalcConfigCB{nil, nil}
+			return benefits.NewChildBenefitCalculator(cfg)
 		}
 
 	case len(allParams) == 1:
@@ -81,7 +82,8 @@ func (f *ChildBenefitFactory) initConstructor(allParams ...history.CBParams) {
 			if err != nil {
 				return nil, errors.Wrap(err, "error creating income calculator")
 			}
-			return benefits.NewChildBenefitCalculator(formula, incomeCalc)
+			cfg := benefits.CalcConfigCB{formula, incomeCalc}
+			return benefits.NewChildBenefitCalculator(cfg)
 		}
 
 	default:
@@ -94,7 +96,8 @@ func (f *ChildBenefitFactory) initConstructor(allParams ...history.CBParams) {
 				if err != nil {
 					return nil, errors.Wrap(err, "error creating income calculator")
 				}
-				cbCalcs[i], err = benefits.NewChildBenefitCalculator(formula, incomeCalc)
+				cfg := benefits.CalcConfigCB{formula, incomeCalc}
+				cbCalcs[i], err = benefits.NewChildBenefitCalculator(cfg)
 				if err != nil {
 					return nil, errors.Wrap(err, "error creating child benefit calculator")
 				}

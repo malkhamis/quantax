@@ -3,9 +3,10 @@
 package benefits
 
 import (
-	"errors"
-
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
+
+	"github.com/pkg/errors"
 )
 
 // Sentinel errors that can be wrapped and returned by this package
@@ -23,4 +24,30 @@ type ChildBenefitFormula interface {
 	Validate() error
 	// Clone returns a copy of the formula
 	Clone() ChildBenefitFormula
+}
+
+// CalcConfigCB is used to pass configurations to create new child benefit
+// calculator
+type CalcConfigCB struct {
+	Formula    ChildBenefitFormula
+	IncomeCalc core.IncomeCalculator
+}
+
+// validate checks if the configurations are valid for use by calc constructors
+func (cfg CalcConfigCB) validate() error {
+
+	if cfg.Formula == nil {
+		return ErrNoFormula
+	}
+
+	err := cfg.Formula.Validate()
+	if err != nil {
+		return errors.Wrap(err, "invalid formula")
+	}
+
+	if cfg.IncomeCalc == nil {
+		return ErrNoIncCalc
+	}
+
+	return nil
 }

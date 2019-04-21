@@ -10,25 +10,25 @@ import (
 func TestNewChildBenefitCalculator(t *testing.T) {
 
 	formula := testCBFormula{}
-	_, err := NewChildBenefitCalculator(formula, nil)
+	_, err := NewChildBenefitCalculator(CalcConfigCB{formula, nil})
 	if errors.Cause(err) != ErrNoIncCalc {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoIncCalc, err)
 	}
 
 	incCalc := testIncomeCalculator{}
-	_, err = NewChildBenefitCalculator(formula, incCalc)
+	_, err = NewChildBenefitCalculator(CalcConfigCB{formula, incCalc})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	_, err = NewChildBenefitCalculator(nil, nil)
+	_, err = NewChildBenefitCalculator(CalcConfigCB{nil, nil})
 	if errors.Cause(err) != ErrNoFormula {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
 
 	simulatedErr := errors.New("test error")
 	formula = testCBFormula{onValidate: simulatedErr}
-	_, err = NewChildBenefitCalculator(formula, nil)
+	_, err = NewChildBenefitCalculator(CalcConfigCB{formula, nil})
 	if errors.Cause(err) != simulatedErr {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", simulatedErr, err)
 	}
@@ -41,7 +41,7 @@ func TestCalculator_Calc(t *testing.T) {
 	formula := testCBFormula{onApply: incCalc.TotalIncome(nil) / 2.0}
 	formula.onClone = formula
 
-	calculator, err := NewChildBenefitCalculator(formula, incCalc)
+	calculator, err := NewChildBenefitCalculator(CalcConfigCB{formula, incCalc})
 	if err != nil {
 		t.Fatal(err)
 	}
