@@ -7,10 +7,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TestNewChildBenefitCalculator(t *testing.T) {
+func TestCalcCOnfigCB_validate(t *testing.T) {
 
 	formula := testCBFormula{}
-	_, err := NewChildBenefitCalculator(CalcConfigCB{formula, nil})
+	err := CalcConfigCB{formula, nil}.validate()
 	if errors.Cause(err) != ErrNoIncCalc {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoIncCalc, err)
 	}
@@ -21,16 +21,25 @@ func TestNewChildBenefitCalculator(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 
-	_, err = NewChildBenefitCalculator(CalcConfigCB{nil, nil})
+	err = CalcConfigCB{nil, nil}.validate()
 	if errors.Cause(err) != ErrNoFormula {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
 
 	simulatedErr := errors.New("test error")
 	formula = testCBFormula{onValidate: simulatedErr}
-	_, err = NewChildBenefitCalculator(CalcConfigCB{formula, nil})
+	err = CalcConfigCB{formula, nil}.validate()
 	if errors.Cause(err) != simulatedErr {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", simulatedErr, err)
+	}
+
+}
+
+func TestNewChildBenefitCalculator(t *testing.T) {
+
+	_, err := NewChildBenefitCalculator(CalcConfigCB{nil, nil})
+	if errors.Cause(err) != ErrNoFormula {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoFormula, err)
 	}
 
 }
