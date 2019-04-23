@@ -11,6 +11,11 @@ import (
 
 var (
 	taxParamsBC = yearlyTaxParams{
+		2019: TaxParams{
+			Formula:       taxFormulaBC2019,
+			ContraFormula: taxContraFormulaBC2019,
+			IncomeRecipe:  incomeRecipeNet,
+		},
 		2018: TaxParams{
 			Formula:       taxFormulaBC2018,
 			ContraFormula: taxContraFormulaBC2018,
@@ -19,9 +24,21 @@ var (
 	}
 
 	cbParamsBC = yearlyCBParams{
-		2017: CBParams{cbFormulaBC2017, incomeRecipeNet},
+		2018: CBParams{cbFormulaBC2018, incomeRecipeNet},
 	}
 )
+
+var taxFormulaBC2019 = &tax.CanadianFormula{
+	WeightedBrackets: core.WeightedBrackets{
+		0.0506: core.Bracket{0, 40707},
+
+		0.0770: core.Bracket{40707, 81416},
+		0.1050: core.Bracket{81416, 93476},
+		0.1229: core.Bracket{93476, 113506},
+		0.1470: core.Bracket{113506, 153900},
+		0.1680: core.Bracket{153900, math.Inf(1)},
+	},
+}
 
 var taxFormulaBC2018 = &tax.CanadianFormula{
 	WeightedBrackets: core.WeightedBrackets{
@@ -38,6 +55,18 @@ const (
 	crSrcPersonalAmountBC = "BC-basic-personal-amount"
 )
 
+var taxContraFormulaBC2019 = &tax.CanadianContraFormula{
+	PersistentCredits: map[string]float64{
+		crSrcPersonalAmountBC: 0.0506 * 10682,
+	},
+	ApplicationOrder: []tax.CreditRule{
+		{
+			Source: crSrcPersonalAmountBC,
+			Type:   tax.CrRuleTypeNotCarryForward,
+		},
+	},
+}
+
 var taxContraFormulaBC2018 = &tax.CanadianContraFormula{
 	PersistentCredits: map[string]float64{
 		crSrcPersonalAmountBC: 0.0506 * 10412,
@@ -50,7 +79,7 @@ var taxContraFormulaBC2018 = &tax.CanadianContraFormula{
 	},
 }
 
-var cbFormulaBC2017 = &benefits.BCECTBMaxReducer{
+var cbFormulaBC2018 = &benefits.BCECTBMaxReducer{
 	BeneficiaryClasses: []benefits.AgeGroupBenefits{
 		benefits.AgeGroupBenefits{
 			AgesMonths:      human.AgeRange{0, (monthsInYear * 6) - 1},

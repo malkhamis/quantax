@@ -30,7 +30,7 @@ func ExampleNewTaxFactory() {
 
 func ExampleNewChildBenefitFactory() {
 
-	f := NewChildBenefitFactory(2017, Canada, BC)
+	f := NewChildBenefitFactory(2018, Canada, BC)
 	calculator, err := f.NewCalculator()
 	if err != nil {
 		fmt.Println(err)

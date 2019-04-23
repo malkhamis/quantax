@@ -12,7 +12,7 @@ import (
 
 func TestNewChildBenefitFactory_NewCalculator_SingleFormula(t *testing.T) {
 
-	f := NewChildBenefitFactory(2017, BC)
+	f := NewChildBenefitFactory(2018, BC)
 	c, err := f.NewCalculator()
 	if err != nil {
 		t.Fatal(err)
@@ -61,7 +61,7 @@ func TestNewChildBenefitCalculatorFactory_Errors(t *testing.T) {
 		},
 		{
 			name:    "valid",
-			year:    2017,
+			year:    2018,
 			regions: []Region{BC},
 			err:     nil,
 		},

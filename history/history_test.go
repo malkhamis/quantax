@@ -60,7 +60,7 @@ func TestGetRRSPParams_Errors(t *testing.T) {
 
 func TestGetChildBenefitParams(t *testing.T) {
 
-	_, err := GetChildBenefitParams(2017, Canada)
+	_, err := GetChildBenefitParams(2018, Canada)
 	if err != nil {
 		t.Fatal(err)
 	}
