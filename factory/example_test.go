@@ -9,7 +9,7 @@ import (
 
 func ExampleNewTaxFactory() {
 
-	f := NewTaxFactory(2018, Canada, BC)
+	f := NewTaxFactory(2018, core.RegionCA, core.RegionBC)
 	calculator, err := f.NewCalculator()
 	if err != nil {
 		fmt.Println(err)
@@ -30,7 +30,7 @@ func ExampleNewTaxFactory() {
 
 func ExampleNewChildBenefitFactory() {
 
-	f := NewChildBenefitFactory(2017, Canada, BC)
+	f := NewChildBenefitFactory(2018, core.RegionCA, core.RegionBC)
 	calculator, err := f.NewCalculator()
 	if err != nil {
 		fmt.Println(err)
@@ -52,7 +52,8 @@ func ExampleNewChildBenefitFactory() {
 	f2.AddAmount(core.DeducSrcRRSP, 15000)
 
 	finances := core.NewHouseholdFinances(f1, f2)
-	total := calculator.Calc(finances)
+	calculator.SetFinances(finances)
+	total := calculator.Calc()
 
 	fmt.Printf("%.2f", total) // Output: 6742.54
 }
@@ -61,8 +62,8 @@ func ExampleNewRRSPFactory() {
 
 	config := RRSPFactoryConfig{
 		Year:       2018,
-		RRSPRegion: Canada,
-		TaxRegions: []Region{Canada, BC},
+		RRSPRegion: core.RegionCA,
+		TaxRegions: []core.Region{core.RegionCA, core.RegionBC},
 	}
 
 	f := NewRRSPFactory(config)

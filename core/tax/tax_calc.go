@@ -45,6 +45,7 @@ func (c *Calculator) SetFinances(f *core.IndividualFinances) {
 	if f == nil {
 		f = core.NewEmptyIndividualFinances()
 	}
+	c.incomeCalculator.SetFinances(f)
 	c.finances = f
 }
 
@@ -68,7 +69,7 @@ func (c *Calculator) SetCredits(credits []core.TaxCredit) {
 // and any relevent credits.
 func (c *Calculator) TaxPayable() (float64, []core.TaxCredit) {
 
-	netIncome := c.incomeCalculator.NetIncome(c.finances)
+	netIncome := c.incomeCalculator.NetIncome()
 	totalTax := c.formula.Apply(netIncome)
 
 	newCredits := c.contraFormula.Apply(c.finances, netIncome)

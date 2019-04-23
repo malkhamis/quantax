@@ -5,12 +5,13 @@ import (
 )
 
 // compile-time check for interface implementation
-var _ = (*core.IncomeCalculator)(nil)
+var _ core.IncomeCalculator = (*Calculator)(nil)
 
 // Calculator is used to calculate net income as per the underlying recipe
 type Calculator struct {
 	incomeAdjusters map[core.FinancialSource]Adjuster
 	deducAdjusters  map[core.FinancialSource]Adjuster
+	finances        core.Financer
 }
 
 // NewCalculator returns a new income calculator for the given recipe
@@ -28,29 +29,29 @@ func NewCalculator(recipe *Recipe) (*Calculator, error) {
 // NetIncome returns the net income of the given finances as follows:
 //  NetIncome = (Total Adjusted Income) - (Total Adjusted Deductions)
 // If the given finances is nil, it returns 0.0
-func (c *Calculator) NetIncome(finances core.Financer) float64 {
+func (c *Calculator) NetIncome() float64 {
 
-	if finances == nil {
+	if c.finances == nil {
 		return 0.0
 	}
 
-	netIncome := c.TotalIncome(finances) - c.TotalDeductions(finances)
+	netIncome := c.TotalIncome() - c.TotalDeductions()
 	return netIncome
 }
 
 // TotalIncome returns the total income of given finances, applying any needed
 // adjustments as per the underlying recipe without subtracting deductions.
 // If the given finances is nil, it returns 0.0
-func (c *Calculator) TotalIncome(finances core.Financer) float64 {
+func (c *Calculator) TotalIncome() float64 {
 
-	if finances == nil {
+	if c.finances == nil {
 		return 0.0
 	}
 
 	var totalIncome float64
-	for source := range finances.IncomeSources() {
+	for source := range c.finances.IncomeSources() {
 
-		incomeFromSrc := finances.TotalIncome(source)
+		incomeFromSrc := c.finances.TotalIncome(source)
 
 		adjuster, isAdjustable := c.incomeAdjusters[source]
 		if isAdjustable {
@@ -67,16 +68,16 @@ func (c *Calculator) TotalIncome(finances core.Financer) float64 {
 // TotalDeductions returns the total deductions of given finances, applying any
 // needed adjustments as per the underlying recipe without adding income.
 // If the given finances is nil, it returns 0.0
-func (c *Calculator) TotalDeductions(finances core.Financer) float64 {
+func (c *Calculator) TotalDeductions() float64 {
 
-	if finances == nil {
+	if c.finances == nil {
 		return 0.0
 	}
 
 	var totalDeductions float64
-	for source := range finances.DeductionSources() {
+	for source := range c.finances.DeductionSources() {
 
-		deducFromSrc := finances.TotalDeductions(source)
+		deducFromSrc := c.finances.TotalDeductions(source)
 
 		adjuster, isAdjustable := c.deducAdjusters[source]
 		if isAdjustable {
@@ -88,6 +89,12 @@ func (c *Calculator) TotalDeductions(finances core.Financer) float64 {
 	}
 
 	return totalDeductions
+}
+
+// SetFinances sets the given finances to this calculator, making subsequent
+// calls based on them
+func (c *Calculator) SetFinances(finances core.Financer) {
+	c.finances = finances
 }
 
 // initialize is used to initialize this calculator from the given recipe

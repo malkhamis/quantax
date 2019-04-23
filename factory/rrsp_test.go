@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/history"
 
 	"github.com/pkg/errors"
@@ -29,8 +30,8 @@ func TestRRSPFactory_Errors(t *testing.T) {
 			name: "invalid-year",
 			config: RRSPFactoryConfig{
 				Year:       1000,
-				RRSPRegion: Canada,
-				TaxRegions: []Region{Canada, BC},
+				RRSPRegion: core.RegionCA,
+				TaxRegions: []core.Region{core.RegionCA, core.RegionBC},
 			},
 			err: history.ErrParamsNotExist,
 		},
@@ -38,26 +39,26 @@ func TestRRSPFactory_Errors(t *testing.T) {
 			name: "invalid-rrsp-region",
 			config: RRSPFactoryConfig{
 				Year:       2018,
-				RRSPRegion: Region(1000),
-				TaxRegions: []Region{BC},
+				RRSPRegion: "1000",
+				TaxRegions: []core.Region{core.RegionBC},
 			},
-			err: ErrRegionNotExist,
+			err: history.ErrRegionNotExist,
 		},
 		{
 			name: "invalid-tax-region",
 			config: RRSPFactoryConfig{
 				Year:       2018,
-				RRSPRegion: Canada,
-				TaxRegions: []Region{Region(1000)},
+				RRSPRegion: core.RegionCA,
+				TaxRegions: []core.Region{"1000"},
 			},
-			err: ErrRegionNotExist,
+			err: history.ErrRegionNotExist,
 		},
 		{
 			name: "valid",
 			config: RRSPFactoryConfig{
 				Year:       2018,
-				RRSPRegion: Canada,
-				TaxRegions: []Region{Canada, BC},
+				RRSPRegion: core.RegionCA,
+				TaxRegions: []core.Region{core.RegionCA, core.RegionBC},
 			},
 			err: nil,
 		},

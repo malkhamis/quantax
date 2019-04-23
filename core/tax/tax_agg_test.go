@@ -25,7 +25,7 @@ func TestAggregator(t *testing.T) {
 func TestAggregator_TaxPayable(t *testing.T) {
 
 	incCalc := testIncomeCalculator{onTotalIncome: 3000.0}
-	formula := testTaxFormula{onApply: incCalc.TotalIncome(nil) / 2.0}
+	formula := testTaxFormula{onApply: incCalc.TotalIncome() / 2.0}
 
 	cfg := CalcConfig{
 		TaxFormula:       formula,

@@ -12,21 +12,35 @@ import (
 
 var (
 	taxParamsCanada = yearlyTaxParams{
+		2019: TaxParams{
+			Formula:       taxFormulaCanada2019,
+			ContraFormula: taxContraFormulaCanada2019,
+			IncomeRecipe:  incomeRecipeNet,
+		},
 		2018: TaxParams{
 			Formula:       taxFormulaCanada2018,
 			ContraFormula: taxContraFormulaCanada2018,
-			IncomeRecipe:  &incomeRecipeNet,
+			IncomeRecipe:  incomeRecipeNet,
 		},
 	}
 
 	cbParamsCanada = yearlyCBParams{
-		2017: CBParams{cbFormulaCanada2017, &incomeRecipeAFNI},
+		2018: CBParams{cbFormulaCanada2018, incomeRecipeAFNI},
 	}
 
 	rrspParamsCanada = yearlyRRSPParams{
+		2019: RRSPParams{rrspFormulaCanada2019},
 		2018: RRSPParams{rrspFormulaCanada2018},
 	}
 )
+
+var rrspFormulaCanada2019 = &rrsp.MaxCapper{
+	Rate:                           0.18,
+	Cap:                            26500,
+	IncomeSources:                  []core.FinancialSource{core.IncSrcEarned},
+	IncomeSourceForWithdrawal:      core.IncSrcRRSP,
+	DeductionSourceForContribution: core.DeducSrcRRSP,
+}
 
 var rrspFormulaCanada2018 = &rrsp.MaxCapper{
 	Rate:                           0.18,
@@ -34,6 +48,16 @@ var rrspFormulaCanada2018 = &rrsp.MaxCapper{
 	IncomeSources:                  []core.FinancialSource{core.IncSrcEarned},
 	IncomeSourceForWithdrawal:      core.IncSrcRRSP,
 	DeductionSourceForContribution: core.DeducSrcRRSP,
+}
+
+var taxFormulaCanada2019 = &tax.CanadianFormula{
+	WeightedBrackets: core.WeightedBrackets{
+		0.150: core.Bracket{0, 47630},
+		0.205: core.Bracket{47630, 95259},
+		0.260: core.Bracket{95259, 147667},
+		0.290: core.Bracket{147667, 210371},
+		0.330: core.Bracket{210371, math.Inf(1)},
+	},
 }
 
 var taxFormulaCanada2018 = &tax.CanadianFormula{
@@ -50,6 +74,18 @@ const (
 	crSrcPersonalAmountCanada = "Canada-basic-personal-amount"
 )
 
+var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
+	PersistentCredits: map[string]float64{
+		crSrcPersonalAmountCanada: 0.150 * 12069,
+	},
+	ApplicationOrder: []tax.CreditRule{
+		{
+			Source: crSrcPersonalAmountCanada,
+			Type:   tax.CrRuleTypeNotCarryForward,
+		},
+	},
+}
+
 var taxContraFormulaCanada2018 = &tax.CanadianContraFormula{
 	PersistentCredits: map[string]float64{
 		crSrcPersonalAmountCanada: 0.150 * 11809,
@@ -62,7 +98,7 @@ var taxContraFormulaCanada2018 = &tax.CanadianContraFormula{
 	},
 }
 
-var cbFormulaCanada2017 = &benefits.CCBMaxReducer{
+var cbFormulaCanada2018 = &benefits.CCBMaxReducer{
 	BeneficiaryClasses: []benefits.AgeGroupBenefits{
 		benefits.AgeGroupBenefits{
 			AgesMonths:      human.AgeRange{0, (monthsInYear * 6) - 1},

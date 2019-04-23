@@ -6,22 +6,18 @@ import (
 )
 
 var (
-	incomeRecipeNet  income.Recipe
-	incomeRecipeAFNI income.Recipe
-)
-
-// TODO: add more adjusters
-func initIncomeRecipes() {
-
-	zeroAdjuster := income.WeightedAdjuster(0.0)
-	incomeRecipeNet = income.Recipe{
+	incomeRecipeNet = &income.Recipe{
 		IncomeAdjusters: map[core.FinancialSource]income.Adjuster{
-			core.IncSrcTFSA:          zeroAdjuster,
 			core.IncSrcCapitalGainCA: income.WeightedAdjuster(0.5),
+			core.IncSrcTFSA:          income.WeightedAdjuster(0.0),
 		},
 	}
-
-	incomeRecipeAFNI = *((&incomeRecipeNet).Clone())
-	incomeRecipeAFNI.IncomeAdjusters[core.IncSrcUCCB] = zeroAdjuster
-	incomeRecipeAFNI.IncomeAdjusters[core.IncSrcRDSP] = zeroAdjuster
-}
+	incomeRecipeAFNI = &income.Recipe{
+		IncomeAdjusters: map[core.FinancialSource]income.Adjuster{
+			core.IncSrcCapitalGainCA: income.WeightedAdjuster(0.5),
+			core.IncSrcTFSA:          income.WeightedAdjuster(0.0),
+			core.IncSrcUCCB:          income.WeightedAdjuster(0.0),
+			core.IncSrcRDSP:          income.WeightedAdjuster(0.0),
+		},
+	}
+)

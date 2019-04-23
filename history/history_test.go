@@ -3,12 +3,13 @@ package history
 import (
 	"testing"
 
+	"github.com/malkhamis/quantax/core"
 	"github.com/pkg/errors"
 )
 
 func TestGetTaxParams(t *testing.T) {
 
-	params, err := GetTaxParams(2018, BC)
+	params, err := GetTaxParams(2018, core.RegionBC)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,12 +25,12 @@ func TestGetTaxParams(t *testing.T) {
 
 func TestGetTaxParams_Errors(t *testing.T) {
 
-	_, err := GetTaxParams(2018, Jurisdiction("OhCanada"))
-	if errors.Cause(err) != ErrJurisdictionNotExist {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrJurisdictionNotExist, err)
+	_, err := GetTaxParams(2018, core.Region("OhCanada"))
+	if errors.Cause(err) != ErrRegionNotExist {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrRegionNotExist, err)
 	}
 
-	_, err = GetTaxParams(2108, Canada)
+	_, err = GetTaxParams(2108, core.RegionCA)
 	if errors.Cause(err) != ErrParamsNotExist {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrParamsNotExist, err)
 	}
@@ -38,7 +39,7 @@ func TestGetTaxParams_Errors(t *testing.T) {
 
 func TestGetRRSPParams(t *testing.T) {
 
-	_, err := GetRRSPParams(2018, Canada)
+	_, err := GetRRSPParams(2018, core.RegionCA)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,12 +47,12 @@ func TestGetRRSPParams(t *testing.T) {
 
 func TestGetRRSPParams_Errors(t *testing.T) {
 
-	_, err := GetRRSPParams(2018, Jurisdiction("OhCanada"))
-	if errors.Cause(err) != ErrJurisdictionNotExist {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrJurisdictionNotExist, err)
+	_, err := GetRRSPParams(2018, core.Region("OhCanada"))
+	if errors.Cause(err) != ErrRegionNotExist {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrRegionNotExist, err)
 	}
 
-	_, err = GetRRSPParams(2108, Canada)
+	_, err = GetRRSPParams(2108, core.RegionCA)
 	if errors.Cause(err) != ErrParamsNotExist {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrParamsNotExist, err)
 	}
@@ -60,7 +61,7 @@ func TestGetRRSPParams_Errors(t *testing.T) {
 
 func TestGetChildBenefitParams(t *testing.T) {
 
-	_, err := GetChildBenefitParams(2017, Canada)
+	_, err := GetChildBenefitParams(2018, core.RegionCA)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,12 +69,12 @@ func TestGetChildBenefitParams(t *testing.T) {
 
 func TestGetChildBenefitParams_Errors(t *testing.T) {
 
-	_, err := GetChildBenefitParams(2018, Jurisdiction("OhCanada"))
-	if errors.Cause(err) != ErrJurisdictionNotExist {
-		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrJurisdictionNotExist, err)
+	_, err := GetChildBenefitParams(2018, core.Region("OhCanada"))
+	if errors.Cause(err) != ErrRegionNotExist {
+		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrRegionNotExist, err)
 	}
 
-	_, err = GetChildBenefitParams(2108, Canada)
+	_, err = GetChildBenefitParams(2108, core.RegionCA)
 	if errors.Cause(err) != ErrParamsNotExist {
 		t.Fatalf("unexpected error\nwant: %v\n got: %v", ErrParamsNotExist, err)
 	}

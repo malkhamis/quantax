@@ -11,8 +11,8 @@ import (
 // RRSPFactoryConfig is used to pass configs for creating new RRSP factory
 type RRSPFactoryConfig struct {
 	Year       uint
-	RRSPRegion Region
-	TaxRegions []Region
+	RRSPRegion core.Region
+	TaxRegions []core.Region
 }
 
 // RRSPFactory is a type used to conveniently create RRSP calculators
@@ -30,13 +30,7 @@ func NewRRSPFactory(config RRSPFactoryConfig) *RRSPFactory {
 		taxFactory: NewTaxFactory(config.Year, config.TaxRegions...),
 	}
 
-	convertedRegion, ok := knownRegions[config.RRSPRegion]
-	if !ok {
-		calcFactory.setFailingConstructor(errors.Wrap(ErrRegionNotExist, "RRSP region"))
-		return calcFactory
-	}
-
-	foundParams, err := history.GetRRSPParams(config.Year, convertedRegion)
+	foundParams, err := history.GetRRSPParams(config.Year, config.RRSPRegion)
 	if err != nil {
 		calcFactory.setFailingConstructor(errors.Wrap(err, "RRSP formula"))
 		return calcFactory
@@ -71,7 +65,7 @@ func (f *RRSPFactory) initConstructor(params history.RRSPParams) {
 		if err != nil {
 			return nil, err
 		}
-		cfg := rrsp.CalcConfig{params.Formula, taxCalc}
+		cfg := rrsp.CalcConfig{Formula: params.Formula, TaxCalc: taxCalc}
 		return rrsp.NewCalculator(cfg)
 	}
 

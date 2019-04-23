@@ -24,14 +24,17 @@ type testIncomeCalculator struct {
 	onTotalIncome     float64
 }
 
-func (tic testIncomeCalculator) TotalIncome(_ core.Financer) float64 {
+func (tic testIncomeCalculator) TotalIncome() float64 {
 	return tic.onTotalIncome
 }
-func (tic testIncomeCalculator) TotalDeductions(_ core.Financer) float64 {
+func (tic testIncomeCalculator) TotalDeductions() float64 {
 	return tic.onTotalDeductions
 }
-func (tic testIncomeCalculator) NetIncome(_ core.Financer) float64 {
+func (tic testIncomeCalculator) NetIncome() float64 {
 	return tic.onNetIncome
+}
+func (tic testIncomeCalculator) SetFinances(core.Financer) {
+
 }
 
 type testTaxFormula struct {
