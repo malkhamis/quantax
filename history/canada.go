@@ -15,12 +15,12 @@ var (
 		2018: TaxParams{
 			Formula:       taxFormulaCanada2018,
 			ContraFormula: taxContraFormulaCanada2018,
-			IncomeRecipe:  &incomeRecipeNet,
+			IncomeRecipe:  incomeRecipeNet,
 		},
 	}
 
 	cbParamsCanada = yearlyCBParams{
-		2017: CBParams{cbFormulaCanada2017, &incomeRecipeAFNI},
+		2017: CBParams{cbFormulaCanada2017, incomeRecipeAFNI},
 	}
 
 	rrspParamsCanada = yearlyRRSPParams{

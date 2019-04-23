@@ -4,8 +4,6 @@ import "github.com/pkg/errors"
 
 func init() {
 
-	initIncomeRecipes()
-
 	err := validateAllTaxParams()
 	panicIfError(errors.Wrap(err, "invalid tax params"))
 

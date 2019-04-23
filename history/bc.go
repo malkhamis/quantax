@@ -14,12 +14,12 @@ var (
 		2018: TaxParams{
 			Formula:       taxFormulaBC2018,
 			ContraFormula: taxContraFormulaBC2018,
-			IncomeRecipe:  &incomeRecipeNet,
+			IncomeRecipe:  incomeRecipeNet,
 		},
 	}
 
 	cbParamsBC = yearlyCBParams{
-		2017: CBParams{cbFormulaBC2017, &incomeRecipeNet},
+		2017: CBParams{cbFormulaBC2017, incomeRecipeNet},
 	}
 )
 
