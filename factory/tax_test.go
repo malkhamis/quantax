@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/tax"
 	"github.com/malkhamis/quantax/history"
 
@@ -12,7 +13,7 @@ import (
 
 func TestNewTaxFactory_NewCalculator_SingleFormula(t *testing.T) {
 
-	f := NewTaxFactory(2018, BC)
+	f := NewTaxFactory(2018, core.RegionBC)
 	c, err := f.NewCalculator()
 	if err != nil {
 		t.Fatal(err)
@@ -39,20 +40,20 @@ func TestTaxFactory_Errors(t *testing.T) {
 	cases := []struct {
 		name    string
 		year    uint
-		regions []Region
+		regions []core.Region
 		err     error
 	}{
 		{
 			name:    "invalid-year",
 			year:    1000,
-			regions: []Region{BC},
+			regions: []core.Region{core.RegionBC},
 			err:     history.ErrParamsNotExist,
 		},
 		{
 			name:    "invalid-region",
 			year:    1000,
-			regions: []Region{Region(1000)},
-			err:     ErrRegionNotExist,
+			regions: []core.Region{"1000"},
+			err:     history.ErrRegionNotExist,
 		},
 		{
 			name:    "no-regions",
@@ -63,7 +64,7 @@ func TestTaxFactory_Errors(t *testing.T) {
 		{
 			name:    "valid",
 			year:    2018,
-			regions: []Region{BC},
+			regions: []core.Region{core.RegionBC},
 			err:     nil,
 		},
 	}

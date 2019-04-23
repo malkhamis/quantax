@@ -18,24 +18,16 @@ type ChildBenefitFactory struct {
 // NewChildBenefitFactory returns a new child benefit calculator factory
 // from the given params. If multiple regions are specified, the returned
 // calculator aggregates the benefits for all beneficiaries
-func NewChildBenefitFactory(year uint, regions ...Region) *ChildBenefitFactory {
+func NewChildBenefitFactory(year uint, regions ...core.Region) *ChildBenefitFactory {
 
 	calcFactory := &ChildBenefitFactory{}
 	allParams := make([]history.CBParams, len(regions))
-	for i, r := range regions {
+	for i, region := range regions {
 
-		convertedRegion, ok := knownRegions[r]
-		if !ok {
-			calcFactory.setFailingConstructor(
-				errors.Wrapf(ErrRegionNotExist, "child benefit region %q", r),
-			)
-			return calcFactory
-		}
-
-		foundParams, err := history.GetChildBenefitParams(year, convertedRegion)
+		foundParams, err := history.GetChildBenefitParams(year, region)
 		if err != nil {
 			calcFactory.setFailingConstructor(
-				errors.Wrapf(err, "child benefit formula for region %q", r),
+				errors.Wrapf(err, "child benefit formula for region %q", region),
 			)
 			return calcFactory
 		}

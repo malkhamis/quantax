@@ -18,24 +18,16 @@ type TaxFactory struct {
 // multiple regions are specified, the returned calculator aggregates the taxes
 // for all the given regions
 // TODO: make it mandatory to give one region
-func NewTaxFactory(year uint, regions ...Region) *TaxFactory {
+func NewTaxFactory(year uint, regions ...core.Region) *TaxFactory {
 
 	calcFactory := &TaxFactory{}
 	allParams := make([]history.TaxParams, len(regions))
-	for i, r := range regions {
+	for i, region := range regions {
 
-		convertedRegion, ok := knownRegions[r]
-		if !ok {
-			calcFactory.setFailingConstructor(
-				errors.Wrapf(ErrRegionNotExist, "tax region %q", r),
-			)
-			return calcFactory
-		}
-
-		foundParams, err := history.GetTaxParams(year, convertedRegion)
+		foundParams, err := history.GetTaxParams(year, region)
 		if err != nil {
 			calcFactory.setFailingConstructor(
-				errors.Wrapf(err, "tax formula for region %q", r),
+				errors.Wrapf(err, "tax formula for region %q", region),
 			)
 			return calcFactory
 		}
