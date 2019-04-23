@@ -39,10 +39,6 @@ func NewChildBenefitCalculator(cfg CalcConfigCB) (*ChildBenfitCalculator, error)
 // Calc returns the recievable amount of child benefits
 func (c *ChildBenfitCalculator) Calc() float64 {
 
-	if c.finances == nil {
-		return 0
-	}
-
 	netIncome := c.incomeCalculator.NetIncome()
 	benefits := c.formula.Apply(netIncome, c.children...)
 	return benefits
