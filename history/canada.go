@@ -29,9 +29,18 @@ var (
 	}
 
 	rrspParamsCanada = yearlyRRSPParams{
+		2019: RRSPParams{rrspFormulaCanada2019},
 		2018: RRSPParams{rrspFormulaCanada2018},
 	}
 )
+
+var rrspFormulaCanada2019 = &rrsp.MaxCapper{
+	Rate:                           0.18,
+	Cap:                            26500,
+	IncomeSources:                  []core.FinancialSource{core.IncSrcEarned},
+	IncomeSourceForWithdrawal:      core.IncSrcRRSP,
+	DeductionSourceForContribution: core.DeducSrcRRSP,
+}
 
 var rrspFormulaCanada2018 = &rrsp.MaxCapper{
 	Rate:                           0.18,
