@@ -31,7 +31,8 @@ func TestCalculator_NetIncome_Adjusted(t *testing.T) {
 		totalIncome:     30000.0,
 	}
 
-	actual, expected := c.NetIncome(finances), (250.0 - 100.0)
+	c.SetFinances(finances)
+	actual, expected := c.NetIncome(), (250.0 - 100.0)
 	if actual != expected {
 		t.Fatalf("unexpected net income\nwant: %.2f\ngot: %.2f", expected, actual)
 	}
@@ -53,7 +54,8 @@ func TestCalculator_NetIncome_Unadjusted(t *testing.T) {
 		totalIncome:     30000.0,
 	}
 
-	actual, expected := c.NetIncome(finances), (30000.0 - 10000.0)
+	c.SetFinances(finances)
+	actual, expected := c.NetIncome(), (30000.0 - 10000.0)
 	if actual != expected {
 		t.Fatalf("unexpected net income\nwant: %.2f\ngot: %.2f", expected, actual)
 	}
@@ -68,17 +70,18 @@ func TestCalculator_NilFinances(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	actual, expected := c.NetIncome(nil), 0.0
+	c.SetFinances(nil)
+	actual, expected := c.NetIncome(), 0.0
 	if actual != expected {
 		t.Fatalf("unexpected net income\nwant: %.2f\ngot: %.2f", expected, actual)
 	}
 
-	actual, expected = c.TotalIncome(nil), 0.0
+	actual, expected = c.TotalIncome(), 0.0
 	if actual != expected {
 		t.Fatalf("unexpected net income\nwant: %.2f\ngot: %.2f", expected, actual)
 	}
 
-	actual, expected = c.TotalDeductions(nil), 0.0
+	actual, expected = c.TotalDeductions(), 0.0
 	if actual != expected {
 		t.Fatalf("unexpected net income\nwant: %.2f\ngot: %.2f", expected, actual)
 	}

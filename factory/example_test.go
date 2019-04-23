@@ -52,7 +52,8 @@ func ExampleNewChildBenefitFactory() {
 	f2.AddAmount(core.DeducSrcRRSP, 15000)
 
 	finances := core.NewHouseholdFinances(f1, f2)
-	total := calculator.Calc(finances)
+	calculator.SetFinances(finances)
+	total := calculator.Calc()
 
 	fmt.Printf("%.2f", total) // Output: 6742.54
 }

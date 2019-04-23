@@ -3,6 +3,7 @@ package benefits
 import (
 	"testing"
 
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
 	"github.com/pkg/errors"
 )
@@ -25,8 +26,7 @@ func TestNewChildBenefitCalculatorAgg(t *testing.T) {
 func TestCalculatorAgg_Calc(t *testing.T) {
 
 	incCalc := testIncomeCalculator{onTotalIncome: 3000.0}
-	formula := testCBFormula{onApply: incCalc.TotalIncome(nil) / 2.0}
-	formula.onClone = formula
+	formula := testCBFormula{onApply: incCalc.TotalIncome() / 2.0}
 
 	c0, err := NewChildBenefitCalculator(CalcConfigCB{formula, incCalc})
 	if err != nil {
@@ -48,7 +48,8 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	actual := aggregator.Calc(nil)
+	aggregator.SetFinances(core.NewEmptyIndividualFinances())
+	actual := aggregator.Calc()
 	expected := (3000.0 / 2.0) * float64(len(aggregator.calculators))
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)

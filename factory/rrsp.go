@@ -65,7 +65,7 @@ func (f *RRSPFactory) initConstructor(params history.RRSPParams) {
 		if err != nil {
 			return nil, err
 		}
-		cfg := rrsp.CalcConfig{params.Formula, taxCalc}
+		cfg := rrsp.CalcConfig{Formula: params.Formula, TaxCalc: taxCalc}
 		return rrsp.NewCalculator(cfg)
 	}
 

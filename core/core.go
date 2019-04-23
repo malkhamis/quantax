@@ -9,11 +9,13 @@ import "github.com/malkhamis/quantax/core/human"
 // IncomeCalculator is used to calculate income used for benefits and tax
 type IncomeCalculator interface {
 	// TotalIncome returns the total adjusted income
-	TotalIncome(Financer) float64
+	TotalIncome() float64
 	// TotalDeductions returns total adjusted deductions
-	TotalDeductions(Financer) float64
+	TotalDeductions() float64
 	// NetIncome returns total income less total deduction
-	NetIncome(Financer) float64
+	NetIncome() float64
+	// SetFinances makes subsequent calculations based on the given finances
+	SetFinances(Financer)
 }
 
 // ChildBenefitCalculator is used to calculate recievable child benefits for
@@ -21,10 +23,12 @@ type IncomeCalculator interface {
 type ChildBenefitCalculator interface {
 	// Calc returns the recievable amount of child benefits for the given
 	// finances and the children set in the calculator
-	Calc(Financer) float64
+	Calc() float64
 	// SetBeneficiaries sets the children which the calculator will compute the
 	// benefits for in subsequent calls to Calc()
 	SetBeneficiaries(...human.Person)
+	// SetFinances makes subsequent calculations based on the given finances
+	SetFinances(Financer)
 }
 
 // RRSPCalculator is used to calculate recievable or payable tax on transactions

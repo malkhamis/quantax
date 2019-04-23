@@ -3,6 +3,7 @@ package benefits
 import (
 	"testing"
 
+	"github.com/malkhamis/quantax/core"
 	"github.com/malkhamis/quantax/core/human"
 	"github.com/pkg/errors"
 )
@@ -44,18 +45,37 @@ func TestNewChildBenefitCalculator(t *testing.T) {
 
 }
 
-func TestCalculator_Calc(t *testing.T) {
+func TestCalculator_Calc_NilFinances(t *testing.T) {
 
-	incCalc := testIncomeCalculator{onTotalIncome: 3000.0}
-	formula := testCBFormula{onApply: incCalc.TotalIncome(nil) / 2.0}
-	formula.onClone = formula
+	incCalc := testIncomeCalculator{}
+	formula := testCBFormula{}
 
 	calculator, err := NewChildBenefitCalculator(CalcConfigCB{formula, incCalc})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actual := calculator.Calc(nil)
+	calculator.SetFinances(nil)
+	actual := calculator.Calc()
+	expected := 0.0
+	if actual != expected {
+		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
+	}
+
+}
+
+func TestCalculator_Calc(t *testing.T) {
+
+	incCalc := testIncomeCalculator{onTotalIncome: 3000.0}
+	formula := testCBFormula{onApply: incCalc.TotalIncome() / 2.0}
+
+	calculator, err := NewChildBenefitCalculator(CalcConfigCB{formula, incCalc})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	calculator.SetFinances(core.NewEmptyIndividualFinances())
+	actual := calculator.Calc()
 	expected := 3000.0 / 2.0
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)

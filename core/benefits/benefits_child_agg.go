@@ -37,11 +37,11 @@ func NewChildBenefitAggregator(c0, c1 core.ChildBenefitCalculator, extras ...cor
 }
 
 // Calc returns the aggregate recievable amount of child benefits
-func (agg *ChildBenfitAggregator) Calc(finances core.Financer) float64 {
+func (agg *ChildBenfitAggregator) Calc() float64 {
 
 	var total float64
 	for _, c := range agg.calculators {
-		total += c.Calc(finances)
+		total += c.Calc()
 	}
 	return total
 }
@@ -51,5 +51,15 @@ func (agg *ChildBenfitAggregator) Calc(finances core.Financer) float64 {
 func (agg *ChildBenfitAggregator) SetBeneficiaries(children ...human.Person) {
 	for _, c := range agg.calculators {
 		c.SetBeneficiaries(children...)
+	}
+}
+
+// SetFinances stores the given financial data in this calculator. Subsequent
+// calls to other calculator functions will be based on the the given finances.
+// Changes to the given finances after calling this function will affect future
+// calculations. If finances is nil, a non-nil, empty finances is set
+func (agg *ChildBenfitAggregator) SetFinances(finances core.Financer) {
+	for _, c := range agg.calculators {
+		c.SetFinances(finances)
 	}
 }

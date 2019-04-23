@@ -11,9 +11,10 @@ import (
 // families with dependent children. This type implements the following
 // interface: 'core.ChildBenefitCalculator'
 type ChildBenfitCalculator struct {
-	children         []human.Person
 	formula          ChildBenefitFormula
 	incomeCalculator core.IncomeCalculator
+	children         []human.Person
+	finances         core.Financer
 }
 
 // compile-time check for interface implementation
@@ -36,9 +37,13 @@ func NewChildBenefitCalculator(cfg CalcConfigCB) (*ChildBenfitCalculator, error)
 }
 
 // Calc returns the recievable amount of child benefits
-func (c *ChildBenfitCalculator) Calc(finances core.Financer) float64 {
+func (c *ChildBenfitCalculator) Calc() float64 {
 
-	netIncome := c.incomeCalculator.NetIncome(finances)
+	if c.finances == nil {
+		return 0
+	}
+
+	netIncome := c.incomeCalculator.NetIncome()
 	benefits := c.formula.Apply(netIncome, c.children...)
 	return benefits
 }
@@ -48,4 +53,14 @@ func (c *ChildBenfitCalculator) Calc(finances core.Financer) float64 {
 func (c *ChildBenfitCalculator) SetBeneficiaries(children ...human.Person) {
 	c.children = make([]human.Person, len(children))
 	copy(c.children, children)
+}
+
+// SetFinances stores the given financial data in this calculator. Subsequent
+// calls to other calculator functions will be based on the the given finances.
+// Changes to the given finances after calling this function will affect future
+// calculations. If finances is nil, a non-nil, empty finances is set. It must
+// be noted that this function also calls SetFinances on the income calculator
+func (c *ChildBenfitCalculator) SetFinances(finances core.Financer) {
+	c.finances = finances
+	c.incomeCalculator.SetFinances(finances)
 }
