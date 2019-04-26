@@ -28,7 +28,7 @@ type ChildBenefitCalculator interface {
 	SetFinances(HouseholdFinances)
 	// SetBeneficiaries sets the children which the calculator will compute the
 	// benefits for in subsequent calls to Calc()
-	SetBeneficiaries(...human.Person)
+	SetBeneficiaries(...*human.Person)
 }
 
 // RRSPCalculator is used to calculate recievable or payable tax on transactions
@@ -53,7 +53,7 @@ type TaxCalculator interface {
 	// TaxPayable returns the payable amount of tax for the set finances.
 	// The tax credit represent any amount owed to the tax payer without
 	// implications for how they might be used.
-	TaxPayable() (spouseA, spouseB float64, combinedCredits []TaxCredit)
+	TaxPayable() (spouseA, spouseB float64, unusedCredits []TaxCredit)
 	// SetFinances stores the given financial data in the underlying tax
 	// calculator. Subsequent calls to other functions are based on the
 	// the given finances. Changes to the given finances after calling
@@ -66,7 +66,7 @@ type TaxCalculator interface {
 	SetCredits([]TaxCredit)
 	// SetDependents sets the dependents which the calculator might use for tax-
 	// related calculations
-	SetDependents(...human.Person)
+	SetDependents(...*human.Person)
 }
 
 // TaxCredit represents an amount that is owed to the tax payer

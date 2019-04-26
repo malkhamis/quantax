@@ -3,6 +3,7 @@ package tax
 
 import (
 	"github.com/malkhamis/quantax/core"
+	"github.com/malkhamis/quantax/core/human"
 	"github.com/pkg/errors"
 )
 
@@ -33,24 +34,26 @@ func NewAggregator(c0, c1 core.TaxCalculator, extras ...core.TaxCalculator) (*Ag
 }
 
 // TaxPayable returns the sum of payable tax from the underlying calculators
-func (agg *Aggregator) TaxPayable() (float64, []core.TaxCredit) {
+func (agg *Aggregator) TaxPayable() (spouseA, spouseB float64, unusedCredits []core.TaxCredit) {
 
 	var (
-		taxAgg float64
-		crAgg  []core.TaxCredit
+		taxAggA float64
+		taxAggB float64
+		crAgg   []core.TaxCredit
 	)
 
 	for _, c := range agg.calculators {
-		taxPayable, credits := c.TaxPayable()
-		taxAgg += taxPayable
+		taxA, taxB, credits := c.TaxPayable()
+		taxAggA += taxA
+		taxAggB += taxB
 		crAgg = append(crAgg, credits...)
 	}
 
-	return taxAgg, crAgg
+	return taxAggA, taxAggB, crAgg
 }
 
 // SetFinances sets the given finances in all underlying tax calculators
-func (agg *Aggregator) SetFinances(f *core.IndividualFinances) {
+func (agg *Aggregator) SetFinances(f core.HouseholdFinances) {
 	for _, c := range agg.calculators {
 		c.SetFinances(f)
 	}
@@ -60,5 +63,13 @@ func (agg *Aggregator) SetFinances(f *core.IndividualFinances) {
 func (agg *Aggregator) SetCredits(credits []core.TaxCredit) {
 	for _, c := range agg.calculators {
 		c.SetCredits(credits)
+	}
+}
+
+// SetDependents sets the dependents which the calculator might use for tax-
+// related calculations
+func (agg *Aggregator) SetDependents(dependents ...*human.Person) {
+	for _, c := range agg.calculators {
+		c.SetDependents(dependents)
 	}
 }

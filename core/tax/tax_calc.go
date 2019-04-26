@@ -2,6 +2,7 @@ package tax
 
 import (
 	"github.com/malkhamis/quantax/core"
+	"github.com/malkhamis/quantax/core/human"
 	"github.com/pkg/errors"
 )
 
@@ -13,8 +14,9 @@ type Calculator struct {
 	formula          Formula
 	contraFormula    ContraFormula
 	incomeCalculator core.IncomeCalculator
-	finances         *core.IndividualFinances
+	finances         core.HouseholdFinances
 	credits          []*taxCredit
+	dependents       []*human.Person
 }
 
 // NewCalculator returns a new tax calculator for the given tax formula and the
@@ -30,7 +32,7 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 		formula:          cfg.TaxFormula.Clone(),
 		contraFormula:    cfg.ContraTaxFormula.Clone(),
 		incomeCalculator: cfg.IncomeCalc,
-		finances:         core.NewEmptyIndividualFinances(),
+		finances:         core.NewHouseholdFinancesNop(),
 	}
 
 	return c, nil
@@ -39,13 +41,15 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 // SetFinances stores the given financial data in this calculator. Subsequent
 // calls to other calculator functions will be based on the the given finances.
 // Changes to the given finances after calling this function will affect future
-// calculations. If finances is nil, a non-nil, empty finances is set
-func (c *Calculator) SetFinances(f *core.IndividualFinances) {
-
+// calculations. If finances is nil or both spouses' finances are nil, a noop
+// instance is set
+func (c *Calculator) SetFinances(f core.HouseholdFinances) {
 	if f == nil {
-		f = core.NewEmptyIndividualFinances()
+		f = core.NewHouseholdFinancesNop()
 	}
-	c.incomeCalculator.SetFinances(f)
+	if f.SpouseA() == nil && f.SpouseB() == nil {
+		f = core.NewHouseholdFinancesNop()
+	}
 	c.finances = f
 }
 
@@ -57,34 +61,109 @@ func (c *Calculator) SetCredits(credits []core.TaxCredit) {
 	c.credits = make([]*taxCredit, 0, len(credits))
 
 	for _, cr := range credits {
-		typed, ok := cr.(*taxCredit)
-		if ok && typed.owner == c {
-			c.credits = append(c.credits, typed)
+
+		if cr.Amount() == 0 {
+			continue
 		}
+
+		typed, ok := cr.(*taxCredit)
+		if ok && typed.owner != c {
+			continue
+		}
+
+		c.credits = append(c.credits, typed)
 	}
 
+}
+
+// SetDependents sets the dependents which the calculator might use for tax-
+// related calculations
+func (c *Calculator) SetDependents(dependents ...*human.Person) {
+
+	c.dependents = make([]*human.Person, 0, len(dependents))
+	for _, d := range dependents {
+		if d == nil {
+			continue
+		}
+		c.dependents = append(c.dependents, d)
+	}
 }
 
 // TaxPayable computes the tax on the net income for the previously set finances
 // and any relevent credits.
-func (c *Calculator) TaxPayable() (float64, []core.TaxCredit) {
+func (c *Calculator) TaxPayable() (spouseA, spouseB float64, unusedCredits []core.TaxCredit) {
 
-	netIncome := c.incomeCalculator.NetIncome()
-	totalTax := c.formula.Apply(netIncome)
+	netIncomeA, netIncomeB := c.netIncome()
+	totalTaxA, totalTaxB := c.totalTax(netIncomeA, netIncomeB)
+	newCredits := c.totalCombinedCredits(netIncomeA, netIncomeB)
 
-	newCredits := c.contraFormula.Apply(c.finances, netIncome)
-	c.ownCredits(newCredits)
-	allCredits := append(c.credits, newCredits...)
+	netPayableTaxA, unusedCrA := c.netPayableTax(totalTaxA, newCredits)
+	netPayableTaxB, unusedCrB := c.netPayableTax(totalTaxB, newCredits)
+	unusedCr := taxCreditGroup(append(unusedCrA, unusedCrB...)).typecast()
 
-	netPayableTax, remainingCredits := c.netPayableTax(totalTax, allCredits)
-	return netPayableTax, taxCreditGroup(remainingCredits).typecast()
+	return netPayableTaxA, netPayableTaxB, unusedCr
 }
 
-// ownCredits sets the owner of the given credits to this calculator
-func (c *Calculator) ownCredits(credits []*taxCredit) {
-	for _, cr := range credits {
-		cr.owner = c
+// netIncome returns the net income for both spouses in the set finances
+func (c *Calculator) netIncome() (spouseA, spouseB float64) {
+
+	c.incomeCalculator.SetFinances(c.finances.SpouseA())
+	spouseA = c.incomeCalculator.NetIncome()
+
+	c.incomeCalculator.SetFinances(c.finances.SpouseB())
+	spouseB = c.incomeCalculator.NetIncome()
+
+	return spouseA, spouseB
+}
+
+// totalTax returns the total tax amount for both spouses in the set finances
+func (c *Calculator) totalTax(netIncomeA, netIncomeB float64) (totalTaxA, totalTaxB float64) {
+	totalTaxA = c.formula.Apply(netIncomeA)
+	totalTaxB = c.formula.Apply(netIncomeB)
+	return totalTaxA, totalTaxB
+}
+
+// totalCombinedCredits returns tax credits for the set household finances. Each
+// individual tax credit instance is associated with its own financer
+func (c *Calculator) totalCombinedCredits(netIncomeA, netIncomeB float64) []*taxCredit {
+
+	taxPayerA, taxPayerB := c.makeTaxPayers(netIncomeA, netIncomeB)
+	creditsA := c.taxCredits(taxPayerA)
+	creditsB := c.taxCredits(taxPayerB)
+
+	allCredits := append(c.credits, creditsA...)
+	allCredits = append(allCredits, creditsB...)
+	return allCredits
+}
+
+// taxCredits returns the tax credits for the given tax payer. individual tax
+// credits are associated with this calculator and tax payer's finanaces. If
+// a tax credit is nil or its amount is zero, it is skipped. If the given tax
+// payer is nil, it returns nil
+func (c *Calculator) taxCredits(taxPayer *TaxPayer) []*taxCredit {
+
+	if taxPayer == nil {
+		return nil
 	}
+
+	allCredits := c.contraFormula.Apply(taxPayer)
+	usableCredits := make([]*taxCredit, 0, len(allCredits))
+	for _, cr := range allCredits {
+
+		if cr == nil {
+			continue
+		}
+		if cr.amount == 0 {
+			continue
+		}
+
+		cr.owner = c
+		cr.ref = taxPayer.Finances
+
+		usableCredits = append(usableCredits, cr)
+	}
+
+	return usableCredits
 }
 
 // netPayableTax returns the payable tax and any unsable/remaining credits. It
@@ -120,4 +199,37 @@ func (c *Calculator) netPayableTax(taxAmount float64, credits []*taxCredit) (flo
 	}
 
 	return taxAmount, newCredits
+}
+
+// makeTaxPayers returns dual tax payers from the given net income amounts and
+// the finances stored in this calculator
+func (c *Calculator) makeTaxPayers(netIncomeA, netIncomeB float64) (A, B *TaxPayer) {
+
+	var (
+		taxPayerA, taxPayerB *TaxPayer
+		financesA            = c.finances.SpouseA()
+		financesB            = c.finances.SpouseB()
+	)
+
+	if financesA != nil {
+		taxPayerA = &TaxPayer{
+			Finances:        financesA,
+			NetIncome:       netIncomeA,
+			Dependents:      c.dependents,
+			HasSpouse:       financesB != nil,
+			SpouseNetIncome: netIncomeB,
+		}
+	}
+
+	if financesB != nil {
+		taxPayerB = &TaxPayer{
+			Finances:        financesB,
+			NetIncome:       netIncomeB,
+			Dependents:      c.dependents,
+			HasSpouse:       financesA != nil,
+			SpouseNetIncome: netIncomeA,
+		}
+	}
+
+	return taxPayerA, taxPayerB
 }

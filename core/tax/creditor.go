@@ -85,6 +85,8 @@ type taxCredit struct {
 	rule CreditRule
 	// the originator of this tax credit
 	owner core.TaxCalculator
+	// the financer this tax credit belonngs to
+	ref core.Financer
 }
 
 // Amount returns the credit amount
@@ -97,6 +99,11 @@ func (cr *taxCredit) Source() string {
 	return cr.rule.Source
 }
 
+// Reference returns the financer instance which this tax credit belongs to
+func (cr *taxCredit) Reference() core.Financer {
+	return cr.ref
+}
+
 // clone returns a copy of this tax credit instance
 func (cr *taxCredit) clone() *taxCredit {
 	if cr == nil {
@@ -106,6 +113,7 @@ func (cr *taxCredit) clone() *taxCredit {
 		amount: cr.amount,
 		rule:   cr.rule,
 		owner:  cr.owner,
+		ref:    cr.ref,
 	}
 }
 

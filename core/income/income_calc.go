@@ -88,7 +88,6 @@ func (c *Calculator) SetFinances(finances core.Financer) {
 		finances = core.NewFinancerNop()
 	}
 	c.finances = finances
-
 }
 
 // initialize is used to initialize this calculator from the given recipe
