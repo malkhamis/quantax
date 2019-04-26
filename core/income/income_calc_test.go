@@ -24,11 +24,10 @@ func TestCalculator_NetIncome_Adjusted(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	finances := testIncomeDeductor{
-		deducSrcs:       map[core.FinancialSource]struct{}{core.FinancialSource(2000): struct{}{}},
-		incomeSrcs:      map[core.FinancialSource]struct{}{core.FinancialSource(1000): struct{}{}},
-		totalDeductions: 15000.0,
-		totalIncome:     30000.0,
+	finances := &testFinancer{
+		onIncomeSources:    []core.FinancialSource{core.FinancialSource(1000)},
+		onDeductionSources: []core.FinancialSource{core.FinancialSource(2000)},
+		onTotalAmount:      []float64{2500, 1000},
 	}
 
 	c.SetFinances(finances)
@@ -47,11 +46,10 @@ func TestCalculator_NetIncome_Unadjusted(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	finances := testIncomeDeductor{
-		deducSrcs:       map[core.FinancialSource]struct{}{core.FinancialSource(2000): struct{}{}},
-		incomeSrcs:      map[core.FinancialSource]struct{}{core.FinancialSource(1000): struct{}{}},
-		totalDeductions: 10000.0,
-		totalIncome:     30000.0,
+	finances := &testFinancer{
+		onDeductionSources: []core.FinancialSource{core.FinancialSource(123)},
+		onIncomeSources:    []core.FinancialSource{core.FinancialSource(123)},
+		onTotalAmount:      []float64{30000, 10000},
 	}
 
 	c.SetFinances(finances)
