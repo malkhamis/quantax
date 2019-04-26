@@ -24,11 +24,11 @@ type ChildBenefitCalculator interface {
 	// Calc returns the recievable amount of child benefits for the given
 	// finances and the children set in the calculator
 	Calc() float64
+	// SetFinances makes subsequent calculations based on the given finances
+	SetFinances(HouseholdFinances)
 	// SetBeneficiaries sets the children which the calculator will compute the
 	// benefits for in subsequent calls to Calc()
 	SetBeneficiaries(...human.Person)
-	// SetFinances makes subsequent calculations based on the given finances
-	SetFinances(Financer)
 }
 
 // RRSPCalculator is used to calculate recievable or payable tax on transactions
@@ -37,11 +37,15 @@ type RRSPCalculator interface {
 	// TaxPaid calculates the tax payable upon withdrawal
 	TaxPaid(withdrawal float64) float64
 	// TaxRefund calculates the refundable tax upon deposit/contribution
-	TaxRefund(contribution float64) (float64, error)
+	TaxRefund(contribution float64) float64
 	// ContributionEarned calculates the newly acquired contribution room
 	ContributionEarned() float64
-	// SetFinances makes subsequent calculations based on the given finances
-	SetFinances(*IndividualFinances)
+	// SetFinances stores the given finances in the calculator
+	SetFinances(HouseholdFinances)
+	// SetTargetSpouseA makes subsequent calls based on spouse A finances
+	SetTargetSpouseA()
+	// SetTargetSpouseB makes subsequent calls based on spouse B finances
+	SetTargetSpouseB()
 }
 
 // TaxCalculator is used to calculate payable tax on earnings
@@ -49,17 +53,20 @@ type TaxCalculator interface {
 	// TaxPayable returns the payable amount of tax for the set finances.
 	// The tax credit represent any amount owed to the tax payer without
 	// implications for how they might be used.
-	TaxPayable() (float64, []TaxCredit)
+	TaxPayable() (spouseA, spouseB float64, combinedCredits []TaxCredit)
 	// SetFinances stores the given financial data in the underlying tax
 	// calculator. Subsequent calls to other functions are based on the
 	// the given finances. Changes to the given finances after calling
 	// this function should affect future calculations
-	SetFinances(*IndividualFinances)
+	SetFinances(HouseholdFinances)
 	// SetCredits stores the given credits in the underlying tax calculator.
 	// Subsequent calls to other functions will be influenced by the given tax
 	// credits. Treatment of given credits is implementation-specific. Ideally,
 	// These given credits are originated by the same tax calculator.
 	SetCredits([]TaxCredit)
+	// SetDependents sets the dependents which the calculator might use for tax-
+	// related calculations
+	SetDependents(...human.Person)
 }
 
 // TaxCredit represents an amount that is owed to the tax payer
@@ -68,4 +75,6 @@ type TaxCredit interface {
 	Amount() float64
 	// Source describes the source of this tax credit
 	Source() string
+	// Reference is a reference to financer which the tax credit belongs to
+	Reference() Financer
 }

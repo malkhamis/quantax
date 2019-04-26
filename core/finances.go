@@ -1,7 +1,7 @@
 package core
 
 // Financer is a type that holds the financial data for an individual
-type Financer_new interface {
+type Financer interface {
 	// TotalAmount returns the sum of of the given sources only. If no sources
 	// given, it returns zero
 	TotalAmount(sources ...FinancialSource) float64
@@ -38,17 +38,17 @@ type FinanceMutator interface {
 	// DeductionSources, and MiscSources returns a list that does not contain
 	// the given source(s)
 	RemoveAmounts(sources ...FinancialSource)
-	Financer_new
+	Financer
 }
 
 // HouseholdFinances holds the financial data for a household of two spouses
-type HouseholdFinances_new interface {
+type HouseholdFinances interface {
 	// SpouseA returns the financia data of the first spouse
-	SpouseA() Financer_new
+	SpouseA() Financer
 	// SpouseB returns the financia data of the second spouse
-	SpouseB() Financer_new
+	SpouseB() Financer
 	// Clone returns a deep copy of the instance
-	Clone() HouseholdFinances_new
+	Clone() HouseholdFinances
 	// Version returns the version of the instance
 	Version() uint64
 }
