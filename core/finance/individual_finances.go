@@ -5,7 +5,7 @@ import (
 )
 
 // compile-time check for interface implementation
-var _ core.Financer_new = (*IndividualFinances)(nil)
+var _ core.Financer = (*IndividualFinances)(nil)
 
 // IndividualFinances represents the financial data of an individual
 type IndividualFinances struct {
@@ -166,6 +166,15 @@ func (f *IndividualFinances) MiscSources() []core.FinancialSource {
 	}
 
 	return sources
+}
+
+// AllSources returns the income, deduction, and misc sources in this instance
+func (f *IndividualFinances) AllSources() []core.FinancialSource {
+
+	all := f.IncomeSources()
+	all = append(all, f.DeductionSources()...)
+	all = append(all, f.MiscSources()...)
+	return all
 }
 
 // Version returns the version of this instance. If 'f' is nil, it returns zero

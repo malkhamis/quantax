@@ -5,7 +5,7 @@ import (
 )
 
 // compile-time check for inteface implementation
-var _ core.HouseholdFinances_new = (*HouseholdFinances)(nil)
+var _ core.HouseholdFinances = (*HouseholdFinances)(nil)
 
 // HouseholdFinances represents financial data for a couple, family etc
 type HouseholdFinances struct {
@@ -25,7 +25,7 @@ func NewHouseholdFinances(spouseA, spouseB *IndividualFinances) *HouseholdFinanc
 
 // SpouseA returns a reference to the individual finances of the first spouse.
 // If 'hf' is nil, it returns nil
-func (hf *HouseholdFinances) SpouseA() core.Financer_new {
+func (hf *HouseholdFinances) SpouseA() core.Financer {
 	if hf == nil || hf.spouseA == nil {
 		return nil
 	}
@@ -34,7 +34,7 @@ func (hf *HouseholdFinances) SpouseA() core.Financer_new {
 
 // SpouseA returns a reference to the individual finances of the second spouse.
 // If 'hf' is nil, it returns nil
-func (hf *HouseholdFinances) SpouseB() core.Financer_new {
+func (hf *HouseholdFinances) SpouseB() core.Financer {
 	if hf == nil || hf.spouseB == nil {
 		return nil
 	}
@@ -52,13 +52,13 @@ func (hf *HouseholdFinances) Version() uint64 {
 }
 
 // Clone returns a copy of this instance. If 'hf' is nil, it returns nil
-func (hf *HouseholdFinances) Clone() core.HouseholdFinances_new {
+func (hf *HouseholdFinances) Clone() core.HouseholdFinances {
 
 	if hf == nil {
 		return nil
 	}
 
-	return core.HouseholdFinances_new(hf.clone())
+	return core.HouseholdFinances(hf.clone())
 }
 
 // clone returns a copy of this instance. If 'hf' is nil, it returns nil

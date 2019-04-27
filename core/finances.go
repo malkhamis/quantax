@@ -8,12 +8,14 @@ type Financer interface {
 	// IncomeSources returns a set of all income sources in this instance. The
 	// returned map is never nil
 	IncomeSources() []FinancialSource
-	// DeductionSources returns a set of all deduciton sources in this instance.
+	// DeductionSources returns a set of all deduciton sources in this instance
 	// The returned map is never nil
 	DeductionSources() []FinancialSource
-	// MiscSources returns a set of all miscellaneous sources in this instance.
+	// MiscSources returns a set of all miscellaneous sources in this instance
 	// The returned map is never nil
 	MiscSources() []FinancialSource
+	// AllSources returns all financial sources in this instance
+	AllSources() []FinancialSource
 	// Clone returns a deep copy of this instance with the same version number
 	Clone() FinanceMutator
 	// Version returns the version of the instance

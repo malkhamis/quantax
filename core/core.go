@@ -53,7 +53,7 @@ type TaxCalculator interface {
 	// TaxPayable returns the payable amount of tax for the set finances.
 	// The tax credit represent any amount owed to the tax payer without
 	// implications for how they might be used.
-	TaxPayable() (spouseA, spouseB float64, unusedCredits []TaxCredit)
+	TaxPayable() (spouseA, spouseB float64, remainingCredits []TaxCredit)
 	// SetFinances stores the given financial data in the underlying tax
 	// calculator. Subsequent calls to other functions are based on the
 	// the given finances. Changes to the given finances after calling

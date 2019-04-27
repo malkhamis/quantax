@@ -37,6 +37,9 @@ func (nop *financerNop) DeductionSources() []FinancialSource {
 func (nop *financerNop) MiscSources() []FinancialSource {
 	return nil
 }
+func (nop *financerNop) AllSources() []FinancialSource {
+	return nil
+}
 func (nop *financerNop) Clone() FinanceMutator {
 	return nop
 }

@@ -199,6 +199,24 @@ func TestIndividualFinances_Sources(t *testing.T) {
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
+
+	actual = f.AllSources()
+	expected = []core.FinancialSource{
+		core.IncSrcEarned, core.IncSrcInterest,
+		core.DeducSrcRRSP, core.DeducSrcOthers,
+		core.MiscSrcOthers, core.MiscSrcTuition,
+	}
+	sort.SliceStable(actual, func(i int, j int) bool {
+		return int(actual[i]) < int(actual[j])
+	})
+	sort.SliceStable(expected, func(i int, j int) bool {
+		return int(expected[i]) < int(expected[j])
+	})
+
+	diff = deep.Equal(actual, expected)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
 }
 
 func TestIndividualFinances_Version(t *testing.T) {
