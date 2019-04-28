@@ -24,18 +24,24 @@ type Formula interface {
 	Apply(netIncome float64) float64
 	// Clone returns a copy of this formula
 	Clone() Formula
+	// TaxInfo: TODO
+	TaxInfo() core.TaxInfo
 	// Validate checks if the formula is valid for use
 	Validate() error
 }
 
 // ContraFormula computes reduction on payable taxes for the given finances
 type ContraFormula interface {
-	// Apply applies the contra-formula and returns a slice of Credits that is
-	// sorted in a priority-of-use sequence, where the first item has the highest
-	// priority of use before the next item
-	Apply(*TaxPayer) []*taxCredit
+	// Apply applies the contra-formula and returns a slice of tax credits
+	Apply(*TaxPayer) []*TaxCredit
+	// FilterAndSort removes tax credits that are not recognized by this contra-
+	// formula and sort the remaining items in a priority-of-use sequence, where
+	// the first item has the highest priority of use before the next one
+	FilterAndSort([]core.TaxCredit)
 	// Clone returns a copy of this contra-formula
 	Clone() ContraFormula
+	// TaxInfo: TODO
+	TaxInfo() core.TaxInfo
 	// Validate checks if the formula is valid for use
 	Validate() error
 }
@@ -47,6 +53,7 @@ type CalcConfig struct {
 	ContraTaxFormula ContraFormula
 }
 
+// TODO: validate formual and contra formula are for the same region and year?
 // validate checks if the configurations are valid for use by calc constructors
 func (cfg CalcConfig) validate() error {
 
@@ -77,12 +84,12 @@ func (cfg CalcConfig) validate() error {
 
 // TaxPayer represents an individual who pays taxes
 type TaxPayer struct {
-	// the financial data of the tax payer
+	// the financial data of the subject tax payer
 	Finances core.Financer
 	// the net income for tax purposes
 	NetIncome float64
-	// HasSpouse indicates if the tax payer has spouse
-	HasSpouse bool
+	// the financial data of the tax payer's spouse
+	SpouseFinances core.Financer
 	// the net income of the spouse if applicable
 	SpouseNetIncome float64
 	// Dependents the dependents of the tax payer
