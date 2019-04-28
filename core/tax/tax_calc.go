@@ -165,23 +165,23 @@ func (c *Calculator) netPayableTax(taxAmount float64, credits []core.TaxCredit) 
 		ruleType := cr.Rule().Type
 		initial, used, remaining := cr.Amounts()
 
-		if taxAmount <= 0.0 && ruleType == CrRuleTypeCanCarryForward {
+		if taxAmount <= 0.0 && ruleType == core.CrRuleTypeCanCarryForward {
 			continue
 		}
 
-		if taxAmount <= 0.0 && ruleType == CrRuleTypeNotCarryForward {
+		if taxAmount <= 0.0 && ruleType == core.CrRuleTypeNotCarryForward {
 			cr.SetAmounts(initial, used, 0)
 			continue
 		}
 
-		if taxAmount >= remaining || ruleType == CrRuleTypeCashable {
+		if taxAmount >= remaining || ruleType == core.CrRuleTypeCashable {
 			taxAmount -= remaining
 			cr.SetAmounts(initial, used+remaining, 0)
 			continue
 		}
 
 		// reached at most once: 0 < taxAmount < remaining
-		if ruleType == CrRuleTypeNotCarryForward {
+		if ruleType == core.CrRuleTypeNotCarryForward {
 			cr.SetAmounts(initial, used+taxAmount, 0)
 		} else {
 			cr.SetAmounts(initial, used+taxAmount, remaining-taxAmount)

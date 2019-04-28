@@ -68,18 +68,25 @@ func TestCanadianFormula_Apply(t *testing.T) {
 
 func TestCanadianFormula_Clone(t *testing.T) {
 
+	taxInfo := core.TaxInfo{TaxRegion: core.RegionBC, TaxYear: 2019}
 	original := &CanadianFormula{
 		WeightedBrackets: core.WeightedBrackets{0.1: core.Bracket{0, 10}},
+		RelatedTaxInfo:   taxInfo,
 	}
 
 	clone := original.Clone()
 	originalResults := original.Apply(5)
 	original.WeightedBrackets[0.1] = core.Bracket{100, 1000}
+	original.RelatedTaxInfo = core.TaxInfo{}
+
 	cloneResults := clone.Apply(5)
 	if originalResults != cloneResults {
 		t.Errorf("expected clone results to be equal to results of original formula prior to mutation")
 	}
 
+	if clone.TaxInfo() != taxInfo {
+		t.Fatal("expected changes to original to not affect clone")
+	}
 }
 
 func TestCanadianFormula_Clone_Nil(t *testing.T) {
@@ -95,7 +102,7 @@ func TestCanadianFormula_NumFieldsUnchanged(t *testing.T) {
 
 	dummy := CanadianFormula{}
 	s := reflect.ValueOf(&dummy).Elem()
-	if s.NumField() != 1 {
+	if s.NumField() != 2 {
 		t.Fatal(
 			"number of struct fields changed. Please update the constructor and the " +
 				"clone method of this type as well as associated test. Next, update " +

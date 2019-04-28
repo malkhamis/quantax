@@ -9,14 +9,18 @@ var (
 
 type NopContraFormula struct{}
 
-func (NopContraFormula) Apply(finances *core.IndividualFinances, netIncome float64) []*taxCredit {
+func (NopContraFormula) Apply(*TaxPayer) []*TaxCredit {
 	return nil
 }
-
+func (NopContraFormula) FilterAndSort([]core.TaxCredit) []core.TaxCredit {
+	return nil
+}
 func (NopContraFormula) Clone() ContraFormula {
 	return NopContraFormula{}
 }
-
 func (NopContraFormula) Validate() error {
 	return nil
+}
+func (NopContraFormula) TaxInfo() core.TaxInfo {
+	return core.TaxInfo{}
 }

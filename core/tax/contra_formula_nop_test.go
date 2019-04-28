@@ -5,7 +5,7 @@ import "testing"
 func TestNopContraFormula(t *testing.T) {
 
 	nop := NopContraFormula{}
-	cr := nop.Apply(nil, 0)
+	cr := nop.Apply(nil)
 	if cr != nil {
 		t.Errorf(
 			"expected nop contra-formula type to return nil credits, got: %v", cr,

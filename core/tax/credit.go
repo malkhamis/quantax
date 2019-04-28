@@ -164,7 +164,7 @@ func (tcg taxCreditGroup) clone() []*TaxCredit {
 
 	c := make([]*TaxCredit, len(tcg))
 	for i, cr := range tcg {
-		c[i] = cr.clone()
+		c[i] = cr.shallowCopy()
 	}
 	return c
 }

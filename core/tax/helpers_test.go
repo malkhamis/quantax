@@ -40,43 +40,62 @@ func (tic testIncomeCalculator) SetFinances(core.Financer) {
 type testTaxFormula struct {
 	onApply    float64
 	onValidate error
+	onTaxInfo  core.TaxInfo
 }
 
-func (tcb testTaxFormula) Apply(_ float64) float64 {
+func (tcb *testTaxFormula) Apply(_ float64) float64 {
 	return tcb.onApply
 }
-func (tcb testTaxFormula) Validate() error {
+func (tcb *testTaxFormula) Validate() error {
 	return tcb.onValidate
 }
-func (tcb testTaxFormula) Clone() Formula {
+func (tcb *testTaxFormula) Clone() Formula {
 	return tcb
+}
+func (tcb *testTaxFormula) TaxInfo() core.TaxInfo {
+	return tcb.onTaxInfo
 }
 
 type testTaxContraFormula struct {
-	onApply    []*taxCredit
-	onValidate error
+	onApply         []*TaxCredit
+	onFilterAndSort []core.TaxCredit
+	onTaxInfo       core.TaxInfo
+	onValidate      error
 }
 
-func (tcf *testTaxContraFormula) Apply(_ *core.IndividualFinances, _ float64) []*taxCredit {
+func (tcf *testTaxContraFormula) Apply(_ *TaxPayer) []*TaxCredit {
 	return tcf.onApply
+}
+func (tcf *testTaxContraFormula) FilterAndSort(_ []core.TaxCredit) []core.TaxCredit {
+	return tcf.onFilterAndSort
 }
 func (tcf *testTaxContraFormula) Validate() error {
 	return tcf.onValidate
+}
+func (tcf *testTaxContraFormula) TaxInfo() core.TaxInfo {
+	return tcf.onTaxInfo
 }
 func (tcf *testTaxContraFormula) Clone() ContraFormula {
 	return tcf
 }
 
 type testCreditor struct {
-	onTaxCredits float64
-	onSource     string
+	onTaxCredit       float64
+	onCrSourceName    string
+	onFinancialSource core.FinancialSource
 }
 
-func (tc testCreditor) TaxCredit(_, _ float64) float64 {
-	return tc.onTaxCredits
+func (tc testCreditor) TaxCredit(_ *TaxPayer) float64 {
+	return tc.onTaxCredit
 }
-func (tc testCreditor) Source() string {
-	return tc.onSource
+func (tc testCreditor) CrSourceName() string {
+	return tc.onCrSourceName
+}
+func (tc testCreditor) FinancialSource() core.FinancialSource {
+	return tc.onFinancialSource
+}
+func (tc testCreditor) Description() string {
+	return "test"
 }
 func (tc testCreditor) Clone() Creditor {
 	return tc
