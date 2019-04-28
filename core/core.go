@@ -53,7 +53,7 @@ type TaxCalculator interface {
 	// TaxPayable returns the payable amount of tax for the set finances.
 	// The tax credit represent any amount owed to the tax payer without
 	// implications for how they might be used.
-	TaxPayable() (spouseA, spouseB float64, remainingCredits []TaxCredit)
+	TaxPayable() (spouseA, spouseB float64, combinedCredits []TaxCredit)
 	// SetFinances stores the given financial data in the underlying tax
 	// calculator. Subsequent calls to other functions are based on the
 	// the given finances. Changes to the given finances after calling
@@ -67,14 +67,62 @@ type TaxCalculator interface {
 	// SetDependents sets the dependents which the calculator might use for tax-
 	// related calculations
 	SetDependents(...*human.Person)
+	// TaxInfo TODO
+	TaxInfo() []TaxInfo
 }
 
 // TaxCredit represents an amount that is owed to the tax payer
 type TaxCredit interface {
-	// Amount is the amount owed to tax payer
-	Amount() float64
-	// Source describes the source of this tax credit
-	Source() string
-	// Reference is a reference to financer which the tax credit belongs to
-	Reference() Financer
+	// SetAmounts sets the initial, used, and remaining abouts of this tax credit
+	SetAmounts(initial, used, remaining float64)
+	// Amounts returns the tax credit amounts
+	Amounts() (initial, used, remaining float64)
+	// Rule returns the rule of how this tax credit can be used
+	Rule() CreditRule
+	// ReferenceFinancer returns the owner of this tax credit
+	ReferenceFinancer() Financer
+	// TaxInfo returns the tax information this credit is associated with
+	TaxInfo() TaxInfo
+	// Description is a short description for the reason of the tax credit
+	Description() string
+	// Source is the financial source of this tax credit. If the credit is
+	// not associated with a specific source, it should return 'SrcNone'
+	Source() FinancialSource
+	// ShallowCopy returns a copy of this instance, where reference financer
+	// is the same as the original instance
+	ShallowCopy() TaxCredit
+}
+
+// CreditRuleType is an enum type for recognized methods of using tax credits
+type CreditRuleType int
+
+const (
+	// unknown/uninitialized
+	_ CreditRuleType = iota
+	// CrRuleTypeCashable indicates cashable credits
+	// that may result in negative payable tax amount
+	CrRuleTypeCashable
+	// CrRuleTypeCanCarryForward indicates non-cashable
+	// credits which may only reduce payable tax to zero
+	// and the remaining balance may be carried forward
+	// to the future
+	CrRuleTypeCanCarryForward
+	// CrRuleTypeNotCarryForward indicates non-cashable
+	// credits which may only reduce payable tax to zero.
+	// Unused balance cannot be carried forward to the future
+	CrRuleTypeNotCarryForward
+)
+
+// CreditRule associate a credit source with a method of using its credit amount
+type CreditRule struct {
+	// the name of the credit source
+	CrSource string
+	// the way of using the credit source
+	Type CreditRuleType
+}
+
+// TaxInfo TODO better name
+type TaxInfo struct {
+	TaxYear   uint
+	TaxRegion Region
 }

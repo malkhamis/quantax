@@ -4,7 +4,7 @@ package core
 type FinancialSource int
 
 const (
-	SrcUnknown FinancialSource = iota
+	SrcNone FinancialSource = iota
 
 	IncomeSourcesBegin
 	IncSrcEarned        // employment and labour income

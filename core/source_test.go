@@ -14,7 +14,7 @@ func TestFinancialSource(t *testing.T) {
 		{source: IncSrcRRSP, isInc: true},
 		{source: DeducSrcRRSP, isDeduc: true},
 		{source: MiscSrcMedical, isMisc: true},
-		{source: SrcUnknown, isUnkown: true},
+		{source: SrcNone, isUnkown: true},
 	}
 
 	for _, c := range cases {
