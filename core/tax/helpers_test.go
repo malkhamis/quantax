@@ -6,6 +6,15 @@ import (
 	"github.com/malkhamis/quantax/core"
 )
 
+var (
+	_ Formula                = (*testTaxFormula)(nil)
+	_ ContraFormula          = (*testTaxContraFormula)(nil)
+	_ Creditor               = (*testCreditor)(nil)
+	_ core.IncomeCalculator  = (*testIncomeCalculator)(nil)
+	_ core.HouseholdFinances = (*testHouseholdFinances)(nil)
+	_ core.TaxCredit         = (*testTaxCredit)(nil)
+)
+
 // areEqual returns true if the difference between floor(actual) and
 // floor(expected) is within the given +/- error margin of expcted. Negative
 // error margins are converted to a positive number
@@ -85,31 +94,68 @@ type testCreditor struct {
 	onFinancialSource core.FinancialSource
 }
 
-func (tc testCreditor) TaxCredit(_ *TaxPayer) float64 {
+func (tc *testCreditor) TaxCredit(_ *TaxPayer) float64 {
 	return tc.onTaxCredit
 }
-func (tc testCreditor) CrSourceName() string {
+func (tc *testCreditor) CrSourceName() string {
 	return tc.onCrSourceName
 }
-func (tc testCreditor) FinancialSource() core.FinancialSource {
+func (tc *testCreditor) FinancialSource() core.FinancialSource {
 	return tc.onFinancialSource
 }
-func (tc testCreditor) Description() string {
+func (tc *testCreditor) Description() string {
 	return "test"
 }
-func (tc testCreditor) Clone() Creditor {
+func (tc *testCreditor) Clone() Creditor {
 	return tc
 }
 
 type testTaxCredit struct {
-	onAmount float64
-	onSource string
+	onAmounts           [3]float64
+	onRule              core.CreditRule
+	onReferenceFinancer core.Financer
+	onSource            core.FinancialSource
+	onTaxInfo           core.TaxInfo
 }
 
-func (ttc testTaxCredit) Amount() float64 {
-	return ttc.onAmount
+func (ttc *testTaxCredit) SetAmounts(_, _, _ float64) {}
+func (ttc *testTaxCredit) Amounts() (initial, used, remaining float64) {
+	return ttc.onAmounts[0], ttc.onAmounts[1], ttc.onAmounts[2]
 }
-
-func (ttc testTaxCredit) Source() string {
+func (ttc *testTaxCredit) Rule() core.CreditRule {
+	return ttc.onRule
+}
+func (ttc *testTaxCredit) ReferenceFinancer() core.Financer {
+	return ttc.onReferenceFinancer
+}
+func (ttc *testTaxCredit) TaxInfo() core.TaxInfo {
+	return ttc.onTaxInfo
+}
+func (ttc *testTaxCredit) Description() string {
+	return "test"
+}
+func (ttc *testTaxCredit) Source() core.FinancialSource {
 	return ttc.onSource
+}
+func (ttc *testTaxCredit) ShallowCopy() core.TaxCredit {
+	return ttc
+}
+
+type testHouseholdFinances struct {
+	onSpouseA core.Financer
+	onSpouseB core.Financer
+	onVersion uint64
+}
+
+func (thf *testHouseholdFinances) SpouseA() core.Financer {
+	return thf.onSpouseA
+}
+func (thf *testHouseholdFinances) SpouseB() core.Financer {
+	return thf.onSpouseB
+}
+func (thf *testHouseholdFinances) Clone() core.HouseholdFinances {
+	return thf
+}
+func (thf *testHouseholdFinances) Version() uint64 {
+	return thf.onVersion
 }
