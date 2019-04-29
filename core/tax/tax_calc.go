@@ -35,6 +35,7 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 		contraFormula:    cfg.ContraTaxFormula.Clone(),
 		incomeCalculator: cfg.IncomeCalc,
 		finances:         core.NewHouseholdFinancesNop(),
+		taxInfo:          cfg.TaxFormula.TaxInfo(),
 	}
 
 	return c, nil
@@ -47,9 +48,12 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 // instance is set
 func (c *Calculator) SetFinances(f core.HouseholdFinances) {
 
-	if f == nil || (f.SpouseA() == nil && f.SpouseB() == nil) {
+	if f == nil {
+		f = core.NewHouseholdFinancesNop()
+	} else if f.SpouseA() == nil && f.SpouseB() == nil {
 		f = core.NewHouseholdFinancesNop()
 	}
+
 	c.finances = f
 }
 
@@ -64,11 +68,11 @@ func (c *Calculator) SetCredits(credits []core.TaxCredit) {
 			continue
 		}
 
-		if _, _, remaining := cr.Amounts(); remaining <= 0 {
+		if _, _, remaining := cr.Amounts(); remaining == 0 {
 			continue
 		}
 
-		if cr.TaxInfo() != c.taxInfo {
+		if cr.TaxInfo().TaxRegion != c.taxInfo.TaxRegion {
 			continue
 		}
 

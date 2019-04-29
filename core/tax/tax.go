@@ -16,6 +16,7 @@ var (
 	ErrUnknownCreditSource = errors.New("unknown credit source")
 	ErrNoIncCalc           = errors.New("no income calculator given")
 	ErrNoCalc              = errors.New("no benefit calculator given")
+	ErrInvalidTaxInfo      = errors.New("invalid tax info") // TODO better name
 )
 
 // Formula computes payable taxes on the given income
@@ -73,6 +74,12 @@ func (cfg CalcConfig) validate() error {
 	err = cfg.ContraTaxFormula.Validate()
 	if err != nil {
 		return errors.Wrap(err, "invalid contra-formula")
+	}
+
+	taxInfoTF := cfg.TaxFormula.TaxInfo()
+	taxInfoCTF := cfg.ContraTaxFormula.TaxInfo()
+	if taxInfoTF != taxInfoCTF {
+		return errors.Wrapf(ErrInvalidTaxInfo, "%v != %v", taxInfoTF, taxInfoCTF)
 	}
 
 	if cfg.IncomeCalc == nil {
