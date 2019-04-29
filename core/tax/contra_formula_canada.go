@@ -79,7 +79,7 @@ func (cf *CanadianContraFormula) FilterAndSort(credits []core.TaxCredit) []core.
 	filtered := make([]core.TaxCredit, 0, len(credits))
 	for _, cr := range credits {
 
-		if cr.TaxInfo().TaxRegion != cf.RelatedTaxInfo.TaxRegion {
+		if cr == nil {
 			continue
 		}
 

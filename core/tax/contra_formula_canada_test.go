@@ -78,8 +78,6 @@ func TestCanadianContraFormula_Apply(t *testing.T) {
 
 func TestCanadianContraFormula_FilterAndSort(t *testing.T) {
 
-	taxInfo := core.TaxInfo{TaxYear: 2019, TaxRegion: core.Region(t.Name())}
-
 	cf := &CanadianContraFormula{
 		ApplicationOrder: []core.CreditRule{
 			{CrSource: "1000", Type: 1},
@@ -88,7 +86,6 @@ func TestCanadianContraFormula_FilterAndSort(t *testing.T) {
 			{CrSource: "5000", Type: 5},
 			{CrSource: "4000", Type: 4},
 		},
-		RelatedTaxInfo: taxInfo,
 	}
 
 	err := cf.Validate()
@@ -97,35 +94,25 @@ func TestCanadianContraFormula_FilterAndSort(t *testing.T) {
 	}
 
 	cr1000 := &testTaxCredit{
-		onRule:    core.CreditRule{CrSource: "1000", Type: 1},
-		onTaxInfo: taxInfo,
+		onRule: core.CreditRule{CrSource: "1000", Type: 1},
 	}
 	cr2000 := &testTaxCredit{
-		onRule:    core.CreditRule{CrSource: "2000", Type: 2},
-		onTaxInfo: taxInfo,
+		onRule: core.CreditRule{CrSource: "2000", Type: 2},
 	}
 	cr3000 := &testTaxCredit{
-		onRule:    core.CreditRule{CrSource: "3000", Type: 3},
-		onTaxInfo: taxInfo,
+		onRule: core.CreditRule{CrSource: "3000", Type: 3},
 	}
 	cr4000 := &testTaxCredit{
-		onRule:    core.CreditRule{CrSource: "4000", Type: 4},
-		onTaxInfo: taxInfo,
+		onRule: core.CreditRule{CrSource: "4000", Type: 4},
 	}
 	cr5000 := &testTaxCredit{
-		onRule:    core.CreditRule{CrSource: "5000", Type: 5},
-		onTaxInfo: taxInfo,
-	}
-	foreign := &testTaxCredit{
-		onRule:    core.CreditRule{CrSource: "5000", Type: 5},
-		onTaxInfo: core.TaxInfo{TaxRegion: "Somewhere"},
+		onRule: core.CreditRule{CrSource: "5000", Type: 5},
 	}
 	noRuleCr := &testTaxCredit{
-		onRule:    core.CreditRule{CrSource: "5000", Type: 0},
-		onTaxInfo: taxInfo,
+		onRule: core.CreditRule{CrSource: "5000", Type: 0},
 	}
 
-	credits := []core.TaxCredit{cr3000, cr2000, foreign, cr5000, cr1000, noRuleCr, cr4000}
+	credits := []core.TaxCredit{cr3000, nil, cr2000, cr5000, cr1000, noRuleCr, cr4000}
 	actual := cf.FilterAndSort(credits)
 	expected := []core.TaxCredit{cr1000, cr2000, cr3000, cr5000, cr4000}
 
