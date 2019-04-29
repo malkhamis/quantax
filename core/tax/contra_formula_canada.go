@@ -68,10 +68,6 @@ func (cf *CanadianContraFormula) Apply(taxPayer *TaxPayer) []*TaxCredit {
 // assumes that cf wa validated before use.
 func (cf *CanadianContraFormula) FilterAndSort(credits []core.TaxCredit) []core.TaxCredit {
 
-	if len(credits) == 0 {
-		return nil
-	}
-
 	// FIXME: we can avoid this by having NewCanadaianContraFormula
 	// to initialize an internal variable containing the same info
 	// which can be used again and again
@@ -81,7 +77,6 @@ func (cf *CanadianContraFormula) FilterAndSort(credits []core.TaxCredit) []core.
 	}
 
 	filtered := make([]core.TaxCredit, 0, len(credits))
-
 	for _, cr := range credits {
 
 		if cr.TaxInfo().TaxRegion != cf.RelatedTaxInfo.TaxRegion {

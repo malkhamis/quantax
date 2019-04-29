@@ -1,414 +1,329 @@
 package tax
 
-//
-// import (
-// 	"fmt"
-// 	"reflect"
-// 	"sort"
-// 	"strings"
-// 	"testing"
-//
-// 	"github.com/go-test/deep"
-// 	"github.com/malkhamis/quantax/core"
-// 	"github.com/pkg/errors"
-// )
-//
-// func TestCanadianContraFormula_Apply_Nil_finances(t *testing.T) {
-//
-// 	cf := new(CanadianContraFormula)
-// 	actual := cf.Apply(nil, 0)
-// 	if actual != nil {
-// 		t.Errorf("expected nil []credits if finances is nil")
-// 	}
-//
-// }
-//
-// func TestCanadianContraFormula_Apply(t *testing.T) {
-//
-// 	cf := &CanadianContraFormula{
-// 		Creditors: map[core.FinancialSource]Creditor{
-// 			core.IncSrcEarned:   testCreditor{onSource: "1000", onTaxCredits: 1},
-// 			core.DeducSrcRRSP:   testCreditor{onSource: "2000", onTaxCredits: 2},
-// 			core.MiscSrcMedical: testCreditor{onSource: "3000", onTaxCredits: 3},
-// 		},
-// 		PersistentCredits: map[string]float64{"9999": 7},
-// 		ApplicationOrder: []CreditRule{
-// 			{"1000", CrRuleTypeCashable},
-// 			{"3000", CrRuleTypeCanCarryForward},
-// 			{"2000", CrRuleTypeCanCarryForward},
-// 			{"9999", CrRuleTypeNotCarryForward},
-// 		},
-// 	}
-//
-// 	err := cf.Validate()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	finances := core.NewEmptyIndividualFinances()
-// 	finances.AddAmount(core.IncSrcEarned, 10)
-// 	finances.AddAmount(core.DeducSrcRRSP, 20)
-// 	finances.AddAmount(core.MiscSrcMedical, 30)
-// 	finances.AddAmount(456, 40)
-//
-// 	actual := cf.Apply(finances, 0)
-// 	expected := []*taxCredit{
-// 		&taxCredit{amount: 1, rule: CreditRule{"1000", CrRuleTypeCashable}},
-// 		&taxCredit{amount: 3, rule: CreditRule{"3000", CrRuleTypeCanCarryForward}},
-// 		&taxCredit{amount: 2, rule: CreditRule{"2000", CrRuleTypeCanCarryForward}},
-// 		&taxCredit{amount: 7, rule: CreditRule{"9999", CrRuleTypeNotCarryForward}},
-// 	}
-//
-// 	// this test might fail if the order of adding income/deductions/misc
-// 	// was changed. However, the most important thing is that the returned
-// 	// credits are sorted by their source according to cf.ApplicationOrder
-// 	diff := deep.Equal(actual, expected)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
-// 	}
-//
-// }
-//
-// func TestCanadianContraFormula_Validate(t *testing.T) {
-//
-// 	cases := []struct {
-// 		name    string
-// 		formula *CanadianContraFormula
-// 		err     error
-// 	}{
-// 		//
-// 		{
-// 			name: "valid",
-// 			formula: &CanadianContraFormula{
-// 				Creditors: map[core.FinancialSource]Creditor{
-// 					123: testCreditor{onSource: "1000"},
-// 					456: testCreditor{onSource: "2000"},
-// 				},
-// 				ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
-// 			},
-// 			err: nil,
-// 		},
-// 		//
-// 		{
-// 			name: "duplicates-in-app-order",
-// 			formula: &CanadianContraFormula{
-// 				ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "1000"}},
-// 			},
-// 			err: ErrDupCreditSource,
-// 		},
-// 		//
-// 		{
-// 			name: "unknown-creditor",
-// 			formula: &CanadianContraFormula{
-// 				Creditors: map[core.FinancialSource]Creditor{
-// 					123: testCreditor{onSource: "1000"},
-// 					456: testCreditor{onSource: "2222"},
-// 				},
-// 				ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
-// 			},
-// 			err: ErrUnknownCreditSource,
-// 		},
-// 		//
-// 		{
-// 			name: "unknown-persistent-crSrc",
-// 			formula: &CanadianContraFormula{
-// 				PersistentCredits: map[string]float64{"2222": 0.0},
-// 				ApplicationOrder:  []CreditRule{{Source: "1000"}, {Source: "2000"}},
-// 			},
-// 			err: ErrUnknownCreditSource,
-// 		},
-// 	}
-//
-// 	for i, c := range cases {
-// 		c := c
-// 		t.Run(fmt.Sprintf("case%d-%s", i, c.name), func(t *testing.T) {
-//
-// 			err := c.formula.Validate()
-// 			if errors.Cause(err) != c.err {
-// 				t.Errorf("unexpected error\nwant: %v\n got: %v", c.err, err)
-// 			}
-//
-// 		})
-// 	}
-// }
-//
-// func TestCanadianContraFormula_creditsFromIncSrcs(t *testing.T) {
-//
-// 	cf := &CanadianContraFormula{
-// 		Creditors: map[core.FinancialSource]Creditor{
-// 			core.IncSrcEarned:   testCreditor{onSource: "1000", onTaxCredits: 115},
-// 			core.IncSrcInterest: testCreditor{onSource: "2000", onTaxCredits: 95},
-// 			core.IncSrcTFSA:     testCreditor{onSource: "3000", onTaxCredits: 0},
-// 		},
-// 		ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
-// 	}
-//
-// 	finances := core.NewEmptyIndividualFinances()
-// 	finances.AddAmount(core.IncSrcEarned, 15000) // has creditor
-// 	finances.AddAmount(core.IncSrcTFSA, 20000)   // zero credits
-// 	finances.AddAmount(core.IncSrcUCCB, 8000)    // no creditor
-//
-// 	actual := cf.creditsFromIncSrcs(finances, 0)
-// 	expected := []*creditBySource{&creditBySource{amount: 115, source: "1000"}}
-//
-// 	diff := deep.Equal(actual, expected)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
-// 	}
-//
-// }
-//
-// func TestCanadianContraFormula_creditsFromDeducSrcs(t *testing.T) {
-//
-// 	cf := &CanadianContraFormula{
-// 		Creditors: map[core.FinancialSource]Creditor{
-// 			core.DeducSrcRRSP:   testCreditor{onSource: "1000", onTaxCredits: 115},
-// 			core.DeducSrcOthers: testCreditor{onSource: "2000", onTaxCredits: 0},
-// 		},
-// 		ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}, {Source: "3000"}},
-// 	}
-//
-// 	finances := core.NewEmptyIndividualFinances()
-// 	finances.AddAmount(core.DeducSrcOthers, 1000)  // zero creditor
-// 	finances.AddAmount(core.DeducSrcRRSP, 15000)   // has creditor
-// 	finances.AddAmount(core.DeducSrcMedical, 8000) // no creditor
-//
-// 	actual := cf.creditsFromDeducSrcs(finances, 0)
-// 	expected := []*creditBySource{&creditBySource{amount: 115, source: "1000"}}
-//
-// 	diff := deep.Equal(actual, expected)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
-// 	}
-//
-// }
-//
-// func TestCanadianContraFormula_creditsFromMiscSrcs(t *testing.T) {
-//
-// 	cf := &CanadianContraFormula{
-// 		Creditors: map[core.FinancialSource]Creditor{
-// 			core.MiscSrcTuition: testCreditor{onSource: "1000", onTaxCredits: 115},
-// 			core.MiscSrcOthers:  testCreditor{onSource: "3000", onTaxCredits: 0},
-// 		},
-// 		ApplicationOrder: []CreditRule{{Source: "1000"}, {Source: "2000"}},
-// 	}
-//
-// 	finances := core.NewEmptyIndividualFinances()
-// 	finances.AddAmount(core.MiscSrcTuition, 8000)  // has creditor
-// 	finances.AddAmount(core.MiscSrcMedical, 15000) // no creditor
-// 	finances.AddAmount(core.MiscSrcOthers, 8000)   // zero creditor
-//
-// 	actual := cf.creditsFromMiscSrcs(finances, 0)
-// 	expected := []*creditBySource{&creditBySource{amount: 115, source: "1000"}}
-//
-// 	diff := deep.Equal(actual, expected)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
-// 	}
-//
-// }
-//
-// func TestCanadianFormula_persistentCredits(t *testing.T) {
-//
-// 	cf := &CanadianContraFormula{
-// 		PersistentCredits: map[string]float64{"1000": 100, "2000": 200},
-// 	}
-//
-// 	actual := cf.persistentCredits()
-// 	expected := []*creditBySource{
-// 		&creditBySource{"1000", 100},
-// 		&creditBySource{"2000", 200},
-// 	}
-//
-// 	sort.Slice(actual, func(i int, j int) bool {
-// 		return actual[i].source > actual[j].source
-// 	})
-// 	sort.Slice(expected, func(i int, j int) bool {
-// 		return expected[i].source > expected[j].source
-// 	})
-//
-// 	diff := deep.Equal(actual, expected)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
-// 	}
-//
-// }
-//
-// func TestCanadianContraFormula_checkFinSrcCreditorsInSet(t *testing.T) {
-//
-// 	creditor := testCreditor{onSource: "123"}
-// 	cf := &CanadianContraFormula{
-// 		Creditors: map[core.FinancialSource]Creditor{
-// 			321: creditor,
-// 		},
-// 	}
-//
-// 	err := cf.checkFinSrcCreditorsInSet(nil)
-// 	if errors.Cause(err) != ErrUnknownCreditSource {
-// 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrUnknownCreditSource, err)
-// 	}
-//
-// 	set := map[string]struct{}{"123": struct{}{}}
-//
-// 	cf.Creditors[9] = nil
-// 	err = cf.checkFinSrcCreditorsInSet(set)
-// 	if errors.Cause(err) != ErrNoCreditor {
-// 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoCreditor, err)
-// 	}
-//
-// 	delete(cf.Creditors, 9)
-// 	err = cf.checkFinSrcCreditorsInSet(set)
-// 	if err != nil {
-// 		t.Errorf("unexpected error\nwant: %v\n got: %v", nil, err)
-// 	}
-//
-// }
-//
-// func TestCanadianContraFormula_checkPersistentCrSrcsInSet(t *testing.T) {
-//
-// 	cf := &CanadianContraFormula{
-// 		PersistentCredits: map[string]float64{"123": 0.0},
-// 	}
-//
-// 	err := cf.checkPersistentCrSrcsInSet(nil)
-// 	if errors.Cause(err) != ErrUnknownCreditSource {
-// 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrUnknownCreditSource, err)
-// 	}
-//
-// 	set := map[string]struct{}{"123": struct{}{}}
-//
-// 	err = cf.checkPersistentCrSrcsInSet(set)
-// 	if err != nil {
-// 		t.Errorf("unexpected error: %v", err)
-// 	}
-//
-// }
-//
-// func TestCanadianContraFormula_orderCredits(t *testing.T) {
-//
-// 	cf := &CanadianContraFormula{
-// 		ApplicationOrder: []CreditRule{
-// 			{Source: "1000"},
-// 			{Source: "2000"},
-// 			{Source: "3000"},
-// 			{Source: "5000"},
-// 			{Source: "4000"},
-// 		},
-// 	}
-// 	err := cf.Validate()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	credits := []*taxCredit{
-// 		&taxCredit{rule: CreditRule{Source: "3000"}},
-// 		&taxCredit{rule: CreditRule{Source: "2000"}},
-// 		&taxCredit{rule: CreditRule{Source: "5000"}},
-// 		&taxCredit{rule: CreditRule{Source: "1000"}},
-// 		&taxCredit{rule: CreditRule{Source: "4000"}},
-// 	}
-//
-// 	cf.orderCredits(credits)
-//
-// 	expectedOrder := []*taxCredit{
-// 		&taxCredit{rule: CreditRule{Source: "1000"}},
-// 		&taxCredit{rule: CreditRule{Source: "2000"}},
-// 		&taxCredit{rule: CreditRule{Source: "3000"}},
-// 		&taxCredit{rule: CreditRule{Source: "5000"}},
-// 		&taxCredit{rule: CreditRule{Source: "4000"}},
-// 	}
-//
-// 	diff := deep.Equal(credits, expectedOrder)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
-// 	}
-//
-// 	var emptyGrp []*taxCredit
-// 	cf.orderCredits(emptyGrp)
-// 	diff = deep.Equal(emptyGrp, []*taxCredit(nil))
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
-// 	}
-// }
-//
-// func TestCanadianContraFormula_convertCredits(t *testing.T) {
-//
-// 	cf := &CanadianContraFormula{
-// 		ApplicationOrder: []CreditRule{
-// 			CreditRule{Source: "1000"},
-// 		},
-// 	}
-//
-// 	credits := []*creditBySource{
-// 		&creditBySource{source: "1000", amount: 100},
-// 		&creditBySource{source: "9999", amount: 999},
-// 	}
-//
-// 	actual := cf.convertCredits(credits)
-// 	expected := []*taxCredit{
-// 		&taxCredit{amount: 100, rule: CreditRule{Source: "1000"}},
-// 	}
-//
-// 	diff := deep.Equal(actual, expected)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
-// 	}
-//
-// }
-//
-// func TestCanadianContraFormula_Clone(t *testing.T) {
-//
-// 	var original *CanadianContraFormula
-// 	if original.Clone() != nil {
-// 		t.Error("cloning nil contra formula should return nil")
-// 	}
-//
-// 	original = &CanadianContraFormula{
-// 		Creditors: map[core.FinancialSource]Creditor{
-// 			123: testCreditor{onSource: "1000"},
-// 			456: testCreditor{onSource: "2000"},
-// 		},
-// 		PersistentCredits: map[string]float64{"1000": 0.0},
-// 		ApplicationOrder: []CreditRule{
-// 			{Source: "1000"},
-// 			{Source: "2000"},
-// 		},
-// 	}
-//
-// 	err := original.Validate()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	clone := original.Clone()
-// 	err = clone.Validate()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	original.ApplicationOrder[0] = CreditRule{}
-// 	original.ApplicationOrder[1] = CreditRule{}
-// 	original.Creditors[123] = testCreditor{onSource: "1111"}
-// 	original.PersistentCredits = map[string]float64{"111": 0.0}
-// 	err = original.Validate()
-// 	if err == nil {
-// 		t.Fatal("invalid formula did not return error when validated")
-// 	}
-// 	err = clone.Validate()
-// 	if err != nil {
-// 		t.Fatal("changes to original contra formula should not affect clone")
-// 	}
-// }
-//
-// func TestCanadianContraFormula_NumFieldsUnchanged(t *testing.T) {
-//
-// 	dummy := CanadianContraFormula{}
-// 	s := reflect.ValueOf(&dummy).Elem()
-// 	if s.NumField() != 3 {
-// 		t.Fatal(
-// 			"number of struct fields changed. Please update the constructor and the " +
-// 				"clone method of this type as well as associated test. Next, update " +
-// 				"this test with the new number of fields",
-// 		)
-// 	}
-// }
+import (
+	"fmt"
+	"reflect"
+	"strings"
+	"testing"
+
+	"github.com/go-test/deep"
+	"github.com/malkhamis/quantax/core"
+	"github.com/pkg/errors"
+)
+
+func TestCanadianContraFormula_Apply_Nil_finances(t *testing.T) {
+
+	cf := new(CanadianContraFormula)
+
+	actual := cf.Apply(nil)
+	if actual != nil {
+		t.Errorf("expected nil []credits if finances is nil")
+	}
+
+	actual = cf.Apply(&TaxPayer{})
+	if actual != nil {
+		t.Errorf("expected nil []credits if finances is nil")
+	}
+
+}
+
+func TestCanadianContraFormula_Apply(t *testing.T) {
+
+	cf := &CanadianContraFormula{
+		Creditors: []Creditor{
+			&testCreditor{
+				onTaxCredit:       1000,
+				onFinancialSource: 1,
+				onCrSourceName:    t.Name(),
+			},
+			&testCreditor{
+				onTaxCredit:       0,
+				onFinancialSource: 2,
+				onCrSourceName:    "zero-creditor",
+			},
+		},
+		ApplicationOrder: []core.CreditRule{
+			core.CreditRule{CrSource: "zero-creditor", Type: 456},
+			core.CreditRule{CrSource: t.Name(), Type: 123},
+		},
+		RelatedTaxInfo: core.TaxInfo{2019, "UnitTest"},
+	}
+
+	err := cf.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	f := core.NewFinancerNop()
+	expected := []*TaxCredit{
+		&TaxCredit{
+			AmountInitial:   1000,
+			AmountRemaining: 1000,
+			AmountUsed:      0,
+			CrRule:          core.CreditRule{t.Name(), 123},
+			Desc:            "test",
+			FinancialSource: 1,
+			Ref:             f,
+			RelatedTaxInfo:  core.TaxInfo{2019, "UnitTest"},
+		},
+	}
+
+	actual := cf.Apply(&TaxPayer{Finances: f})
+	diff := deep.Equal(actual, expected)
+	if diff != nil {
+		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+
+}
+
+func TestCanadianContraFormula_FilterAndSort(t *testing.T) {
+
+	taxInfo := core.TaxInfo{TaxYear: 2019, TaxRegion: core.Region(t.Name())}
+
+	cf := &CanadianContraFormula{
+		ApplicationOrder: []core.CreditRule{
+			{CrSource: "1000", Type: 1},
+			{CrSource: "2000", Type: 2},
+			{CrSource: "3000", Type: 3},
+			{CrSource: "5000", Type: 5},
+			{CrSource: "4000", Type: 4},
+		},
+		RelatedTaxInfo: taxInfo,
+	}
+
+	err := cf.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cr1000 := &testTaxCredit{
+		onRule:    core.CreditRule{CrSource: "1000", Type: 1},
+		onTaxInfo: taxInfo,
+	}
+	cr2000 := &testTaxCredit{
+		onRule:    core.CreditRule{CrSource: "2000", Type: 2},
+		onTaxInfo: taxInfo,
+	}
+	cr3000 := &testTaxCredit{
+		onRule:    core.CreditRule{CrSource: "3000", Type: 3},
+		onTaxInfo: taxInfo,
+	}
+	cr4000 := &testTaxCredit{
+		onRule:    core.CreditRule{CrSource: "4000", Type: 4},
+		onTaxInfo: taxInfo,
+	}
+	cr5000 := &testTaxCredit{
+		onRule:    core.CreditRule{CrSource: "5000", Type: 5},
+		onTaxInfo: taxInfo,
+	}
+	foreign := &testTaxCredit{
+		onRule:    core.CreditRule{CrSource: "5000", Type: 5},
+		onTaxInfo: core.TaxInfo{TaxRegion: "Somewhere"},
+	}
+	noRuleCr := &testTaxCredit{
+		onRule:    core.CreditRule{CrSource: "5000", Type: 0},
+		onTaxInfo: taxInfo,
+	}
+
+	credits := []core.TaxCredit{cr3000, cr2000, foreign, cr5000, cr1000, noRuleCr, cr4000}
+	actual := cf.FilterAndSort(credits)
+	expected := []core.TaxCredit{cr1000, cr2000, cr3000, cr5000, cr4000}
+
+	diff := deep.Equal(actual, expected)
+	if diff != nil {
+		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+
+	actual = cf.FilterAndSort(nil)
+	diff = deep.Equal(actual, []core.TaxCredit{})
+	if diff != nil {
+		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+}
+
+func TestCanadianContraFormula_Validate(t *testing.T) {
+
+	cases := []struct {
+		name    string
+		formula *CanadianContraFormula
+		err     error
+	}{
+		//
+		{
+			name: "valid",
+			formula: &CanadianContraFormula{
+				Creditors: []Creditor{
+					&testCreditor{onCrSourceName: "1000"},
+					&testCreditor{onCrSourceName: "2000"},
+				},
+				ApplicationOrder: []core.CreditRule{{CrSource: "1000"}, {CrSource: "2000"}},
+			},
+			err: nil,
+		},
+		//
+		{
+			name: "valid-duplicate-creditors",
+			formula: &CanadianContraFormula{
+				Creditors: []Creditor{
+					&testCreditor{onCrSourceName: "1000"},
+					&testCreditor{onCrSourceName: "2000"},
+					&testCreditor{onCrSourceName: "2000"}, // duplicates here is ok
+				},
+				ApplicationOrder: []core.CreditRule{{CrSource: "1000"}, {CrSource: "2000"}},
+			},
+			err: nil,
+		},
+		//
+		{
+			name: "duplicates-in-app-order",
+			formula: &CanadianContraFormula{
+				ApplicationOrder: []core.CreditRule{{CrSource: "1000"}, {CrSource: "1000"}},
+			},
+			err: ErrDupCreditSource,
+		},
+		//
+		{
+			name: "unknown-creditor",
+			formula: &CanadianContraFormula{
+				Creditors: []Creditor{
+					&testCreditor{onCrSourceName: "1000"},
+					&testCreditor{onCrSourceName: "2222"},
+				},
+				ApplicationOrder: []core.CreditRule{{CrSource: "1000"}, {CrSource: "2000"}},
+			},
+			err: ErrUnknownCreditSource,
+		},
+		//
+		{
+			name: "nil-creditor",
+			formula: &CanadianContraFormula{
+				Creditors: []Creditor{nil},
+			},
+			err: ErrNoCreditor,
+		},
+	}
+
+	for i, c := range cases {
+		c := c
+		t.Run(fmt.Sprintf("case%d-%s", i, c.name), func(t *testing.T) {
+
+			err := c.formula.Validate()
+			if errors.Cause(err) != c.err {
+				t.Errorf("unexpected error\nwant: %v\n got: %v", c.err, err)
+			}
+
+		})
+	}
+}
+
+func TestCanadianContraFormula_Clone(t *testing.T) {
+
+	var original *CanadianContraFormula
+	if original.Clone() != nil {
+		t.Error("cloning nil contra formula should return nil")
+	}
+
+	originalCreditor := &testCreditor{
+		onTaxCredit:       1000,
+		onFinancialSource: 1,
+		onCrSourceName:    t.Name(),
+	}
+	originalRule := core.CreditRule{CrSource: t.Name(), Type: 123}
+	originalTaxInfo := core.TaxInfo{2019, "UnitTest"}
+
+	original = &CanadianContraFormula{
+		Creditors:        []Creditor{originalCreditor},
+		ApplicationOrder: []core.CreditRule{originalRule},
+		RelatedTaxInfo:   originalTaxInfo,
+	}
+
+	err := original.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	clone := original.Clone()
+	err = clone.Validate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	original.ApplicationOrder[0] = core.CreditRule{}
+	original.Creditors[0] = &testCreditor{onCrSourceName: "1111"}
+	err = original.Validate()
+	if err == nil {
+		t.Fatal("invalid formula did not return error when validated")
+	}
+	err = clone.Validate()
+	if err != nil {
+		t.Fatal("changes to original contra formula should not affect clone")
+	}
+
+	expected := &CanadianContraFormula{
+		Creditors:        []Creditor{originalCreditor},
+		ApplicationOrder: []core.CreditRule{originalRule},
+		RelatedTaxInfo:   originalTaxInfo,
+	}
+
+	diff := deep.Equal(clone, expected)
+	if diff != nil {
+		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+}
+
+func TestCanadianContraFormula_TaxInfo(t *testing.T) {
+
+	cf := &CanadianContraFormula{
+		RelatedTaxInfo: core.TaxInfo{TaxYear: 2019, TaxRegion: core.Region(t.Name())},
+	}
+
+	expected := core.TaxInfo{TaxYear: 2019, TaxRegion: core.Region(t.Name())}
+	actual := cf.TaxInfo()
+	diff := deep.Equal(actual, expected)
+	if diff != nil {
+		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
+	}
+}
+
+func TestCanadianContraFormula_checkFinSrcCreditorsInSet(t *testing.T) {
+
+	cf := &CanadianContraFormula{
+		Creditors: []Creditor{
+			&testCreditor{onCrSourceName: t.Name()},
+		},
+	}
+
+	err := cf.checkCreditorCrSrcNamesInSet(nil)
+	if errors.Cause(err) != ErrUnknownCreditSource {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrUnknownCreditSource, err)
+	}
+
+	err = cf.checkCreditorCrSrcNamesInSet(
+		map[string]struct{}{
+			t.Name(): struct{}{},
+		},
+	)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	cf.Creditors[0] = nil
+	err = cf.checkCreditorCrSrcNamesInSet(nil)
+	if errors.Cause(err) != ErrNoCreditor {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoCreditor, err)
+	}
+
+}
+
+func TestCanadianContraFormula_NumFieldsUnchanged(t *testing.T) {
+
+	dummy := CanadianContraFormula{}
+	s := reflect.ValueOf(&dummy).Elem()
+	if s.NumField() != 3 {
+		t.Fatal(
+			"number of struct fields changed. Please update the constructor and the " +
+				"clone method of this type as well as associated test. Next, update " +
+				"this test with the new number of fields",
+		)
+	}
+}
