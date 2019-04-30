@@ -67,8 +67,11 @@ type TaxCalculator interface {
 	// SetDependents sets the dependents which the calculator might use for tax-
 	// related calculations
 	SetDependents(...*human.Person)
-	// TaxInfo TODO
-	TaxInfo() []TaxInfo
+	// TaxYear returns the tax year of the calculator
+	Year() uint
+	// Regions is the tax regions of the calculator. The underlying implementation
+	// may compute the taxes for multiple regions
+	Regions() []Region
 }
 
 // TaxCredit represents an amount that is owed to the tax payer
@@ -81,16 +84,18 @@ type TaxCredit interface {
 	Rule() CreditRule
 	// ReferenceFinancer returns the owner of this tax credit
 	ReferenceFinancer() Financer
-	// TaxInfo returns the tax information this credit is associated with
-	TaxInfo() TaxInfo
-	// Description is a short description for the reason of the tax credit
-	Description() string
 	// Source is the financial source of this tax credit. If the credit is
 	// not associated with a specific source, it should return 'SrcNone'
 	Source() FinancialSource
 	// ShallowCopy returns a copy of this instance, where reference financer
 	// is the same as the original instance
 	ShallowCopy() TaxCredit
+	// Year returns the tax year from which the tax credit was calculated
+	Year() uint
+	// Region returns the tax region for which the tax credit was calculated
+	Region() Region
+	// Description is a short description for the reason of the tax credit
+	Description() string
 }
 
 // CreditRuleType is an enum type for recognized methods of using tax credits
@@ -119,10 +124,4 @@ type CreditRule struct {
 	CrSource string
 	// the way of using the credit source
 	Type CreditRuleType
-}
-
-// TaxInfo TODO better name
-type TaxInfo struct {
-	TaxYear   uint
-	TaxRegion Region
 }

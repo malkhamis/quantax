@@ -4,7 +4,10 @@ import "github.com/malkhamis/quantax/core"
 
 // CanadianFormula is used to calculate Canadian federal and provincial taxes
 type CanadianFormula struct {
-	RelatedTaxInfo core.TaxInfo
+	// TaxYear is the tax year this contra formula is associated with
+	TaxYear uint
+	// TaxRegion is the tax region this contra formula is associated with
+	TaxRegion core.Region
 	core.WeightedBrackets
 }
 
@@ -13,9 +16,14 @@ func (cf *CanadianFormula) Apply(netIncome float64) float64 {
 	return cf.WeightedBrackets.Apply(netIncome)
 }
 
-// TaxInfo TODO
-func (cf *CanadianFormula) TaxInfo() core.TaxInfo {
-	return cf.RelatedTaxInfo
+// Year returns the tax year for this formula
+func (cf *CanadianFormula) Year() uint {
+	return cf.TaxYear
+}
+
+// Region returns the tax region for this formula
+func (cf *CanadianFormula) Region() core.Region {
+	return cf.TaxRegion
 }
 
 // Clone returns a copy of this formula
@@ -27,7 +35,8 @@ func (cf *CanadianFormula) Clone() Formula {
 
 	clone := &CanadianFormula{
 		WeightedBrackets: cf.WeightedBrackets.Clone(),
-		RelatedTaxInfo:   cf.RelatedTaxInfo,
+		TaxYear:          cf.TaxYear,
+		TaxRegion:        cf.TaxRegion,
 	}
 
 	return clone

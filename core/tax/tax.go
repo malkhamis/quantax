@@ -9,24 +9,24 @@ import (
 
 // Sentinel errors that can ben wrapped and returned by this package
 var (
-	ErrNoFormula           = errors.New("no formula given/set")
-	ErrNoContraFormula     = errors.New("no contra-formula given/set")
-	ErrNoCreditor          = errors.New("no creditor given/set")
-	ErrDupCreditSource     = errors.New("duplicates are not allowed")
-	ErrUnknownCreditSource = errors.New("unknown credit source")
-	ErrNoIncCalc           = errors.New("no income calculator given")
-	ErrNoCalc              = errors.New("no benefit calculator given")
-	ErrInvalidTaxInfo      = errors.New("invalid tax info") // TODO better name
+	ErrNoFormula       = errors.New("no formula given/set")
+	ErrNoContraFormula = errors.New("no contra-formula given/set")
+	ErrNoIncCalc       = errors.New("no income calculator given")
+	ErrInvalidTaxArg   = errors.New("invalid tax arguments")
+	ErrNoCreditor      = errors.New("no creditor given/set")
+	ErrDupCreditSource = errors.New("duplicate credit sources are not allowed")
 )
 
 // Formula computes payable taxes on the given income
 type Formula interface {
 	// Apply applies the formula on the income
 	Apply(netIncome float64) float64
+	// Year is the tax year this contra formula is associated with
+	Year() uint
+	// Region is the tax region this contra formula is associated with
+	Region() core.Region
 	// Clone returns a copy of this formula
 	Clone() Formula
-	// TaxInfo: TODO
-	TaxInfo() core.TaxInfo
 	// Validate checks if the formula is valid for use
 	Validate() error
 }
@@ -41,8 +41,10 @@ type ContraFormula interface {
 	FilterAndSort([]core.TaxCredit) []core.TaxCredit
 	// Clone returns a copy of this contra-formula
 	Clone() ContraFormula
-	// TaxInfo: TODO
-	TaxInfo() core.TaxInfo
+	// Year is the tax year this contra formula is associated with
+	Year() uint
+	// Region is the tax region this contra formula is associated with
+	Region() core.Region
 	// Validate checks if the formula is valid for use
 	Validate() error
 }
@@ -76,10 +78,12 @@ func (cfg CalcConfig) validate() error {
 		return errors.Wrap(err, "invalid contra-formula")
 	}
 
-	taxInfoTF := cfg.TaxFormula.TaxInfo()
-	taxInfoCTF := cfg.ContraTaxFormula.TaxInfo()
-	if taxInfoTF != taxInfoCTF {
-		return errors.Wrapf(ErrInvalidTaxInfo, "%v != %v", taxInfoTF, taxInfoCTF)
+	if cfg.TaxFormula.Year() != cfg.ContraTaxFormula.Year() {
+		return errors.Wrap(ErrInvalidTaxArg, "formula/contra-formula tax year mismatch")
+	}
+
+	if cfg.TaxFormula.Region() != cfg.ContraTaxFormula.Region() {
+		return errors.Wrap(ErrInvalidTaxArg, "formula/contra-formula tax region mismatch")
 	}
 
 	if cfg.IncomeCalc == nil {

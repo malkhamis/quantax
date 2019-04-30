@@ -5,35 +5,6 @@ import "github.com/malkhamis/quantax/core"
 // compile-time check for interface implementation
 var _ core.TaxCredit = (*TaxCredit)(nil)
 
-// creditRuleGroup is a type used to encapsulate slice-specific logic
-type creditRuleGroup []core.CreditRule
-
-// makeSrcSetAndGetDuplicates convert 'crg' into a set of unique items and
-// returns duplicates
-func (crg creditRuleGroup) makeSrcSetAndGetDuplicates() (map[string]struct{}, []string) {
-
-	srcSet := make(map[string]struct{})
-	srcDup := make([]string, 0, len(crg))
-
-	for _, crRule := range crg {
-
-		if _, ok := srcSet[crRule.CrSource]; ok {
-			srcDup = append(srcDup, crRule.CrSource)
-			continue
-		}
-
-		srcSet[crRule.CrSource] = struct{}{}
-	}
-
-	return srcSet, srcDup
-}
-
-// creditBySource is used to pass around credit amount alongside its source
-type creditBySource struct {
-	source core.FinancialSource
-	amount float64
-}
-
 // TaxCredit represents an amount owed to tax payer
 type TaxCredit struct {
 	// the initial amount
@@ -48,10 +19,12 @@ type TaxCredit struct {
 	CrRule core.CreditRule
 	// the financer this tax credit belongs to
 	Ref core.Financer
+	// Year returns the tax year from which the tax credit was calculated
+	TaxYear uint
+	// Region returns the tax region for which the tax credit was calculated
+	TaxRegion core.Region
 	// description/reason for the tax credit
 	Desc string
-	// TODO
-	RelatedTaxInfo core.TaxInfo
 }
 
 // Amounts returns the initial, used, and remaining credit amounts
@@ -121,12 +94,20 @@ func (tc *TaxCredit) Description() string {
 	return tc.Desc
 }
 
-// TaxInfo returns the tax information this credit is associated with
-func (tc *TaxCredit) TaxInfo() core.TaxInfo {
+// Year returns the tax year this credit was calculated from
+func (tc *TaxCredit) Year() uint {
 	if tc == nil {
-		return core.TaxInfo{}
+		return 0
 	}
-	return tc.RelatedTaxInfo
+	return tc.TaxYear
+}
+
+// Region returns the tax region this credit was calculated for
+func (tc *TaxCredit) Region() core.Region {
+	if tc == nil {
+		return core.Region("")
+	}
+	return tc.TaxRegion
 }
 
 // ShallowCopy returns a copy of this credit without cloning the references

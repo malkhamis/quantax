@@ -18,7 +18,8 @@ type Calculator struct {
 	crSpouseA        []core.TaxCredit
 	crSpouseB        []core.TaxCredit
 	dependents       []*human.Person
-	taxInfo          core.TaxInfo
+	taxYear          uint
+	taxRegion        core.Region
 }
 
 // NewCalculator returns a new tax calculator for the given tax formula and the
@@ -35,7 +36,8 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 		contraFormula:    cfg.ContraTaxFormula.Clone(),
 		incomeCalculator: cfg.IncomeCalc,
 		finances:         core.NewHouseholdFinancesNop(),
-		taxInfo:          cfg.TaxFormula.TaxInfo(),
+		taxYear:          cfg.TaxFormula.Year(),
+		taxRegion:        cfg.TaxFormula.Region(),
 	}
 
 	return c, nil
@@ -72,7 +74,7 @@ func (c *Calculator) SetCredits(credits []core.TaxCredit) {
 			continue
 		}
 
-		if cr.TaxInfo().TaxRegion != c.taxInfo.TaxRegion {
+		if cr.Region() != c.taxRegion {
 			continue
 		}
 
@@ -100,9 +102,14 @@ func (c *Calculator) SetDependents(dependents ...*human.Person) {
 	}
 }
 
-// TaxInfo TODO..
-func (c *Calculator) TaxInfo() []core.TaxInfo {
-	return []core.TaxInfo{c.formula.TaxInfo()}
+// Year returns the tax year for which this calculator is configured
+func (c *Calculator) Year() uint {
+	return c.taxYear
+}
+
+// Regions returns the tax region for which this calculator is configured
+func (c *Calculator) Regions() []core.Region {
+	return []core.Region{c.taxRegion}
 }
 
 // TaxPayable computes the tax on the net income for the previously set finances

@@ -49,7 +49,8 @@ func (tic testIncomeCalculator) SetFinances(core.Financer) {
 type testTaxFormula struct {
 	onApply    float64
 	onValidate error
-	onTaxInfo  core.TaxInfo
+	onYear     uint
+	onRegion   core.Region
 }
 
 func (tcb *testTaxFormula) Apply(_ float64) float64 {
@@ -61,14 +62,18 @@ func (tcb *testTaxFormula) Validate() error {
 func (tcb *testTaxFormula) Clone() Formula {
 	return tcb
 }
-func (tcb *testTaxFormula) TaxInfo() core.TaxInfo {
-	return tcb.onTaxInfo
+func (tcb *testTaxFormula) Year() uint {
+	return tcb.onYear
+}
+func (tcb *testTaxFormula) Region() core.Region {
+	return tcb.onRegion
 }
 
 type testTaxContraFormula struct {
 	onApply         []*TaxCredit
 	onFilterAndSort []core.TaxCredit
-	onTaxInfo       core.TaxInfo
+	onYear          uint
+	onRegion        core.Region
 	onValidate      error
 }
 
@@ -81,8 +86,11 @@ func (tcf *testTaxContraFormula) FilterAndSort(_ []core.TaxCredit) []core.TaxCre
 func (tcf *testTaxContraFormula) Validate() error {
 	return tcf.onValidate
 }
-func (tcf *testTaxContraFormula) TaxInfo() core.TaxInfo {
-	return tcf.onTaxInfo
+func (tcf *testTaxContraFormula) Region() core.Region {
+	return tcf.onRegion
+}
+func (tcf *testTaxContraFormula) Year() uint {
+	return tcf.onYear
 }
 func (tcf *testTaxContraFormula) Clone() ContraFormula {
 	return tcf
@@ -90,15 +98,15 @@ func (tcf *testTaxContraFormula) Clone() ContraFormula {
 
 type testCreditor struct {
 	onTaxCredit       float64
-	onCrSourceName    string
+	onRule            core.CreditRule
 	onFinancialSource core.FinancialSource
 }
 
 func (tc *testCreditor) TaxCredit(_ *TaxPayer) float64 {
 	return tc.onTaxCredit
 }
-func (tc *testCreditor) CrSourceName() string {
-	return tc.onCrSourceName
+func (tc *testCreditor) Rule() core.CreditRule {
+	return tc.onRule
 }
 func (tc *testCreditor) FinancialSource() core.FinancialSource {
 	return tc.onFinancialSource
@@ -115,7 +123,8 @@ type testTaxCredit struct {
 	onRule              core.CreditRule
 	onReferenceFinancer core.Financer
 	onSource            core.FinancialSource
-	onTaxInfo           core.TaxInfo
+	onYear              uint
+	onRegion            core.Region
 }
 
 func (ttc *testTaxCredit) SetAmounts(_, _, _ float64) {}
@@ -128,8 +137,11 @@ func (ttc *testTaxCredit) Rule() core.CreditRule {
 func (ttc *testTaxCredit) ReferenceFinancer() core.Financer {
 	return ttc.onReferenceFinancer
 }
-func (ttc *testTaxCredit) TaxInfo() core.TaxInfo {
-	return ttc.onTaxInfo
+func (ttc *testTaxCredit) Region() core.Region {
+	return ttc.onRegion
+}
+func (ttc *testTaxCredit) Year() uint {
+	return ttc.onYear
 }
 func (ttc *testTaxCredit) Description() string {
 	return "test"

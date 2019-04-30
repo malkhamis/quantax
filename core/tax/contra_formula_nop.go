@@ -21,6 +21,9 @@ func (NopContraFormula) Clone() ContraFormula {
 func (NopContraFormula) Validate() error {
 	return nil
 }
-func (NopContraFormula) TaxInfo() core.TaxInfo {
-	return core.TaxInfo{}
+func (NopContraFormula) Year() uint {
+	return 0
+}
+func (NopContraFormula) Region() core.Region {
+	return core.Region("")
 }
