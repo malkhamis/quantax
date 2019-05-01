@@ -30,7 +30,7 @@ package tax
 //
 // 	cfg := CalcConfig{
 // 		TaxFormula:       formula,
-// 		ContraTaxFormula: &testTaxContraFormula{},
+// 		ContraTaxFormula: &testContraTaxFormula{},
 // 		IncomeCalc:       incCalc,
 // 	}
 //

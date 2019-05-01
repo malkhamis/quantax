@@ -8,7 +8,7 @@ import (
 
 var (
 	_ Formula                = (*testTaxFormula)(nil)
-	_ ContraFormula          = (*testTaxContraFormula)(nil)
+	_ ContraFormula          = (*testContraTaxFormula)(nil)
 	_ Creditor               = (*testCreditor)(nil)
 	_ core.IncomeCalculator  = (*testIncomeCalculator)(nil)
 	_ core.HouseholdFinances = (*testHouseholdFinances)(nil)
@@ -69,7 +69,7 @@ func (tcb *testTaxFormula) Region() core.Region {
 	return tcb.onRegion
 }
 
-type testTaxContraFormula struct {
+type testContraTaxFormula struct {
 	onApply         []*TaxCredit
 	onFilterAndSort []core.TaxCredit
 	onYear          uint
@@ -77,22 +77,22 @@ type testTaxContraFormula struct {
 	onValidate      error
 }
 
-func (tcf *testTaxContraFormula) Apply(_ *TaxPayer) []*TaxCredit {
+func (tcf *testContraTaxFormula) Apply(_ *TaxPayer) []*TaxCredit {
 	return tcf.onApply
 }
-func (tcf *testTaxContraFormula) FilterAndSort(_ []core.TaxCredit) []core.TaxCredit {
+func (tcf *testContraTaxFormula) FilterAndSort(_ []core.TaxCredit) []core.TaxCredit {
 	return tcf.onFilterAndSort
 }
-func (tcf *testTaxContraFormula) Validate() error {
+func (tcf *testContraTaxFormula) Validate() error {
 	return tcf.onValidate
 }
-func (tcf *testTaxContraFormula) Region() core.Region {
+func (tcf *testContraTaxFormula) Region() core.Region {
 	return tcf.onRegion
 }
-func (tcf *testTaxContraFormula) Year() uint {
+func (tcf *testContraTaxFormula) Year() uint {
 	return tcf.onYear
 }
-func (tcf *testTaxContraFormula) Clone() ContraFormula {
+func (tcf *testContraTaxFormula) Clone() ContraFormula {
 	return tcf
 }
 

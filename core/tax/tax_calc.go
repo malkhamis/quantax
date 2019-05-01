@@ -48,7 +48,7 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 // Changes to the given finances after calling this function will affect future
 // calculations. If finances is nil or both spouses' finances are nil, a noop
 // instance is set
-func (c *Calculator) SetFinances(f core.HouseholdFinances) {
+func (c *Calculator) SetFinances(f core.HouseholdFinances, credits ...core.TaxCredit) {
 
 	if f == nil {
 		f = core.NewHouseholdFinancesNop()
@@ -57,12 +57,13 @@ func (c *Calculator) SetFinances(f core.HouseholdFinances) {
 	}
 
 	c.finances = f
+	c.setCredits(credits)
 }
 
-// SetCredits stores relevent credits from the given credits in this calculator.
+// setCredits stores relevent credits from the given credits in this calculator.
 // Subsequent calls to other calculator functions may or may not be influenced
 // by these credits.
-func (c *Calculator) SetCredits(credits []core.TaxCredit) {
+func (c *Calculator) setCredits(credits []core.TaxCredit) {
 
 	for _, cr := range credits {
 
@@ -75,6 +76,10 @@ func (c *Calculator) SetCredits(credits []core.TaxCredit) {
 		}
 
 		if cr.Region() != c.taxRegion {
+			continue
+		}
+
+		if cr.Year() > c.taxYear {
 			continue
 		}
 
