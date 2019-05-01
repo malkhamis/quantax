@@ -23,7 +23,9 @@ func NewHouseholdFinancesNop() HouseholdFinances {
 	}
 }
 
-type financerNop struct{}
+type financerNop struct {
+	_ byte // to guarantee a new instance
+}
 
 func (nop *financerNop) TotalAmount(_ ...FinancialSource) float64 {
 	return 0
@@ -41,7 +43,7 @@ func (nop *financerNop) AllSources() []FinancialSource {
 	return nil
 }
 func (nop *financerNop) Clone() FinanceMutator {
-	return nop
+	return &financerNop{}
 }
 func (nop *financerNop) Version() uint64 {
 	return 0

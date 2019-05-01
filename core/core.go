@@ -58,12 +58,7 @@ type TaxCalculator interface {
 	// calculator. Subsequent calls to other functions are based on the
 	// the given finances. Changes to the given finances after calling
 	// this function should affect future calculations
-	SetFinances(HouseholdFinances)
-	// SetCredits stores the given credits in the underlying tax calculator.
-	// Subsequent calls to other functions will be influenced by the given tax
-	// credits. Treatment of given credits is implementation-specific. Ideally,
-	// These given credits are originated by the same tax calculator.
-	SetCredits([]TaxCredit)
+	SetFinances(HouseholdFinances, ...TaxCredit)
 	// SetDependents sets the dependents which the calculator might use for tax-
 	// related calculations
 	SetDependents(...*human.Person)
