@@ -13,6 +13,8 @@ var (
 	ErrNoContraFormula = errors.New("no contra-formula given/set")
 	ErrNoIncCalc       = errors.New("no income calculator given")
 	ErrInvalidTaxArg   = errors.New("invalid tax arguments")
+	ErrTooManyYears    = errors.New("too many tax years")
+	ErrNoCalc          = errors.New("no tax calculator given")
 	ErrNoCreditor      = errors.New("no creditor given/set")
 	ErrDupCreditSource = errors.New("duplicate credit sources are not allowed")
 )

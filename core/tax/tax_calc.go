@@ -57,7 +57,7 @@ func (c *Calculator) Regions() []core.Region {
 // calls to other calculator functions will be based on the the given finances.
 // Changes to the given finances after calling this function will affect future
 // calculations. If finances is nil or both spouses' finances are nil, a noop
-// instance is set
+// instance is set. The given finances are never modified in the calculator
 func (c *Calculator) SetFinances(f core.HouseholdFinances, credits ...core.TaxCredit) {
 
 	if f == nil {
@@ -129,8 +129,18 @@ func (c *Calculator) totalCredits(netIncomeA, netIncomeB float64) (totalCrA, tot
 		c.contraFormula.Apply(taxPayerB),
 	).typecast()
 
-	totalCrA = append(c.crSpouseA, newCrA...)
-	totalCrB = append(c.crSpouseB, newCrB...)
+	crSpouseA := make([]core.TaxCredit, len(c.crSpouseA))
+	for i, cr := range c.crSpouseA {
+		crSpouseA[i] = cr.ShallowCopy()
+	}
+
+	crSpouseB := make([]core.TaxCredit, len(c.crSpouseB))
+	for i, cr := range c.crSpouseB {
+		crSpouseB[i] = cr.ShallowCopy()
+	}
+
+	totalCrA = append(crSpouseA, newCrA...)
+	totalCrB = append(crSpouseB, newCrB...)
 
 	c.contraFormula.FilterAndSort(&totalCrA)
 	c.contraFormula.FilterAndSort(&totalCrB)
@@ -143,6 +153,7 @@ func (c *Calculator) totalCredits(netIncomeA, netIncomeB float64) (totalCrA, tot
 // The credits are used one by one in the same given order
 func (c *Calculator) netPayableTax(taxAmount float64, credits []core.TaxCredit) float64 {
 
+	// FIXME: this is a bit complex
 	for _, cr := range credits {
 
 		ruleType := cr.Rule().Type
@@ -166,11 +177,13 @@ func (c *Calculator) netPayableTax(taxAmount float64, credits []core.TaxCredit) 
 		// reached at most once: 0 < taxAmount < remaining
 		if ruleType == core.CrRuleTypeNotCarryForward {
 			cr.SetAmounts(initial, used+taxAmount, 0)
-		} else { // core.CrRuleTypeCanCarryForward
+			taxAmount = 0.0
+		} else if ruleType == core.CrRuleTypeCanCarryForward {
 			cr.SetAmounts(initial, used+taxAmount, remaining-taxAmount)
+			taxAmount = 0.0
 		}
-		taxAmount = 0.0
 
+		// we only reach here if ruleType is unknown which is a nop
 	}
 
 	return taxAmount

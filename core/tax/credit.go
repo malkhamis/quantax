@@ -107,7 +107,8 @@ func (tc *TaxCredit) shallowCopy() *TaxCredit {
 	if tc == nil {
 		return nil
 	}
-	return &(*tc)
+	clone := *tc
+	return &(clone)
 }
 
 // taxCreditGroup is a type used to encapsulate slice-specific logic

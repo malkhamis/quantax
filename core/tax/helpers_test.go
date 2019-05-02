@@ -78,7 +78,12 @@ type testContraTaxFormula struct {
 }
 
 func (tcf *testContraTaxFormula) Apply(_ *TaxPayer) []*TaxCredit {
-	return tcf.onApply
+
+	clone := make([]*TaxCredit, len(tcf.onApply))
+	for i, cr := range tcf.onApply {
+		clone[i] = cr.shallowCopy()
+	}
+	return clone
 }
 func (tcf *testContraTaxFormula) FilterAndSort(_ *[]core.TaxCredit) {
 	if tcf.onFilterAndSort != nil {
