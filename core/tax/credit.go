@@ -135,17 +135,3 @@ func (tcg taxCreditGroup) typecast() []core.TaxCredit {
 	}
 	return typed
 }
-
-// clone returns a copy of this tax credit group
-func (tcg taxCreditGroup) clone() []*TaxCredit {
-
-	if tcg == nil {
-		return nil
-	}
-
-	c := make([]*TaxCredit, len(tcg))
-	for i, cr := range tcg {
-		c[i] = cr.shallowCopy()
-	}
-	return c
-}
