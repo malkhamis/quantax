@@ -45,22 +45,6 @@ func (tc *TaxCredit) SetAmounts(initial, used, remaining float64) {
 	tc.AmountRemaining = remaining
 }
 
-// RemainingAmount is the remaining credit amount owed to tax payer
-func (tc *TaxCredit) RemainingAmount() float64 {
-	if tc == nil {
-		return 0
-	}
-	return tc.AmountRemaining
-}
-
-// UsedAmount is the amount previously used to pay the tax payer
-func (tc *TaxCredit) UsedAmount() float64 {
-	if tc == nil {
-		return 0
-	}
-	return tc.AmountUsed
-}
-
 // Source is the financial source of this tax credit. If the credit is
 // not associated with a specific source, it should return 'SrcNone'
 func (tc *TaxCredit) Source() core.FinancialSource {
@@ -112,15 +96,18 @@ func (tc *TaxCredit) Region() core.Region {
 
 // ShallowCopy returns a copy of this credit without cloning the references
 func (tc *TaxCredit) ShallowCopy() core.TaxCredit {
+	if tc == nil {
+		return nil
+	}
 	return tc.shallowCopy()
 }
 
 // shallowCopy returns a copy of this tax credit instance
-func (cr *TaxCredit) shallowCopy() *TaxCredit {
-	if cr == nil {
+func (tc *TaxCredit) shallowCopy() *TaxCredit {
+	if tc == nil {
 		return nil
 	}
-	return &(*cr)
+	return &(*tc)
 }
 
 // taxCreditGroup is a type used to encapsulate slice-specific logic
