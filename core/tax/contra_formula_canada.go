@@ -62,7 +62,11 @@ func (cf *CanadianContraFormula) Apply(taxPayer *TaxPayer) []*TaxCredit {
 // FilterAndSort removes tax credits whose credit source names aren't recognized
 // by this contra formula and sort them according to their priority of use. It
 // assumes that cf was validated before use.
-func (cf *CanadianContraFormula) FilterAndSort(credits []core.TaxCredit) []core.TaxCredit {
+func (cf *CanadianContraFormula) FilterAndSort(credits *[]core.TaxCredit) {
+
+	if credits == nil {
+		return
+	}
 
 	// FIXME: we can avoid this by having NewCanadaianContraFormula
 	// to initialize an internal variable containing the same info
@@ -72,8 +76,8 @@ func (cf *CanadianContraFormula) FilterAndSort(credits []core.TaxCredit) []core.
 		priority[creditor.Rule()] = i
 	}
 
-	filtered := make([]core.TaxCredit, 0, len(credits))
-	for _, cr := range credits {
+	filtered := make([]core.TaxCredit, 0, len(*credits))
+	for _, cr := range *credits {
 
 		if cr == nil {
 			continue
@@ -93,7 +97,7 @@ func (cf *CanadianContraFormula) FilterAndSort(credits []core.TaxCredit) []core.
 		return priority[iSrc] < priority[jSrc]
 	})
 
-	return filtered
+	*credits = filtered
 }
 
 // Validate checks if the formula is valid for use. It ensures that there are no

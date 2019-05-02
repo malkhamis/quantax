@@ -19,7 +19,7 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "valid",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
+				IncomeCalc:       &testIncomeCalculator{},
 				TaxFormula:       &testTaxFormula{},
 				ContraTaxFormula: &testContraTaxFormula{},
 			},
@@ -29,7 +29,7 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "invalid-tax-formula",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
+				IncomeCalc:       &testIncomeCalculator{},
 				TaxFormula:       &testTaxFormula{onValidate: simulatedErr},
 				ContraTaxFormula: &testContraTaxFormula{},
 			},
@@ -39,7 +39,7 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "invalid-contratax-formula",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
+				IncomeCalc:       &testIncomeCalculator{},
 				TaxFormula:       &testTaxFormula{},
 				ContraTaxFormula: &testContraTaxFormula{onValidate: simulatedErr},
 			},
@@ -49,7 +49,7 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "nil-tax-formula",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
+				IncomeCalc:       &testIncomeCalculator{},
 				TaxFormula:       nil,
 				ContraTaxFormula: &testContraTaxFormula{},
 			},
@@ -59,7 +59,7 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "nil-contratax-formula",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
+				IncomeCalc:       &testIncomeCalculator{},
 				TaxFormula:       &testTaxFormula{},
 				ContraTaxFormula: nil,
 			},
@@ -69,7 +69,7 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "invalid-contratax-formula",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
+				IncomeCalc:       &testIncomeCalculator{},
 				TaxFormula:       nil,
 				ContraTaxFormula: &testContraTaxFormula{},
 			},
@@ -78,7 +78,7 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "year-mismatch",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
+				IncomeCalc:       &testIncomeCalculator{},
 				TaxFormula:       &testTaxFormula{onYear: 2019},
 				ContraTaxFormula: &testContraTaxFormula{onYear: 2020},
 			},
@@ -87,7 +87,7 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "region-mismatch",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
+				IncomeCalc:       &testIncomeCalculator{},
 				TaxFormula:       &testTaxFormula{onRegion: core.Region("Somewhere")},
 				ContraTaxFormula: &testContraTaxFormula{onRegion: core.Region("NoMan")},
 			},

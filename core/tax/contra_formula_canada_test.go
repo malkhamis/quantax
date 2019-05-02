@@ -111,20 +111,15 @@ func TestCanadianContraFormula_FilterAndSort(t *testing.T) {
 		onRule: core.CreditRule{CrSource: "5000", Type: 0},
 	}
 
-	credits := []core.TaxCredit{cr3000, nil, cr2000, cr5000, cr1000, noRuleCr, cr4000}
-	actual := cf.FilterAndSort(credits)
-	expected := []core.TaxCredit{cr1000, cr2000, cr3000, cr5000, cr4000}
-
-	diff := deep.Equal(actual, expected)
+	credits := []core.TaxCredit{cr3000, nil, cr2000, cr5000, cr1000, cr2000, noRuleCr, cr4000}
+	cf.FilterAndSort(&credits)
+	expected := []core.TaxCredit{cr1000, cr2000, cr2000, cr3000, cr5000, cr4000}
+	diff := deep.Equal(credits, expected)
 	if diff != nil {
 		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
 	}
 
-	actual = cf.FilterAndSort(nil)
-	diff = deep.Equal(actual, []core.TaxCredit{})
-	if diff != nil {
-		t.Error("actual does not match expected\n" + strings.Join(diff, "\n"))
-	}
+	cf.FilterAndSort(nil) // should not panic
 }
 
 func TestCanadianContraFormula_Validate(t *testing.T) {

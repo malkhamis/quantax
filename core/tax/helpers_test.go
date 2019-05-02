@@ -33,16 +33,16 @@ type testIncomeCalculator struct {
 	onTotalIncome     float64
 }
 
-func (tic testIncomeCalculator) TotalIncome() float64 {
+func (tic *testIncomeCalculator) TotalIncome() float64 {
 	return tic.onTotalIncome
 }
-func (tic testIncomeCalculator) TotalDeductions() float64 {
+func (tic *testIncomeCalculator) TotalDeductions() float64 {
 	return tic.onTotalDeductions
 }
-func (tic testIncomeCalculator) NetIncome() float64 {
+func (tic *testIncomeCalculator) NetIncome() float64 {
 	return tic.onNetIncome
 }
-func (tic testIncomeCalculator) SetFinances(core.Financer) {
+func (tic *testIncomeCalculator) SetFinances(core.Financer) {
 
 }
 
@@ -71,7 +71,7 @@ func (tcb *testTaxFormula) Region() core.Region {
 
 type testContraTaxFormula struct {
 	onApply         []*TaxCredit
-	onFilterAndSort []core.TaxCredit
+	onFilterAndSort func()
 	onYear          uint
 	onRegion        core.Region
 	onValidate      error
@@ -80,8 +80,10 @@ type testContraTaxFormula struct {
 func (tcf *testContraTaxFormula) Apply(_ *TaxPayer) []*TaxCredit {
 	return tcf.onApply
 }
-func (tcf *testContraTaxFormula) FilterAndSort(_ []core.TaxCredit) []core.TaxCredit {
-	return tcf.onFilterAndSort
+func (tcf *testContraTaxFormula) FilterAndSort(_ *[]core.TaxCredit) {
+	if tcf.onFilterAndSort != nil {
+		tcf.onFilterAndSort()
+	}
 }
 func (tcf *testContraTaxFormula) Validate() error {
 	return tcf.onValidate

@@ -196,89 +196,182 @@ func TestCalculator_Regions(t *testing.T) {
 	}
 }
 
-//
-// func TestCalculator_TaxPayable(t *testing.T) {
-//
-// 	incCalc := testIncomeCalculator{onTotalIncome: 3000.0}
-// 	formula := testTaxFormula{onApply: incCalc.TotalIncome() / 2.0}
-// 	cformula := &testContraTaxFormula{
-// 		onApply: []*taxCredit{
-// 			&taxCredit{
-// 				amount: 50,
-// 				rule:   CreditRule{Source: "tuition", Type: CrRuleTypeCashable},
-// 			},
-// 		},
-// 	}
-//
-// 	cfg := CalcConfig{
-// 		TaxFormula:       formula,
-// 		ContraTaxFormula: cformula,
-// 		IncomeCalc:       incCalc,
-// 	}
-//
-// 	c, err := NewCalculator(cfg)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	c.SetFinances(core.NewEmptyIndividualFinances())
-// 	actualTax, actualCr := c.TaxPayable()
-//
-// 	expectedTax := formula.onApply - 50.0
-// 	expectedCr := []core.TaxCredit{
-// 		&taxCredit{
-// 			owner:  c,
-// 			amount: 0.0,
-// 			rule:   CreditRule{Source: "tuition", Type: CrRuleTypeCashable},
-// 		},
-// 	}
-//
-// 	if actualTax != expectedTax {
-// 		t.Fatalf("unexpected tax\nwant: %.2f\n got: %.2f", expectedTax, actualTax)
-// 	}
-//
-// 	diff := deep.Equal(actualCr, expectedCr)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
-// 	}
-// }
-//
-// func TestCalculator_netPayableTax(t *testing.T) {
-//
-// 	crGroup := []*taxCredit{
-// 		&taxCredit{amount: 5000, rule: CreditRule{Source: "1", Type: CrRuleTypeCashable}},
-// 		&taxCredit{amount: 4000, rule: CreditRule{Source: "2", Type: CrRuleTypeNotCarryForward}},
-// 		&taxCredit{amount: 2000, rule: CreditRule{Source: "3", Type: CrRuleTypeNotCarryForward}},
-// 		&taxCredit{amount: 1000, rule: CreditRule{Source: "4", Type: CrRuleTypeCashable}},
-// 		&taxCredit{amount: 500, rule: CreditRule{Source: "5", Type: CrRuleTypeNotCarryForward}},
-// 		&taxCredit{amount: 500, rule: CreditRule{Source: "6", Type: CrRuleTypeCanCarryForward}},
-// 	}
-//
-// 	actualNetTax, actualRemainingCrs := (&Calculator{}).netPayableTax(10000, crGroup)
-// 	expectedNetTax := -1000.0
-// 	expectedRemainingCrs := []*taxCredit{
-// 		&taxCredit{amount: 0, rule: CreditRule{Source: "1", Type: CrRuleTypeCashable}},
-// 		&taxCredit{amount: 0, rule: CreditRule{Source: "2", Type: CrRuleTypeNotCarryForward}},
-// 		&taxCredit{amount: 0, rule: CreditRule{Source: "3", Type: CrRuleTypeNotCarryForward}},
-// 		&taxCredit{amount: 0, rule: CreditRule{Source: "4", Type: CrRuleTypeCashable}},
-// 		&taxCredit{amount: 0, rule: CreditRule{Source: "5", Type: CrRuleTypeNotCarryForward}},
-// 		&taxCredit{amount: 500, rule: CreditRule{Source: "6", Type: CrRuleTypeCanCarryForward}},
-// 	}
-//
-// 	if actualNetTax != expectedNetTax {
-// 		t.Errorf(
-// 			"actual net tax does not match expected\nwant: %.2f\ngot: %.2f",
-// 			expectedNetTax, actualNetTax,
-// 		)
-// 	}
-//
-// 	diff := deep.Equal(actualRemainingCrs, expectedRemainingCrs)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
-// 	}
-//
-// }
-//
+func TestCalculator_TaxPayable(t *testing.T) {
+
+	dummyCr := &TaxCredit{AmountInitial: 123, AmountUsed: 123}
+	incCalc := &testIncomeCalculator{onTotalIncome: 3000.0}
+	formula := &testTaxFormula{onApply: incCalc.TotalIncome() / 2.0}
+	cformula := &testContraTaxFormula{onApply: []*TaxCredit{dummyCr}}
+
+	cfg := CalcConfig{
+		TaxFormula:       formula,
+		ContraTaxFormula: cformula,
+		IncomeCalc:       incCalc,
+	}
+
+	c, err := NewCalculator(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actualA, actualB, actualCr := c.TaxPayable()
+	if actualA != 1500.0 {
+		t.Errorf("actual does not match expected\nwant: %.2f\n got: %.2f", 1500.0, actualA)
+	}
+	if actualB != 1500.0 {
+		t.Errorf("actual does not match expected\nwant: %.2f\n got: %.2f", 1500.0, actualB)
+	}
+
+	diff := deep.Equal(actualCr, []core.TaxCredit{dummyCr, dummyCr})
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+}
+
+func TestCalculator_netPayableTax(t *testing.T) {
+
+	crBefore := []core.TaxCredit{
+		&TaxCredit{AmountInitial: 5000, AmountRemaining: 5000, CrRule: core.CreditRule{Type: core.CrRuleTypeCashable}},
+		&TaxCredit{AmountInitial: 4000, AmountRemaining: 4000, CrRule: core.CreditRule{Type: core.CrRuleTypeNotCarryForward}},
+		&TaxCredit{AmountInitial: 2000, AmountRemaining: 2000, CrRule: core.CreditRule{Type: core.CrRuleTypeNotCarryForward}},
+		&TaxCredit{AmountInitial: 1000, AmountRemaining: 1000, CrRule: core.CreditRule{Type: core.CrRuleTypeCashable}},
+		&TaxCredit{AmountInitial: 500, AmountRemaining: 500, CrRule: core.CreditRule{Type: core.CrRuleTypeNotCarryForward}},
+		&TaxCredit{AmountInitial: 500, AmountRemaining: 500, CrRule: core.CreditRule{Type: core.CrRuleTypeCanCarryForward}},
+	}
+
+	crAfter := []core.TaxCredit{
+		&TaxCredit{AmountInitial: 5000, AmountRemaining: 0, AmountUsed: 5000, CrRule: core.CreditRule{Type: core.CrRuleTypeCashable}},
+		&TaxCredit{AmountInitial: 4000, AmountRemaining: 0, AmountUsed: 4000, CrRule: core.CreditRule{Type: core.CrRuleTypeNotCarryForward}},
+		&TaxCredit{AmountInitial: 2000, AmountRemaining: 0, AmountUsed: 1000, CrRule: core.CreditRule{Type: core.CrRuleTypeNotCarryForward}},
+		&TaxCredit{AmountInitial: 1000, AmountRemaining: 0, AmountUsed: 1000, CrRule: core.CreditRule{Type: core.CrRuleTypeCashable}},
+		&TaxCredit{AmountInitial: 500, AmountRemaining: 0, AmountUsed: 0, CrRule: core.CreditRule{Type: core.CrRuleTypeNotCarryForward}},
+		&TaxCredit{AmountInitial: 500, AmountRemaining: 500, AmountUsed: 0, CrRule: core.CreditRule{Type: core.CrRuleTypeCanCarryForward}},
+	}
+
+	actualNetTax := (&Calculator{}).netPayableTax(10000, crBefore)
+
+	expectedNetTax := -1000.0
+	if actualNetTax != expectedNetTax {
+		t.Errorf(
+			"actual net tax does not match expected\nwant: %.2f\ngot: %.2f",
+			expectedNetTax, actualNetTax,
+		)
+	}
+
+	diff := deep.Equal(crBefore, crAfter)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+}
+
+func TestCalculator_netPayableTax_CanCarryForward_amounts(t *testing.T) {
+
+	crBefore := []core.TaxCredit{
+		&TaxCredit{
+			AmountInitial:   500,
+			AmountRemaining: 500,
+			CrRule: core.CreditRule{
+				Type: core.CrRuleTypeCanCarryForward,
+			},
+		},
+	}
+
+	crAfter := []core.TaxCredit{
+		&TaxCredit{
+			AmountInitial:   500,
+			AmountRemaining: 250,
+			AmountUsed:      250,
+			CrRule: core.CreditRule{
+				Type: core.CrRuleTypeCanCarryForward,
+			},
+		},
+	}
+
+	actualNetTax := (&Calculator{}).netPayableTax(250, crBefore)
+
+	expectedNetTax := 0.0
+	if actualNetTax != expectedNetTax {
+		t.Errorf(
+			"actual net tax does not match expected\nwant: %.2f\ngot: %.2f",
+			expectedNetTax, actualNetTax,
+		)
+	}
+
+	diff := deep.Equal(crBefore, crAfter)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+}
+
+func TestCalculator_netIncome(t *testing.T) {
+
+	calc := &Calculator{
+		finances:         core.NewHouseholdFinancesNop(),
+		incomeCalculator: &testIncomeCalculator{onNetIncome: 1000},
+	}
+
+	actualA, actualB := calc.netIncome()
+	expected := 1000.0
+	if actualA != expected {
+		t.Errorf(
+			"actual does not match expected\nwant: %.2f\n got: %.2f", expected, actualA)
+	}
+	if actualB != expected {
+		t.Errorf(
+			"actual does not match expected\nwant: %.2f\n got: %.2f", expected, actualB)
+	}
+}
+
+func TestCalculator_totalTax(t *testing.T) {
+
+	calc := &Calculator{
+		finances: core.NewHouseholdFinancesNop(),
+		formula:  &testTaxFormula{onApply: 1000.0},
+	}
+
+	actualA, actualB := calc.totalTax(0, 0)
+	expected := 1000.0
+	if actualA != expected {
+		t.Errorf(
+			"actual does not match expected\nwant: %.2f\n got: %.2f", expected, actualA)
+	}
+	if actualB != expected {
+		t.Errorf(
+			"actual does not match expected\nwant: %.2f\n got: %.2f", expected, actualB)
+	}
+}
+
+func TestCalculator_totalCredits(t *testing.T) {
+
+	crSpouseA := &testTaxCredit{onRegion: core.Region(t.Name())}
+	crSpouseB := &testTaxCredit{onRegion: core.Region("another")}
+	simulatedCr := []*TaxCredit{{}, {}}
+	calc := &Calculator{
+		finances:  core.NewHouseholdFinancesNop(),
+		crSpouseA: []core.TaxCredit{crSpouseA},
+		crSpouseB: []core.TaxCredit{crSpouseB},
+		contraFormula: &testContraTaxFormula{
+			onApply: simulatedCr,
+		},
+	}
+
+	actualA, actualB := calc.totalCredits(0, 0)
+
+	expectedA := []core.TaxCredit{crSpouseA, simulatedCr[0], simulatedCr[1]}
+	diff := deep.Equal(actualA, expectedA)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	expectedB := []core.TaxCredit{crSpouseB, simulatedCr[0], simulatedCr[1]}
+	diff = deep.Equal(actualB, expectedB)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+}
 
 func TestCalculator_makeTaxPayers_couple(t *testing.T) {
 

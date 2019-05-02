@@ -7,14 +7,14 @@ var (
 	_ ContraFormula = (NopContraFormula)(NopContraFormula{})
 )
 
-type NopContraFormula struct{}
+type NopContraFormula struct {
+	_ byte // to guarantee a new instance
+}
 
 func (NopContraFormula) Apply(*TaxPayer) []*TaxCredit {
 	return nil
 }
-func (NopContraFormula) FilterAndSort([]core.TaxCredit) []core.TaxCredit {
-	return nil
-}
+func (NopContraFormula) FilterAndSort(*[]core.TaxCredit) {}
 func (NopContraFormula) Clone() ContraFormula {
 	return NopContraFormula{}
 }

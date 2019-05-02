@@ -38,7 +38,7 @@ type ContraFormula interface {
 	// FilterAndSort removes tax credits that are not recognized by this contra-
 	// formula and sort the remaining items in a priority-of-use sequence, where
 	// the first item has the highest priority of use before the next one
-	FilterAndSort([]core.TaxCredit) []core.TaxCredit
+	FilterAndSort(*[]core.TaxCredit)
 	// Clone returns a copy of this contra-formula
 	Clone() ContraFormula
 	// Year is the tax year this contra formula is associated with

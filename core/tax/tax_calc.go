@@ -43,6 +43,16 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 	return c, nil
 }
 
+// Year returns the tax year for which this calculator is configured
+func (c *Calculator) Year() uint {
+	return c.taxYear
+}
+
+// Regions returns the tax region for which this calculator is configured
+func (c *Calculator) Regions() []core.Region {
+	return []core.Region{c.taxRegion}
+}
+
 // SetFinances stores the given financial data in this calculator. Subsequent
 // calls to other calculator functions will be based on the the given finances.
 // Changes to the given finances after calling this function will affect future
@@ -60,40 +70,6 @@ func (c *Calculator) SetFinances(f core.HouseholdFinances, credits ...core.TaxCr
 	c.setCredits(credits)
 }
 
-// setCredits stores relevent credits from the given credits in this calculator.
-// Subsequent calls to other calculator functions may or may not be influenced
-// by these credits.
-func (c *Calculator) setCredits(credits []core.TaxCredit) {
-
-	for _, cr := range credits {
-
-		if cr == nil {
-			continue
-		}
-
-		if _, _, remaining := cr.Amounts(); remaining == 0 {
-			continue
-		}
-
-		if cr.Region() != c.taxRegion {
-			continue
-		}
-
-		if cr.Year() > c.taxYear {
-			continue
-		}
-
-		ref := cr.ReferenceFinancer()
-		if ref == c.finances.SpouseA() {
-			c.crSpouseA = append(c.crSpouseA, cr)
-		} else if ref == c.finances.SpouseB() {
-			c.crSpouseB = append(c.crSpouseB, cr)
-		}
-
-	}
-
-}
-
 // SetDependents sets the dependents which the calculator might use for tax-
 // related calculations
 func (c *Calculator) SetDependents(dependents ...*human.Person) {
@@ -105,16 +81,6 @@ func (c *Calculator) SetDependents(dependents ...*human.Person) {
 		}
 		c.dependents = append(c.dependents, d)
 	}
-}
-
-// Year returns the tax year for which this calculator is configured
-func (c *Calculator) Year() uint {
-	return c.taxYear
-}
-
-// Regions returns the tax region for which this calculator is configured
-func (c *Calculator) Regions() []core.Region {
-	return []core.Region{c.taxRegion}
 }
 
 // TaxPayable computes the tax on the net income for the previously set finances
@@ -166,14 +132,15 @@ func (c *Calculator) totalCredits(netIncomeA, netIncomeB float64) (totalCrA, tot
 	totalCrA = append(c.crSpouseA, newCrA...)
 	totalCrB = append(c.crSpouseB, newCrB...)
 
-	c.contraFormula.FilterAndSort(totalCrA)
-	c.contraFormula.FilterAndSort(totalCrB)
+	c.contraFormula.FilterAndSort(&totalCrA)
+	c.contraFormula.FilterAndSort(&totalCrB)
 
 	return totalCrA, totalCrB
 }
 
 // netPayableTax returns the payable tax after using the given credits. It also
-// sets new values for the given tax credits according to how they were used
+// sets new values for the given tax credits according to how they were used.
+// The credits are used one by one in the same given order
 func (c *Calculator) netPayableTax(taxAmount float64, credits []core.TaxCredit) float64 {
 
 	for _, cr := range credits {
@@ -199,7 +166,7 @@ func (c *Calculator) netPayableTax(taxAmount float64, credits []core.TaxCredit) 
 		// reached at most once: 0 < taxAmount < remaining
 		if ruleType == core.CrRuleTypeNotCarryForward {
 			cr.SetAmounts(initial, used+taxAmount, 0)
-		} else {
+		} else { // core.CrRuleTypeCanCarryForward
 			cr.SetAmounts(initial, used+taxAmount, remaining-taxAmount)
 		}
 		taxAmount = 0.0
@@ -207,6 +174,40 @@ func (c *Calculator) netPayableTax(taxAmount float64, credits []core.TaxCredit) 
 	}
 
 	return taxAmount
+}
+
+// setCredits stores relevent credits from the given credits in this calculator.
+// Subsequent calls to other calculator functions may or may not be influenced
+// by these credits.
+func (c *Calculator) setCredits(credits []core.TaxCredit) {
+
+	for _, cr := range credits {
+
+		if cr == nil {
+			continue
+		}
+
+		if _, _, remaining := cr.Amounts(); remaining == 0 {
+			continue
+		}
+
+		if cr.Region() != c.taxRegion {
+			continue
+		}
+
+		if cr.Year() > c.taxYear {
+			continue
+		}
+
+		ref := cr.ReferenceFinancer()
+		if ref == c.finances.SpouseA() {
+			c.crSpouseA = append(c.crSpouseA, cr)
+		} else if ref == c.finances.SpouseB() {
+			c.crSpouseB = append(c.crSpouseB, cr)
+		}
+
+	}
+
 }
 
 // makeTaxPayers returns dual tax payers from the given net income amounts and
