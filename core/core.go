@@ -61,7 +61,7 @@ type TaxCalculator interface {
 	SetFinances(HouseholdFinances, []TaxCredit)
 	// SetDependents sets the dependents which the calculator might use for tax-
 	// related calculations
-	SetDependents(...*human.Person)
+	SetDependents([]*human.Person)
 	// TaxYear returns the tax year of the calculator
 	Year() uint
 	// Regions is the tax regions of the calculator. The underlying implementation

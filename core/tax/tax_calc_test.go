@@ -197,7 +197,7 @@ func TestCalculator_SetDependents(t *testing.T) {
 
 	dep := &human.Person{AgeMonths: 10, Name: t.Name()}
 	calc := new(Calculator)
-	calc.SetDependents(nil, nil, dep)
+	calc.SetDependents([]*human.Person{nil, nil, dep})
 	diff := deep.Equal(calc.dependents, []*human.Person{dep})
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))

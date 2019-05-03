@@ -128,7 +128,7 @@ func TestAggregator_SetDependents(t *testing.T) {
 		&human.Person{Name: "test2"},
 	}
 
-	agg.SetDependents(deps...)
+	agg.SetDependents(deps)
 
 	diff := deep.Equal(c0.dependents, deps)
 	if diff != nil {

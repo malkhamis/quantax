@@ -69,9 +69,9 @@ func (agg *Aggregator) SetFinances(f core.HouseholdFinances, credits []core.TaxC
 
 // SetDependents sets the dependents which the calculator might use for tax-
 // related calculations
-func (agg *Aggregator) SetDependents(deps ...*human.Person) {
+func (agg *Aggregator) SetDependents(deps []*human.Person) {
 	for _, c := range agg.calculators {
-		c.SetDependents(deps...)
+		c.SetDependents(deps)
 	}
 }
 

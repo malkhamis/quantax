@@ -71,7 +71,7 @@ func (c *Calculator) SetFinances(f core.HouseholdFinances, credits []core.TaxCre
 
 // SetDependents sets the dependents which the calculator might use for tax-
 // related calculations
-func (c *Calculator) SetDependents(dependents ...*human.Person) {
+func (c *Calculator) SetDependents(dependents []*human.Person) {
 
 	c.dependents = make([]*human.Person, 0, len(dependents))
 	for _, d := range dependents {
