@@ -61,9 +61,9 @@ func (agg *Aggregator) Regions() []core.Region {
 }
 
 // SetFinances sets the given finances in all underlying tax calculators
-func (agg *Aggregator) SetFinances(f core.HouseholdFinances, credits ...core.TaxCredit) {
+func (agg *Aggregator) SetFinances(f core.HouseholdFinances, credits []core.TaxCredit) {
 	for _, c := range agg.calculators {
-		c.SetFinances(f, credits...)
+		c.SetFinances(f, credits)
 	}
 }
 

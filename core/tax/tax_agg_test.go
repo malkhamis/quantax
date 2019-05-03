@@ -71,7 +71,7 @@ func TestAggregator(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	aggregator.SetFinances(finances)
+	aggregator.SetFinances(finances, nil)
 	actualA, actualB, cr := aggregator.TaxPayable()
 	expected := (3000.0 / 2.0) * float64(len(aggregator.calculators))
 	expected -= 300.0
@@ -163,7 +163,7 @@ func TestAggregator_SetFinances(t *testing.T) {
 		onYear:              2019,
 	}
 
-	agg.SetFinances(finances, crA, crB)
+	agg.SetFinances(finances, []core.TaxCredit{crA, crB})
 
 	diff := deep.Equal(c0.crSpouseA, []core.TaxCredit{crA})
 	if diff != nil {

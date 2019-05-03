@@ -46,7 +46,7 @@ func TestCalculator_SetFinances(t *testing.T) {
 	credits := []core.TaxCredit{crSpouseA, crSpouseB}
 
 	calc := &Calculator{}
-	calc.SetFinances(f, credits...)
+	calc.SetFinances(f, credits)
 
 	diff := deep.Equal(calc.crSpouseA[0], crSpouseA)
 	if diff != nil {
@@ -63,12 +63,12 @@ func TestCalculator_SetFinances_Nil(t *testing.T) {
 
 	c := &Calculator{}
 
-	c.SetFinances(nil)
+	c.SetFinances(nil, nil)
 	if c.finances == nil {
 		t.Fatal("expected empty finances to be set")
 	}
 
-	c.SetFinances(&testHouseholdFinances{})
+	c.SetFinances(&testHouseholdFinances{}, nil)
 	if c.finances == nil {
 		t.Fatal("expected empty finances to be set")
 	}
@@ -156,6 +156,31 @@ func TestCalculator_setCredits_different_finances(t *testing.T) {
 			onAmounts:           [3]float64{0, 0, 1000},
 			onYear:              2019,
 			onReferenceFinancer: core.NewFinancerNop(),
+		},
+	}
+	calc.setCredits(credits)
+
+	if len(calc.crSpouseA) != 0 {
+		t.Error("expected no credits to be set")
+	}
+	if len(calc.crSpouseB) != 0 {
+		t.Error("expected no credits to be set")
+	}
+}
+
+func TestCalculator_setCredits_unreferenced_credit(t *testing.T) {
+
+	calc := &Calculator{
+		finances:  core.NewHouseholdFinancesNop(),
+		taxRegion: core.Region(t.Name()),
+		taxYear:   2019,
+	}
+	credits := []core.TaxCredit{
+		&testTaxCredit{
+			onRegion:            core.Region(t.Name()),
+			onAmounts:           [3]float64{0, 0, 1000},
+			onYear:              2019,
+			onReferenceFinancer: nil,
 		},
 	}
 	calc.setCredits(credits)
@@ -475,4 +500,23 @@ func TestNewCalculator_Error(t *testing.T) {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoIncCalc, err)
 	}
 
+}
+
+func TestCalculator_panicIfEqNonNilSpouses(t *testing.T) {
+
+	spouseFinances := core.NewFinancerNop()
+	c := &Calculator{
+		finances: &testHouseholdFinances{
+			onSpouseA: spouseFinances,
+			onSpouseB: spouseFinances,
+		},
+	}
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("should panic if household finances contain the same spouse twice")
+		}
+	}()
+
+	c.panicIfEqNonNilSpouses()
 }

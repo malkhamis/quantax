@@ -58,15 +58,14 @@ func (c *Calculator) Regions() []core.Region {
 // Changes to the given finances after calling this function will affect future
 // calculations. If finances is nil or both spouses' finances are nil, a noop
 // instance is set. The given finances are never modified in the calculator
-func (c *Calculator) SetFinances(f core.HouseholdFinances, credits ...core.TaxCredit) {
+func (c *Calculator) SetFinances(f core.HouseholdFinances, credits []core.TaxCredit) {
 
 	if f == nil {
-		f = core.NewHouseholdFinancesNop()
-	} else if f.SpouseA() == nil && f.SpouseB() == nil {
 		f = core.NewHouseholdFinancesNop()
 	}
 
 	c.finances = f
+	c.panicIfEqNonNilSpouses()
 	c.setCredits(credits)
 }
 
@@ -86,6 +85,8 @@ func (c *Calculator) SetDependents(dependents ...*human.Person) {
 // TaxPayable computes the tax on the net income for the previously set finances
 // and any relevent credits.
 func (c *Calculator) TaxPayable() (spouseA, spouseB float64, combinedCredits []core.TaxCredit) {
+
+	c.panicIfEqNonNilSpouses()
 
 	netIncomeA, netIncomeB := c.netIncome()
 	totalTaxA, totalTaxB := c.totalTax(netIncomeA, netIncomeB)
@@ -194,6 +195,9 @@ func (c *Calculator) netPayableTax(taxAmount float64, credits []core.TaxCredit) 
 // by these credits.
 func (c *Calculator) setCredits(credits []core.TaxCredit) {
 
+	c.crSpouseA = make([]core.TaxCredit, 0)
+	c.crSpouseB = make([]core.TaxCredit, 0)
+
 	for _, cr := range credits {
 
 		if cr == nil {
@@ -213,6 +217,10 @@ func (c *Calculator) setCredits(credits []core.TaxCredit) {
 		}
 
 		ref := cr.ReferenceFinancer()
+		if ref == nil {
+			continue
+		}
+
 		if ref == c.finances.SpouseA() {
 			c.crSpouseA = append(c.crSpouseA, cr)
 		} else if ref == c.finances.SpouseB() {
@@ -251,4 +259,12 @@ func (c *Calculator) makeTaxPayers(netIncomeA, netIncomeB float64) (taxPayerA, t
 	}
 
 	return taxPayerA, taxPayerB
+}
+
+func (c *Calculator) panicIfEqNonNilSpouses() {
+	if c.finances.SpouseA() != nil && c.finances.SpouseB() != nil {
+		if c.finances.SpouseA() == c.finances.SpouseB() {
+			panic("household finances cannot reference the same spouse as spouse A & spouse B")
+		}
+	}
 }

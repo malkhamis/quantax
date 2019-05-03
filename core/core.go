@@ -58,7 +58,7 @@ type TaxCalculator interface {
 	// calculator. Subsequent calls to other functions are based on the
 	// the given finances. Changes to the given finances after calling
 	// this function should affect future calculations
-	SetFinances(HouseholdFinances, ...TaxCredit)
+	SetFinances(HouseholdFinances, []TaxCredit)
 	// SetDependents sets the dependents which the calculator might use for tax-
 	// related calculations
 	SetDependents(...*human.Person)
