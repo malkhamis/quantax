@@ -229,6 +229,10 @@ func TestTaxCredit_shallowCopy(t *testing.T) {
 	}
 
 	clone = original.shallowCopy()
+	if clone == original {
+		t.Fatal("expcted a shallow copy to have a different pointer")
+	}
+
 	diff := deep.Equal(original, clone)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))

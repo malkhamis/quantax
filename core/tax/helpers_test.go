@@ -81,7 +81,8 @@ func (tcf *testContraTaxFormula) Apply(_ *TaxPayer) []*TaxCredit {
 
 	clone := make([]*TaxCredit, len(tcf.onApply))
 	for i, cr := range tcf.onApply {
-		clone[i] = cr.shallowCopy()
+		cloneCr := *cr
+		clone[i] = &cloneCr
 	}
 	return clone
 }
@@ -157,7 +158,8 @@ func (ttc *testTaxCredit) Source() core.FinancialSource {
 	return ttc.onSource
 }
 func (ttc *testTaxCredit) ShallowCopy() core.TaxCredit {
-	return ttc
+	clone := *ttc
+	return &clone
 }
 
 type testHouseholdFinances struct {
