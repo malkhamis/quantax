@@ -50,8 +50,6 @@ type RRSPCalculator interface {
 	// SetDependents sets the dependents which the calculator might use for tax-
 	// related calculations
 	SetDependents([]*human.Person)
-	// SetTaxCalculator sets the tax calculator used by the rrso calculator
-	SetTaxCalculator(TaxCalculator)
 	// SetTargetSpouseA makes subsequent calls based on spouse A finances
 	SetTargetSpouseA()
 	// SetTargetSpouseB makes subsequent calls based on spouse B finances

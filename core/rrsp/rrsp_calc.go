@@ -2,6 +2,7 @@ package rrsp
 
 import (
 	"github.com/malkhamis/quantax/core"
+	"github.com/malkhamis/quantax/core/human"
 	"github.com/pkg/errors"
 )
 
@@ -12,9 +13,12 @@ var _ core.RRSPCalculator = (*Calculator)(nil)
 // withdrawal or contribution. It also computes added contributution room for
 // a given income
 type Calculator struct {
-	taxCalculator core.TaxCalculator
-	formula       Formula
-	finances      *core.IndividualFinances
+	formula           Formula
+	householdFinances core.HouseholdFinances
+	isTargetSpouseB   bool // default to SpouseA
+	taxCredits        []core.TaxCredit
+	dependents        []*human.Person
+	taxCalculator     core.TaxCalculator
 }
 
 // NewCalculator returns a new RRSP calculator from the given options with
@@ -27,77 +31,130 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 	}
 
 	c := &Calculator{
-		formula:       cfg.Formula.Clone(),
-		taxCalculator: cfg.TaxCalc,
-		finances:      core.NewEmptyIndividualFinances(),
+		formula:           cfg.Formula.Clone(),
+		taxCalculator:     cfg.TaxCalc,
+		householdFinances: core.NewHouseholdFinancesNop(),
 	}
+
 	return c, nil
 }
 
 // TaxPaid calculates the extra tax payable given the finances set in this
 // calculator for the given withdrawal amount
-func (c *Calculator) TaxPaid(withdrawal float64) float64 {
+func (c *Calculator) TaxPaid(withdrawal float64) (float64, []core.TaxCredit) {
 
-	original := c.finances
-	clone := original.Clone()
-	c.SetFinances(clone)
-	defer c.SetFinances(original)
+	var (
+		finances = c.householdFinances.Clone()
+		target   core.FinanceMutator
+	)
+
+	if c.isTargetSpouseB {
+		target = finances.MutableSpouseB()
+	} else {
+		target = finances.MutableSpouseA()
+	}
+	if target == nil {
+		return 0, nil
+	}
 
 	incomeSrc := c.formula.TargetSourceForWithdrawl()
+	c.taxCalculator.SetDependents(c.dependents)
+	c.taxCalculator.SetFinances(finances, c.taxCredits)
 
-	taxBefore, _ := c.taxCalculator.TaxPayable()
-	c.finances.AddAmount(incomeSrc, withdrawal)
-	taxAfter, _ := c.taxCalculator.TaxPayable()
+	taxBeforeA, taxBeforeB, _ := c.taxCalculator.TaxPayable()
+	target.AddAmount(incomeSrc, withdrawal)
+	taxAfterA, taxAfterB, credits := c.taxCalculator.TaxPayable()
 
-	diff := taxAfter - taxBefore
-	return diff
+	var diff float64
+	if c.isTargetSpouseB {
+		diff = taxAfterB - taxBeforeB
+	} else {
+		diff = taxAfterA - taxBeforeA
+	}
+
+	return diff, credits
 }
 
 // TaxRefund calculates the refundable tax proportion of deposit/contribution
 // given the finances set in this calculator
-func (c *Calculator) TaxRefund(contribution float64) (float64, error) {
+func (c *Calculator) TaxRefund(contribution float64) (float64, []core.TaxCredit) {
 
-	if contribution > c.finances.RRSPAmounts().ContributionRoom {
-		return 0.0, ErrNoRRSPRoom
+	var (
+		finances = c.householdFinances.Clone()
+		target   core.FinanceMutator
+	)
+
+	if c.isTargetSpouseB {
+		target = finances.MutableSpouseB()
+	} else {
+		target = finances.MutableSpouseA()
+	}
+	if target == nil {
+		return 0, nil
 	}
 
-	original := c.finances
-	clone := original.Clone()
-	c.SetFinances(clone)
-	defer c.SetFinances(original)
-
 	deducSrc := c.formula.TargetSourceForContribution()
+	c.taxCalculator.SetDependents(c.dependents)
+	c.taxCalculator.SetFinances(finances, c.taxCredits)
 
-	taxBefore, _ := c.taxCalculator.TaxPayable()
-	c.finances.AddAmount(deducSrc, contribution)
-	taxAfter, _ := c.taxCalculator.TaxPayable()
+	taxBeforeA, taxBeforeB, _ := c.taxCalculator.TaxPayable()
+	target.AddAmount(deducSrc, contribution)
+	taxAfterA, taxAfterB, credits := c.taxCalculator.TaxPayable()
 
-	diff := taxBefore - taxAfter
-	return diff, nil
+	var diff float64
+	if c.isTargetSpouseB {
+		diff = taxBeforeB - taxAfterB
+	} else {
+		diff = taxBeforeA - taxAfterA
+	}
+
+	return diff, credits
 }
 
 // ContributionEarned calculates the newly acquired contribution room
 func (c *Calculator) ContributionEarned() float64 {
 
-	var netIncome float64
-	incSrcs := c.formula.AllowedIncomeSources()
-
-	if len(incSrcs) > 0 {
-		netIncome = c.finances.TotalIncome(incSrcs...)
+	var target core.Financer
+	if c.isTargetSpouseB {
+		target = c.householdFinances.SpouseA()
+	} else {
+		target = c.householdFinances.SpouseB()
+	}
+	if target == nil {
+		return 0
 	}
 
-	return c.formula.ContributionEarned(netIncome)
+	incSrcs := c.formula.AllowedIncomeSources()
+	totalIncome := target.TotalAmount(incSrcs...)
+	return c.formula.ContributionEarned(totalIncome)
+}
+
+// SetDependents sets the dependents which the calculator might use for tax-
+// related calculations
+func (c *Calculator) SetDependents(dependents []*human.Person) {
+	c.dependents = dependents
 }
 
 // SetFinances makes subsequent calculations based on the given finances.
 // if new finances is nil, an empty finances instance is set. Change to the
 // given finances will affect the results of future calls on this calculator
-func (c *Calculator) SetFinances(f *core.IndividualFinances) {
+func (c *Calculator) SetFinances(f core.HouseholdFinances, credits []core.TaxCredit) {
 
 	if f == nil {
-		f = core.NewEmptyIndividualFinances()
+		f = core.NewHouseholdFinancesNop()
 	}
+	c.householdFinances = f
+	c.taxCredits = credits
+}
 
-	c.finances = f
-	c.taxCalculator.SetFinances(f)
+// SetTargetSpouseA makes subsequent calculations based on SpouseA of the
+// previously set finances. This is the default target of the calculator
+func (c *Calculator) SetTargetSpouseA() {
+	c.isTargetSpouseB = false
+}
+
+// SetTargetSpouseB makes subsequent calculations based on SpouseA of the
+// previously set finances
+func (c *Calculator) SetTargetSpouseB() {
+	c.isTargetSpouseB = true
 }
