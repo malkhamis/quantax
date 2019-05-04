@@ -40,92 +40,35 @@ func NewCalculator(cfg CalcConfig) (*Calculator, error) {
 }
 
 // TaxPaid calculates the extra tax payable given the finances set in this
-// calculator for the given withdrawal amount
+// calculator for the given withdrawal amount. The returned tax credit are
+// after the withdrawal
 func (c *Calculator) TaxPaid(withdrawal float64) (float64, []core.TaxCredit) {
 
-	var (
-		finances = c.householdFinances.Clone()
-		target   core.FinanceMutator
-	)
-
-	if c.isTargetSpouseB {
-		target = finances.MutableSpouseB()
-	} else {
-		target = finances.MutableSpouseA()
-	}
-	if target == nil {
-		return 0, nil
-	}
-
 	incomeSrc := c.formula.TargetSourceForWithdrawl()
-	c.taxCalculator.SetDependents(c.dependents)
-	c.taxCalculator.SetFinances(finances, c.taxCredits)
-
-	taxBeforeA, taxBeforeB, _ := c.taxCalculator.TaxPayable()
-	target.AddAmount(incomeSrc, withdrawal)
-	taxAfterA, taxAfterB, credits := c.taxCalculator.TaxPayable()
-
-	var diff float64
-	if c.isTargetSpouseB {
-		diff = taxAfterB - taxBeforeB
-	} else {
-		diff = taxAfterA - taxBeforeA
-	}
-
-	return diff, credits
+	diff, credits := c.taxDiffForTargetSpouse(incomeSrc, withdrawal)
+	return -diff, credits
 }
 
 // TaxRefund calculates the refundable tax proportion of deposit/contribution
-// given the finances set in this calculator
+// given the finances set in this calculator. The returned tax credit are after
+// the contribution amount
 func (c *Calculator) TaxRefund(contribution float64) (float64, []core.TaxCredit) {
 
-	var (
-		finances = c.householdFinances.Clone()
-		target   core.FinanceMutator
-	)
-
-	if c.isTargetSpouseB {
-		target = finances.MutableSpouseB()
-	} else {
-		target = finances.MutableSpouseA()
-	}
-	if target == nil {
-		return 0, nil
-	}
-
 	deducSrc := c.formula.TargetSourceForContribution()
-	c.taxCalculator.SetDependents(c.dependents)
-	c.taxCalculator.SetFinances(finances, c.taxCredits)
-
-	taxBeforeA, taxBeforeB, _ := c.taxCalculator.TaxPayable()
-	target.AddAmount(deducSrc, contribution)
-	taxAfterA, taxAfterB, credits := c.taxCalculator.TaxPayable()
-
-	var diff float64
-	if c.isTargetSpouseB {
-		diff = taxBeforeB - taxAfterB
-	} else {
-		diff = taxBeforeA - taxAfterA
-	}
-
+	diff, credits := c.taxDiffForTargetSpouse(deducSrc, contribution)
 	return diff, credits
 }
 
 // ContributionEarned calculates the newly acquired contribution room
 func (c *Calculator) ContributionEarned() float64 {
 
-	var target core.Financer
-	if c.isTargetSpouseB {
-		target = c.householdFinances.SpouseA()
-	} else {
-		target = c.householdFinances.SpouseB()
-	}
-	if target == nil {
+	targetSpouse := c.targetSpouse()
+	if targetSpouse == nil {
 		return 0
 	}
 
 	incSrcs := c.formula.AllowedIncomeSources()
-	totalIncome := target.TotalAmount(incSrcs...)
+	totalIncome := targetSpouse.TotalAmount(incSrcs...)
 	return c.formula.ContributionEarned(totalIncome)
 }
 
@@ -157,4 +100,69 @@ func (c *Calculator) SetTargetSpouseA() {
 // previously set finances
 func (c *Calculator) SetTargetSpouseB() {
 	c.isTargetSpouseB = true
+}
+
+// taxDiffForTargetSpouse returns the tax difference after adding the given source amount to
+// the target spouse set in this calculator. The returned amount is calculated
+// as follows:
+//   diff = (tax before adding the amount) - (tax after adding the amount)
+//
+// The returned credits are for after adding the given source amount when
+// computing the tax
+func (c *Calculator) taxDiffForTargetSpouse(src core.FinancialSource, amount float64) (float64, []core.TaxCredit) {
+
+	householdFinancesClone, targetSpouseClone := c.cloneFinancesAndGetTargetRef()
+	if targetSpouseClone == nil {
+		return 0, nil
+	}
+
+	c.setupTaxCalculator(householdFinancesClone)
+
+	taxBeforeA, taxBeforeB, _ := c.taxCalculator.TaxPayable()
+	targetSpouseClone.AddAmount(src, amount)
+	taxAfterA, taxAfterB, credits := c.taxCalculator.TaxPayable()
+
+	var diff float64
+	if c.isTargetSpouseB {
+		diff = taxBeforeB - taxAfterB
+	} else {
+		diff = taxBeforeA - taxAfterA
+	}
+
+	return diff, credits
+}
+
+// targetSpouse returns a read-only reference to the target spouse. If the set
+// target points to a nil spouse, it returns nil
+func (c *Calculator) targetSpouse() core.Financer {
+	if c.isTargetSpouseB {
+		return c.householdFinances.SpouseA()
+	}
+	return c.householdFinances.SpouseB()
+}
+
+// cloneFinancesAndGetTargetRef clones the household finances set in calculator.
+// In addition, it returns a mutable reference to the target spouse from the
+// clone household finances
+func (c *Calculator) cloneFinancesAndGetTargetRef() (core.HouseholdFinanceMutator, core.FinanceMutator) {
+
+	var (
+		finances = c.householdFinances.Clone()
+		target   core.FinanceMutator
+	)
+
+	if c.isTargetSpouseB {
+		target = finances.MutableSpouseB()
+	} else {
+		target = finances.MutableSpouseA()
+	}
+
+	return finances, target
+}
+
+// setupTaxCalculator set the given finances as well as dependents and tax
+// credits stored in the RRSP calculator into the tax calculator
+func (c *Calculator) setupTaxCalculator(finances core.HouseholdFinances) {
+	c.taxCalculator.SetDependents(c.dependents)
+	c.taxCalculator.SetFinances(finances, c.taxCredits)
 }
