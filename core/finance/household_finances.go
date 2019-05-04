@@ -1,5 +1,6 @@
 package finance
 
+// TODO: versioning
 import (
 	"github.com/malkhamis/quantax/core"
 )
@@ -41,6 +42,24 @@ func (hf *HouseholdFinances) SpouseB() core.Financer {
 	return hf.spouseB
 }
 
+// MutableSpouseA returns a reference to the individual finances of the first
+// spouse for mutations. If 'hf' is nil, it returns nil
+func (hf *HouseholdFinances) MutableSpouseA() core.FinanceMutator {
+	if hf == nil || hf.spouseA == nil {
+		return nil
+	}
+	return hf.spouseA
+}
+
+// MutableSpouseB returns a reference to the individual finances of the second
+// spouse for mutations. If 'hf' is nil, it returns nil
+func (hf *HouseholdFinances) MutableSpouseB() core.FinanceMutator {
+	if hf == nil || hf.spouseB == nil {
+		return nil
+	}
+	return hf.spouseB
+}
+
 // Version returns the version of this instance, which is the sum of individual
 // finance versions of the first and the second spouses. If 'hf' is nil, it
 // returns zero
@@ -52,13 +71,16 @@ func (hf *HouseholdFinances) Version() uint64 {
 }
 
 // Clone returns a copy of this instance. If 'hf' is nil, it returns nil
-func (hf *HouseholdFinances) Clone() core.HouseholdFinances {
+func (hf *HouseholdFinances) Clone() core.HouseholdFinanceMutator {
 
 	if hf == nil {
 		return nil
 	}
 
-	return core.HouseholdFinances(hf.clone())
+	return &HouseholdFinances{
+		spouseA: hf.spouseA.clone(),
+		spouseB: hf.spouseB.clone(),
+	}
 }
 
 // clone returns a copy of this instance. If 'hf' is nil, it returns nil

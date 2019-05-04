@@ -9,7 +9,7 @@ var (
 // NewFinancerNop returns a no-op Financer instance. Packages implementing the
 // interfaces defined by this package may use instances created by this function
 // if the user passes nil finances
-func NewFinancerNop() Financer {
+func NewFinancerNop() FinanceMutator {
 	return &financerNop{}
 }
 
@@ -63,8 +63,17 @@ func (nop *householdFinancesNop) SpouseA() Financer {
 func (nop *householdFinancesNop) SpouseB() Financer {
 	return nop.spouseB
 }
-func (nop *householdFinancesNop) Clone() HouseholdFinances {
-	return NewHouseholdFinancesNop()
+func (nop *householdFinancesNop) MutableSpouseA() FinanceMutator {
+	return nop.spouseA
+}
+func (nop *householdFinancesNop) MutableSpouseB() FinanceMutator {
+	return nop.spouseB
+}
+func (nop *householdFinancesNop) Clone() HouseholdFinanceMutator {
+	return &householdFinancesNop{
+		spouseA: &financerNop{},
+		spouseB: &financerNop{},
+	}
 }
 func (nop *householdFinancesNop) Version() uint64 {
 	return 0

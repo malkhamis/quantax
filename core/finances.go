@@ -50,7 +50,13 @@ type HouseholdFinances interface {
 	// SpouseB returns the financia data of the second spouse
 	SpouseB() Financer
 	// Clone returns a deep copy of the instance
-	Clone() HouseholdFinances
+	Clone() HouseholdFinanceMutator
 	// Version returns the version of the instance
 	Version() uint64
+}
+
+type HouseholdFinanceMutator interface {
+	MutableSpouseA() FinanceMutator
+	MutableSpouseB() FinanceMutator
+	HouseholdFinances
 }

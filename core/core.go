@@ -34,14 +34,24 @@ type ChildBenefitCalculator interface {
 // RRSPCalculator is used to calculate recievable or payable tax on transactions
 // related to Registered Retirement Saving Plan (RRSP) accounts
 type RRSPCalculator interface {
-	// TaxPaid calculates the tax payable upon withdrawal
-	TaxPaid(withdrawal float64) float64
-	// TaxRefund calculates the refundable tax upon deposit/contribution
-	TaxRefund(contribution float64) float64
+	// TaxPaid calculates the tax payable on the amount withdrawn. It should
+	// return the tax credits after the withdrawal
+	TaxPaid(withdrawal float64) (float64, []TaxCredit)
+	// TaxRefund calculates the refundable tax upon deposit/contribution. It
+	// should return the tax credits after the contribution
+	TaxRefund(contribution float64) (float64, []TaxCredit)
 	// ContributionEarned calculates the newly acquired contribution room
 	ContributionEarned() float64
-	// SetFinances stores the given finances in the calculator
-	SetFinances(HouseholdFinances)
+	// SetFinances stores the given financial data in the underlying tax
+	// calculator. Subsequent calls to other functions are based on the
+	// the given finances. Changes to the given finances after calling
+	// this function should affect future calculations
+	SetFinances(HouseholdFinances, []TaxCredit)
+	// SetDependents sets the dependents which the calculator might use for tax-
+	// related calculations
+	SetDependents([]*human.Person)
+	// SetTaxCalculator sets the tax calculator used by the rrso calculator
+	SetTaxCalculator(TaxCalculator)
 	// SetTargetSpouseA makes subsequent calls based on spouse A finances
 	SetTargetSpouseA()
 	// SetTargetSpouseB makes subsequent calls based on spouse B finances
