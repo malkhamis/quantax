@@ -2,21 +2,38 @@ package rrsp
 
 import (
 	"github.com/malkhamis/quantax/core"
+	"github.com/malkhamis/quantax/core/human"
 )
 
+var _ core.TaxCalculator = (*testTaxCalculator)(nil)
+
 type testTaxCalculator struct {
-	currentIndex int
-	onTaxPayable []float64
+	_currentIndex               int // do not set
+	onTaxPayableSpouseA         []float64
+	onTaxPayableSpouseB         []float64
+	financesPassedOnSetFinances core.HouseholdFinances
+	creditsPassedOnSetFinances  []core.TaxCredit
+	depsPassedOnSetDependents   []*human.Person
 }
 
-func (ttc *testTaxCalculator) TaxPayable() (float64, []core.TaxCredit) {
-	currentVal := ttc.onTaxPayable[ttc.currentIndex]
-	ttc.currentIndex++
-	return currentVal, nil
+func (ttc *testTaxCalculator) TaxPayable() (float64, float64, []core.TaxCredit) {
+	spouseA := ttc.onTaxPayableSpouseA[ttc._currentIndex]
+	spouseB := ttc.onTaxPayableSpouseB[ttc._currentIndex]
+	ttc._currentIndex++
+	return spouseA, spouseB, nil
 }
-func (ttc *testTaxCalculator) SetCredits(_ []core.TaxCredit) {
+func (ttc *testTaxCalculator) SetFinances(f core.HouseholdFinances, cr []core.TaxCredit) {
+	ttc.financesPassedOnSetFinances = f
+	ttc.creditsPassedOnSetFinances = cr
 }
-func (ttc *testTaxCalculator) SetFinances(_ *core.IndividualFinances) {
+func (ttc *testTaxCalculator) SetDependents(deps []*human.Person) {
+	ttc.depsPassedOnSetDependents = deps
+}
+func (ttc *testTaxCalculator) Regions() []core.Region {
+	return nil
+}
+func (ttc *testTaxCalculator) Year() uint {
+	return 0
 }
 
 type testFormula struct {
