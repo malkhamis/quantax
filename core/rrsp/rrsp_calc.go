@@ -136,9 +136,9 @@ func (c *Calculator) taxDiffForTargetSpouse(src core.FinancialSource, amount flo
 // target points to a nil spouse, it returns nil
 func (c *Calculator) targetSpouse() core.Financer {
 	if c.isTargetSpouseB {
-		return c.householdFinances.SpouseA()
+		return c.householdFinances.SpouseB()
 	}
-	return c.householdFinances.SpouseB()
+	return c.householdFinances.SpouseA()
 }
 
 // cloneFinancesAndGetTargetRef clones the household finances set in calculator.
