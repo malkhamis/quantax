@@ -26,6 +26,7 @@ type ChildBenefitCalculator interface {
 	Calc() float64
 	// SetFinances makes subsequent calculations based on the given finances
 	SetFinances(HouseholdFinances)
+	// TODO eliminate this variadic param
 	// SetBeneficiaries sets the children which the calculator will compute the
 	// benefits for in subsequent calls to Calc()
 	SetBeneficiaries(...*human.Person)
