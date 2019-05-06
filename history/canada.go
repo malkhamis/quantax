@@ -10,6 +10,10 @@ import (
 	"github.com/malkhamis/quantax/core/tax"
 )
 
+const (
+	crSrcPersonalAmount = "basic-personal-amount"
+)
+
 var (
 	taxParamsCanada = yearlyTaxParams{
 		2019: TaxParams{
@@ -70,32 +74,36 @@ var taxFormulaCanada2018 = &tax.CanadianFormula{
 	},
 }
 
-const (
-	crSrcPersonalAmountCanada = "Canada-basic-personal-amount"
-)
-
 var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
-	PersistentCredits: map[string]float64{
-		crSrcPersonalAmountCanada: 0.150 * 12069,
-	},
-	ApplicationOrder: []tax.CreditRule{
-		{
-			Source: crSrcPersonalAmountCanada,
-			Type:   tax.CrRuleTypeNotCarryForward,
+	OrderedCreditors: []tax.Creditor{
+		tax.CreditorConst{
+			Amount:                0.150 * 12069,
+			CreditDescription:     crSrcPersonalAmount,
+			TargetFinancialSource: core.SrcNone,
+			CreditRule: core.CreditRule{
+				CrSource: crSrcPersonalAmount,
+				Type:     core.CrRuleTypeNotCarryForward,
+			},
 		},
 	},
+	TaxYear:   2019,
+	TaxRegion: core.RegionCA,
 }
 
 var taxContraFormulaCanada2018 = &tax.CanadianContraFormula{
-	PersistentCredits: map[string]float64{
-		crSrcPersonalAmountCanada: 0.150 * 11809,
-	},
-	ApplicationOrder: []tax.CreditRule{
-		{
-			Source: crSrcPersonalAmountCanada,
-			Type:   tax.CrRuleTypeNotCarryForward,
+	OrderedCreditors: []tax.Creditor{
+		tax.CreditorConst{
+			Amount:                0.150 * 11809,
+			CreditDescription:     crSrcPersonalAmount,
+			TargetFinancialSource: core.SrcNone,
+			CreditRule: core.CreditRule{
+				CrSource: crSrcPersonalAmount,
+				Type:     core.CrRuleTypeNotCarryForward,
+			},
 		},
 	},
+	TaxYear:   2018,
+	TaxRegion: core.RegionCA,
 }
 
 var cbFormulaCanada2018 = &benefits.CCBMaxReducer{
