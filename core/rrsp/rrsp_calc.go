@@ -160,7 +160,7 @@ func (c *Calculator) cloneFinancesAndGetTargetRef() (core.HouseholdFinanceMutato
 	return finances, target
 }
 
-// setupTaxCalculator set the given finances as well as dependents and tax
+// setupTaxCalculator sets the given finances as well as dependents and tax
 // credits stored in the RRSP calculator into the tax calculator
 func (c *Calculator) setupTaxCalculator(finances core.HouseholdFinances) {
 	c.taxCalculator.SetDependents(c.dependents)

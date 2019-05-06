@@ -11,6 +11,9 @@ var _ core.TaxCalculator = (*Aggregator)(nil)
 
 // Aggregator is used to aggregate payable tax from multiple tax calculators
 type Aggregator struct {
+	finances    core.HouseholdFinances
+	credits     []core.TaxCredit
+	dependents  []*human.Person
 	calculators []core.TaxCalculator
 }
 
@@ -63,17 +66,21 @@ func (agg *Aggregator) Regions() []core.Region {
 // TODO: this one and SetDependents should only cache the given params
 // SetFinances sets the given finances in all underlying tax calculators
 func (agg *Aggregator) SetFinances(f core.HouseholdFinances, credits []core.TaxCredit) {
-	for _, c := range agg.calculators {
-		c.SetFinances(f, credits)
-	}
+	agg.finances = f
+	agg.credits = credits
+}
+
+// setupTaxCalculator sets up the given calculator with the finances as well as
+// dependents and tax credits stored in this aggregator
+func (agg *Aggregator) setupTaxCalculator(c core.TaxCalculator) {
+	c.SetFinances(agg.finances, agg.credits)
+	c.SetDependents(agg.dependents)
 }
 
 // SetDependents sets the dependents which the calculator might use for tax-
 // related calculations
 func (agg *Aggregator) SetDependents(deps []*human.Person) {
-	for _, c := range agg.calculators {
-		c.SetDependents(deps)
-	}
+	agg.dependents = deps
 }
 
 // TaxPayable returns the sum of payable tax from the underlying calculators
@@ -86,6 +93,7 @@ func (agg *Aggregator) TaxPayable() (spouseA, spouseB float64, unusedCredits []c
 	)
 
 	for _, c := range agg.calculators {
+		agg.setupTaxCalculator(c)
 		taxA, taxB, credits := c.TaxPayable()
 		taxAggA += taxA
 		taxAggB += taxB
