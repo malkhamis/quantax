@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/malkhamis/quantax/core"
+	"github.com/malkhamis/quantax/core/human"
 	"github.com/pkg/errors"
 )
 
@@ -114,70 +115,66 @@ func TestAggregator_Regions(t *testing.T) {
 	}
 }
 
-// func TestAggregator_SetDependents(t *testing.T) {
-//
-// 	c0, c1 := new(Calculator), new(Calculator)
-// 	agg, err := NewAggregator(c0, c1)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	deps := []*human.Person{
-// 		&human.Person{Name: "test1"},
-// 		&human.Person{Name: "test2"},
-// 	}
-//
-// 	agg.SetDependents(deps)
-//
-// 	diff := deep.Equal(c0.dependents, deps)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
-// 	}
-// 	diff = deep.Equal(c1.dependents, deps)
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
-// 	}
-// }
-//
-// func TestAggregator_SetFinances(t *testing.T) {
-//
-// 	c0 := &Calculator{taxYear: 2019, taxRegion: "BC"}
-// 	c1 := &Calculator{taxYear: 2019, taxRegion: "Canada"}
-// 	agg, err := NewAggregator(c0, c1)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-//
-// 	finances := core.NewHouseholdFinancesNop()
-// 	crA := &testTaxCredit{
-// 		onReferenceFinancer: finances.SpouseA(),
-// 		onAmounts:           [3]float64{2000, 1000, 1000},
-// 		onRegion:            "BC",
-// 		onYear:              2019,
-// 	}
-// 	crB := &testTaxCredit{
-// 		onReferenceFinancer: finances.SpouseB(),
-// 		onAmounts:           [3]float64{4000, 2000, 2000},
-// 		onRegion:            "Canada",
-// 		onYear:              2019,
-// 	}
-//
-// 	agg.SetFinances(finances, []core.TaxCredit{crA, crB})
-//
-// 	diff := deep.Equal(c0.crSpouseA, []core.TaxCredit{crA})
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
-// 	}
-//
-// 	diff = deep.Equal(c1.crSpouseB, []core.TaxCredit{crB})
-// 	if diff != nil {
-// 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
-// 	}
-//
-// 	if c0.finances != finances {
-// 		t.Errorf("expected first calculator to be set with given household finances")
-// 	}
-// 	if c1.finances != finances {
-// 		t.Errorf("expected first calculator to be set with given household finances")
-// 	}
-// }
+func TestAggregator_SetDependents(t *testing.T) {
+
+	deps := []*human.Person{
+		&human.Person{Name: "test1"},
+		&human.Person{Name: "test2"},
+	}
+
+	agg := &Aggregator{}
+	agg.SetDependents(deps)
+
+	diff := deep.Equal(agg.dependents, deps)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+}
+
+func TestAggregator_setupTaxCalculator(t *testing.T) {
+
+	c0 := &Calculator{taxYear: 2019, taxRegion: "BC"}
+
+	deps := []*human.Person{
+		&human.Person{Name: "test1"},
+		&human.Person{Name: "test2"},
+	}
+
+	finances := core.NewHouseholdFinancesNop()
+	crA := &testTaxCredit{
+		onReferenceFinancer: finances.SpouseA(),
+		onAmounts:           [3]float64{2000, 1000, 1000},
+		onRegion:            "BC",
+		onYear:              2019,
+	}
+	crB := &testTaxCredit{
+		onReferenceFinancer: finances.SpouseB(),
+		onAmounts:           [3]float64{4000, 2000, 2000},
+		onRegion:            "Canada",
+		onYear:              2019,
+	}
+
+	agg := &Aggregator{
+		finances:   finances,
+		credits:    []core.TaxCredit{crA, crB},
+		dependents: deps,
+	}
+
+	agg.setupTaxCalculator(c0)
+
+	diff := deep.Equal(c0.crSpouseA, []core.TaxCredit{crA})
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	if c0.finances != finances {
+		t.Errorf("expected first calculator to be set with given household finances")
+	}
+
+	diff = deep.Equal(c0.dependents, deps)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+}
