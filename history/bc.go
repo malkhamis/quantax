@@ -38,6 +38,8 @@ var taxFormulaBC2019 = &tax.CanadianFormula{
 		0.1470: core.Bracket{113506, 153900},
 		0.1680: core.Bracket{153900, math.Inf(1)},
 	},
+	TaxRegion: core.RegionBC,
+	TaxYear:   2019,
 }
 
 var taxFormulaBC2018 = &tax.CanadianFormula{
@@ -49,6 +51,8 @@ var taxFormulaBC2018 = &tax.CanadianFormula{
 		0.1470: core.Bracket{110630, 150000},
 		0.1680: core.Bracket{150000, math.Inf(1)},
 	},
+	TaxRegion: core.RegionBC,
+	TaxYear:   2018,
 }
 
 var taxContraFormulaBC2019 = &tax.CanadianContraFormula{

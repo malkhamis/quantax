@@ -62,6 +62,8 @@ var taxFormulaCanada2019 = &tax.CanadianFormula{
 		0.290: core.Bracket{147667, 210371},
 		0.330: core.Bracket{210371, math.Inf(1)},
 	},
+	TaxRegion: core.RegionCA,
+	TaxYear:   2019,
 }
 
 var taxFormulaCanada2018 = &tax.CanadianFormula{
@@ -72,6 +74,8 @@ var taxFormulaCanada2018 = &tax.CanadianFormula{
 		0.290: core.Bracket{144489, 205842},
 		0.330: core.Bracket{205842, math.Inf(1)},
 	},
+	TaxRegion: core.RegionCA,
+	TaxYear:   2018,
 }
 
 var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
