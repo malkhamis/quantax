@@ -16,20 +16,20 @@ func TestAgeGroupBenefits_IsInAgeGroup(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !agb.IsInAgeGroup(human.Person{AgeMonths: 15}) {
+	if !agb.IsInAgeGroup(&human.Person{AgeMonths: 15}) {
 		t.Errorf("expected a 5 month old person to be in age group")
 	}
-	if !agb.IsInAgeGroup(human.Person{AgeMonths: 10}) {
+	if !agb.IsInAgeGroup(&human.Person{AgeMonths: 10}) {
 		t.Errorf("expected a 10 month old person to be in age group")
 	}
-	if !agb.IsInAgeGroup(human.Person{AgeMonths: 20}) {
+	if !agb.IsInAgeGroup(&human.Person{AgeMonths: 20}) {
 		t.Errorf("expected a 20 month old person to be in age group")
 	}
 
-	if agb.IsInAgeGroup(human.Person{AgeMonths: 9}) {
+	if agb.IsInAgeGroup(&human.Person{AgeMonths: 9}) {
 		t.Errorf("expected a 9 month old person to not be in age group")
 	}
-	if agb.IsInAgeGroup(human.Person{AgeMonths: 21}) {
+	if agb.IsInAgeGroup(&human.Person{AgeMonths: 21}) {
 		t.Errorf("expected a 21 month old person to not be in age group")
 	}
 }
@@ -48,7 +48,7 @@ func TestMultiAgeGroupBenefits_MinAnnualAmount(t *testing.T) {
 	}
 
 	expected := float64(50*6) + float64(25*6)
-	actual := agb.MinAnnualAmount(human.Person{AgeMonths: 5})
+	actual := agb.MinAnnualAmount(&human.Person{AgeMonths: 5})
 	if actual != expected {
 		t.Errorf(
 			"expected a 5 month old child to be entitled to %.2f, got %.2f",
@@ -72,7 +72,7 @@ func TestMultiAgeGroupBenefits_MaxAnnualAmount(t *testing.T) {
 	}
 
 	expected := float64(100*6) + float64(50*6)
-	actual := agb.MaxAnnualAmount(human.Person{AgeMonths: 5})
+	actual := agb.MaxAnnualAmount(&human.Person{AgeMonths: 5})
 	if actual != expected {
 		t.Errorf(
 			"expected a 5 month old child to be entitled to %.2f, got %.2f",

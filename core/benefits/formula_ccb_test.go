@@ -43,7 +43,7 @@ func TestCCBMaxReducer_Apply(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	child1, child2 := human.Person{AgeMonths: 0}, human.Person{AgeMonths: 6}
+	child1, child2 := &human.Person{AgeMonths: 0}, &human.Person{AgeMonths: 6}
 	max := (12.0 * 500) + (6.0*500 + 6.0*250)
 
 	income := 100000.0
@@ -156,7 +156,7 @@ func TestCCBMaxReducer_Clone(t *testing.T) {
 	}
 
 	income := 100000.0
-	child1, child2 := human.Person{AgeMonths: 0}, human.Person{AgeMonths: 6}
+	child1, child2 := &human.Person{AgeMonths: 0}, &human.Person{AgeMonths: 6}
 	originalResults := originalFormula.Apply(income, child1, child2)
 
 	clone := originalFormula.Clone()

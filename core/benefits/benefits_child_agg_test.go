@@ -48,7 +48,7 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	aggregator.SetFinances(core.NewEmptyIndividualFinances())
+	aggregator.SetFinances(core.NewHouseholdFinancesNop())
 	actual := aggregator.Calc()
 	expected := (3000.0 / 2.0) * float64(len(aggregator.calculators))
 	if actual != expected {
@@ -60,7 +60,7 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 func TestAggregator_SetBeneficiaries(t *testing.T) {
 
 	c0, c1, c2 := &ChildBenfitCalculator{}, &ChildBenfitCalculator{}, &ChildBenfitCalculator{}
-	children := []human.Person{{AgeMonths: 1}, {AgeMonths: 2}}
+	children := []*human.Person{&human.Person{AgeMonths: 1}, &human.Person{AgeMonths: 2}}
 
 	aggregator, err := NewChildBenefitAggregator(c0, c1, c2)
 	if err != nil {

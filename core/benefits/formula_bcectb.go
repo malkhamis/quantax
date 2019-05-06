@@ -23,7 +23,7 @@ type BCECTBMaxReducer struct {
 }
 
 // Apply returns the total annual benefits for the children given the net income
-func (mr *BCECTBMaxReducer) Apply(netIncome float64, children ...human.Person) float64 {
+func (mr *BCECTBMaxReducer) Apply(netIncome float64, children ...*human.Person) float64 {
 
 	if len(children) == 0 {
 		return 0.0

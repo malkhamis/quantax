@@ -74,7 +74,7 @@ func TestCalculator_Calc(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	calculator.SetFinances(core.NewEmptyIndividualFinances())
+	calculator.SetFinances(core.NewHouseholdFinancesNop())
 	actual := calculator.Calc()
 	expected := 3000.0 / 2.0
 	if actual != expected {
@@ -86,7 +86,7 @@ func TestCalculator_Calc(t *testing.T) {
 func TestCalculator_SetBeneficiaries(t *testing.T) {
 
 	c := &ChildBenfitCalculator{}
-	children := []human.Person{{AgeMonths: 1}, {AgeMonths: 2}}
+	children := []*human.Person{&human.Person{AgeMonths: 1}, &human.Person{AgeMonths: 2}}
 
 	c.SetBeneficiaries(children...)
 	if len(c.children) != len(children) {
