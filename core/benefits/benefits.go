@@ -51,3 +51,13 @@ func (cfg CalcConfigCB) validate() error {
 
 	return nil
 }
+
+func getChildCount(children []*human.Person) int {
+	childCount := len(children)
+	for _, c := range children {
+		if c == nil {
+			childCount--
+		}
+	}
+	return childCount
+}

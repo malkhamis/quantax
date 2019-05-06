@@ -48,7 +48,7 @@ func (mr *CCBMaxReducer) Apply(netIncome float64, children ...*human.Person) flo
 		)
 	}
 
-	childCount := len(children)
+	childCount := getChildCount(children)
 	reduction := mr.reducerFormula(childCount).Apply(netIncome)
 
 	reducedBenefits := maxBenefits - reduction

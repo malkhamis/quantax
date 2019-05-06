@@ -47,7 +47,7 @@ func (mr *BCECTBMaxReducer) Apply(netIncome float64, children ...*human.Person) 
 		)
 	}
 
-	childCount := len(children)
+	childCount := getChildCount(children)
 	reduction := float64(childCount) * mr.ReducerFormula.Apply(netIncome)
 
 	reducedBenefits := maxBenefits - reduction
