@@ -66,10 +66,7 @@ func (hf *HouseholdFinances) Clone() core.HouseholdFinanceMutator {
 		return nil
 	}
 
-	return &HouseholdFinances{
-		spouseA: hf.spouseA.clone(),
-		spouseB: hf.spouseB.clone(),
-	}
+	return hf.clone()
 }
 
 // clone returns a copy of this instance. If 'hf' is nil, it returns nil

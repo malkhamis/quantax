@@ -257,6 +257,12 @@ func TestIndividualFinances_Clone(t *testing.T) {
 	if clone != nil {
 		t.Errorf("cloning nil finances should return nil")
 	}
+
+	original = NewIndividualFinances()
+	clone = original.Clone()
+	if original == clone {
+		t.Fatal("expected clone to return a new instance")
+	}
 }
 
 func TestIndividualFinances_NumFieldsUnchanged(t *testing.T) {
