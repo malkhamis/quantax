@@ -2,40 +2,44 @@ package tax
 
 import "github.com/malkhamis/quantax/core"
 
-// TODO docstring
+// CreditorConst is a Creditor that returns a constant amount
 type CreditorConst struct {
-	Amount                float64
-	CreditRule            core.CreditRule
+	// the amount to return when TaxCredit is called
+	Amount float64
+	// the credit rule to return when Rule is called
+	CreditRule core.CreditRule
+	// the target financial source to return when FinancialSource is called
 	TargetFinancialSource core.FinancialSource
-	CreditDescription     string
+	// a short description of the tax credit
+	CreditDescription string
 }
 
-// TODO: docstring
+// TaxCredit returns the Amount set in this creditor
 func (cc CreditorConst) TaxCredit(_ *TaxPayer) float64 {
 	return cc.Amount
 }
 
-// TODO: docstring
+// Rule returns the credit rule set in this creditor
 func (cc CreditorConst) Rule() core.CreditRule {
 	return cc.CreditRule
 }
 
-// TODO: docstring
+// FinancialSource returns the financial source set in this creditor
 func (cc CreditorConst) FinancialSource() core.FinancialSource {
 	return cc.TargetFinancialSource
 }
 
-// TODO: docstring
+// Description returns a description of the tax credit
 func (cc CreditorConst) Description() string {
 	return cc.CreditDescription
 }
 
-// TODO: docstring
+// Clone returns a deep copy of this creditor
 func (cc CreditorConst) Clone() Creditor {
 	return cc.clone()
 }
 
-// TODO: docstring
+// clone returns a copy of this creditor
 func (cc CreditorConst) clone() CreditorConst {
 	return cc
 }
