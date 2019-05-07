@@ -165,7 +165,6 @@ func (ttc *testTaxCredit) ShallowCopy() core.TaxCredit {
 type testHouseholdFinances struct {
 	onSpouseA core.FinanceMutator
 	onSpouseB core.FinanceMutator
-	onVersion uint64
 }
 
 func (thf *testHouseholdFinances) SpouseA() core.Financer {
@@ -182,7 +181,4 @@ func (thf *testHouseholdFinances) MutableSpouseB() core.FinanceMutator {
 }
 func (thf *testHouseholdFinances) Clone() core.HouseholdFinanceMutator {
 	return thf
-}
-func (thf *testHouseholdFinances) Version() uint64 {
-	return thf.onVersion
 }

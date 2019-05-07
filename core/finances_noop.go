@@ -45,9 +45,6 @@ func (nop *financerNop) AllSources() []FinancialSource {
 func (nop *financerNop) Clone() FinanceMutator {
 	return &financerNop{}
 }
-func (nop *financerNop) Version() uint64 {
-	return 0
-}
 func (nop *financerNop) SetAmount(_ FinancialSource, _ float64) {}
 func (nop *financerNop) AddAmount(_ FinancialSource, _ float64) {}
 func (nop *financerNop) RemoveAmounts(_ ...FinancialSource)     {}
@@ -74,7 +71,4 @@ func (nop *householdFinancesNop) Clone() HouseholdFinanceMutator {
 		spouseA: &financerNop{},
 		spouseB: &financerNop{},
 	}
-}
-func (nop *householdFinancesNop) Version() uint64 {
-	return 0
 }

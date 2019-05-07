@@ -1,6 +1,5 @@
 package finance
 
-// TODO: versioning
 import (
 	"github.com/malkhamis/quantax/core"
 )
@@ -58,16 +57,6 @@ func (hf *HouseholdFinances) MutableSpouseB() core.FinanceMutator {
 		return nil
 	}
 	return hf.spouseB
-}
-
-// Version returns the version of this instance, which is the sum of individual
-// finance versions of the first and the second spouses. If 'hf' is nil, it
-// returns zero
-func (hf *HouseholdFinances) Version() uint64 {
-	if hf == nil {
-		return 0
-	}
-	return 1 + hf.spouseA.Version() + hf.spouseB.Version()
 }
 
 // Clone returns a copy of this instance. If 'hf' is nil, it returns nil

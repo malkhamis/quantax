@@ -16,10 +16,8 @@ type Financer interface {
 	MiscSources() []FinancialSource
 	// AllSources returns all financial sources in this instance
 	AllSources() []FinancialSource
-	// Clone returns a deep copy of this instance with the same version number
+	// Clone returns a deep copy of this instance
 	Clone() FinanceMutator
-	// Version returns the version of the instance
-	Version() uint64
 }
 
 // FinanceMutator exposes financial data for mutations
@@ -51,8 +49,6 @@ type HouseholdFinances interface {
 	SpouseB() Financer
 	// Clone returns a deep copy of the instance
 	Clone() HouseholdFinanceMutator
-	// Version returns the version of the instance
-	Version() uint64
 }
 
 type HouseholdFinanceMutator interface {

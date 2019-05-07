@@ -9,7 +9,7 @@ type testFinancer struct {
 	onIncomeSources    []core.FinancialSource
 	onDeductionSources []core.FinancialSource
 	onMiscSources      []core.FinancialSource
-	onVersion          uint64
+	onAllSources       []core.FinancialSource
 }
 
 func (tf *testFinancer) TotalAmount(sources ...core.FinancialSource) float64 {
@@ -27,11 +27,11 @@ func (tf *testFinancer) DeductionSources() []core.FinancialSource {
 func (tf *testFinancer) MiscSources() []core.FinancialSource {
 	return tf.onMiscSources
 }
+func (tf *testFinancer) AllSources() []core.FinancialSource {
+	return tf.onAllSources
+}
 func (tf *testFinancer) Clone() core.FinanceMutator {
 	return nil // not needed for this package
-}
-func (tf *testFinancer) Version() uint64 {
-	return tf.onVersion
 }
 
 type testAdjuster struct {

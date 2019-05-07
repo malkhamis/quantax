@@ -22,9 +22,6 @@ func TestNewIndividualFinances(t *testing.T) {
 	if f.miscAmounts == nil {
 		t.Error("expected map to not be nil")
 	}
-	if f.version != 1 {
-		t.Errorf("unexpected version number\nwant: %d\n got: %d", 1, f.version)
-	}
 }
 
 func TestIndividualFinances_TotalAmount(t *testing.T) {
@@ -219,26 +216,6 @@ func TestIndividualFinances_Sources(t *testing.T) {
 	}
 }
 
-func TestIndividualFinances_Version(t *testing.T) {
-
-	var f *IndividualFinances
-	if f.Version() != 0 {
-		t.Errorf(
-			"expected the version number of nil finances to be zero: got %d",
-			f.Version(),
-		)
-	}
-
-	f = NewIndividualFinances()
-	f.version = 10
-
-	actual := f.Version()
-	var expected uint64 = 10
-	if actual != expected {
-		t.Errorf("unexpected version\nwant: %d\n got: %d", expected, actual)
-	}
-}
-
 func TestIndividualFinances_clone(t *testing.T) {
 
 	var original *IndividualFinances
@@ -256,11 +233,6 @@ func TestIndividualFinances_clone(t *testing.T) {
 	diff := deep.Equal(original, clone)
 	if diff != nil {
 		t.Fatal("clone does not match original\n", strings.Join(diff, "\n"))
-	}
-
-	original.version += 10000
-	if clone.version == original.version {
-		t.Fatal("expected change to original to not affect clone")
 	}
 
 	defer func() {
@@ -285,26 +257,13 @@ func TestIndividualFinances_Clone(t *testing.T) {
 	if clone != nil {
 		t.Errorf("cloning nil finances should return nil")
 	}
-
-	original = NewIndividualFinances()
-	clone = original.Clone()
-	if clone.Version() != original.Version() {
-		t.Errorf(
-			"expected clone's version '%d' to match original's '%d'",
-			clone.Version(), original.Version(),
-		)
-	}
-}
-
-func TestIndividualFinances_Version_change(t *testing.T) {
-	t.Skip("TODO")
 }
 
 func TestIndividualFinances_NumFieldsUnchanged(t *testing.T) {
 
 	dummy := IndividualFinances{}
 	s := reflect.ValueOf(&dummy).Elem()
-	if s.NumField() != 4 {
+	if s.NumField() != 3 {
 		t.Fatal(
 			"number of struct fields changed. Please update the constructor and the " +
 				"clone method of this type as well as associated test. Next, update " +

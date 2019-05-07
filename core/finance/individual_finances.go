@@ -12,16 +12,14 @@ type IndividualFinances struct {
 	income      map[core.FinancialSource]float64
 	deductions  map[core.FinancialSource]float64
 	miscAmounts map[core.FinancialSource]float64
-	version     uint64
 }
 
-// NewEmptyIndividualFinances returns an empty instance with version equals one
+// NewEmptyIndividualFinances returns an empty instance
 func NewIndividualFinances() *IndividualFinances {
 	return &IndividualFinances{
 		income:      make(map[core.FinancialSource]float64),
 		deductions:  make(map[core.FinancialSource]float64),
 		miscAmounts: make(map[core.FinancialSource]float64),
-		version:     1,
 	}
 }
 
@@ -70,8 +68,6 @@ func (f *IndividualFinances) AddAmount(source core.FinancialSource, amount float
 		f.miscAmounts[source] += amount
 	}
 
-	// TODO: this is too naive
-	f.version++
 }
 
 // SetAmount force-set the given amount for the given source. If the source
@@ -93,8 +89,6 @@ func (f *IndividualFinances) SetAmount(source core.FinancialSource, amount float
 		f.miscAmounts[source] = amount
 	}
 
-	// TODO: this is too naive
-	f.version++
 }
 
 // RemoveAmounts removes the given stored sources. If sources is empty, the call
@@ -117,8 +111,6 @@ func (f *IndividualFinances) RemoveAmounts(sources ...core.FinancialSource) {
 		}
 	}
 
-	// TODO: this is too naive
-	f.version++
 }
 
 // IncomeSources returns a set of all income sources in this instance
@@ -177,14 +169,6 @@ func (f *IndividualFinances) AllSources() []core.FinancialSource {
 	return all
 }
 
-// Version returns the version of this instance. If 'f' is nil, it returns zero
-func (f *IndividualFinances) Version() uint64 {
-	if f == nil {
-		return 0
-	}
-	return f.version
-}
-
 // Clone returns a copy of this instance. If 'f' is nil, it returns nil
 func (f *IndividualFinances) Clone() core.FinanceMutator {
 	if f == nil {
@@ -204,7 +188,6 @@ func (f *IndividualFinances) clone() *IndividualFinances {
 		income:      amountBySource(f.income).Clone(),
 		deductions:  amountBySource(f.deductions).Clone(),
 		miscAmounts: amountBySource(f.miscAmounts).Clone(),
-		version:     f.version,
 	}
 
 	return clone

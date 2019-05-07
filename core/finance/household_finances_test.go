@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/malkhamis/quantax/core"
 )
 
 func TestNewHouseholdFinances(t *testing.T) {
@@ -61,64 +60,6 @@ func TestHouseholdFinances_SpouseB(t *testing.T) {
 
 }
 
-func TestHouseholdFinances_Version_Change(t *testing.T) {
-
-	spouseA, spouseB := NewIndividualFinances(), NewIndividualFinances()
-	hf := NewHouseholdFinances(spouseA, spouseB)
-
-	spouseA.AddAmount(core.IncSrcEarned, 0)
-	spouseA.AddAmount(core.DeducSrcRRSP, 0)
-	spouseA.AddAmount(core.MiscSrcOthers, 0)
-	spouseA.SetAmount(core.IncSrcEarned, 0)
-	spouseA.SetAmount(core.DeducSrcRRSP, 0)
-	spouseA.SetAmount(core.MiscSrcOthers, 0)
-
-	spouseB.AddAmount(core.IncSrcEarned, 0)
-	spouseB.AddAmount(core.DeducSrcRRSP, 0)
-	spouseB.AddAmount(core.MiscSrcOthers, 0)
-	spouseB.SetAmount(core.IncSrcEarned, 0)
-	spouseB.SetAmount(core.DeducSrcRRSP, 0)
-	spouseB.SetAmount(core.MiscSrcOthers, 0)
-
-	actual := hf.Version()
-	var expected uint64 = 15
-	if actual != expected {
-		t.Errorf("unexpected version\nwant: %d\n got: %d", expected, actual)
-	}
-}
-
-func TestHouseholdFinances_Version(t *testing.T) {
-
-	var hf *HouseholdFinances
-	if hf.Version() != 0 {
-		t.Errorf(
-			"expected the version number of nil finances to be zero: got %d",
-			hf.Version(),
-		)
-	}
-
-	hf = NewHouseholdFinances(nil, nil)
-	actual := hf.Version()
-	var expected uint64 = 1
-	if actual != expected {
-		t.Errorf("unexpected version\nwant: %d\n got: %d", expected, actual)
-	}
-
-	hf = NewHouseholdFinances(NewIndividualFinances(), nil)
-	actual = hf.Version()
-	expected = 2
-	if actual != expected {
-		t.Errorf("unexpected version\nwant: %d\n got: %d", expected, actual)
-	}
-
-	hf = NewHouseholdFinances(NewIndividualFinances(), NewIndividualFinances())
-	actual = hf.Version()
-	expected = 3
-	if actual != expected {
-		t.Errorf("unexpected version\nwant: %d\n got: %d", expected, actual)
-	}
-}
-
 func TestHouseholdFinances_clone(t *testing.T) {
 
 	var original *HouseholdFinances
@@ -155,14 +96,6 @@ func TestHouseholdFinances_Clone(t *testing.T) {
 		t.Errorf("cloning nil finances should return nil")
 	}
 
-	original = NewHouseholdFinances(NewIndividualFinances(), NewIndividualFinances())
-	clone = original.Clone()
-	if clone.Version() != original.Version() {
-		t.Errorf(
-			"expected clone's version '%d' to match original's '%d'",
-			clone.Version(), original.Version(),
-		)
-	}
 }
 
 func TestHouseholdFinances_NumFieldsUnchanged(t *testing.T) {
