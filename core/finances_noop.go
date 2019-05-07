@@ -16,7 +16,7 @@ func NewFinancerNop() FinanceMutator {
 // NewFinancerNop returns a no-op HouseholdFinances instance. Packages
 // implementing the interfaces defined by this package may use instances created
 // by this function if the user passes nil finances
-func NewHouseholdFinancesNop() HouseholdFinances {
+func NewHouseholdFinancesNop() HouseholdFinanceMutator {
 	return &householdFinancesNop{
 		spouseA: &financerNop{},
 		spouseB: &financerNop{},
