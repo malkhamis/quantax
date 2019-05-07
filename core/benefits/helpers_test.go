@@ -28,7 +28,7 @@ type testCBFormula struct {
 	onValidate error
 }
 
-func (tcb testCBFormula) Apply(_ float64, _ ...human.Person) float64 {
+func (tcb testCBFormula) Apply(_ float64, _ ...*human.Person) float64 {
 	return tcb.onApply
 }
 func (tcb testCBFormula) Validate() error {

@@ -21,27 +21,39 @@ type IncomeCalculator interface {
 // ChildBenefitCalculator is used to calculate recievable child benefits for
 // families with dependent children.
 type ChildBenefitCalculator interface {
-	// Calc returns the recievable amount of child benefits for the given
-	// finances and the children set in the calculator
-	Calc() float64
-	// SetBeneficiaries sets the children which the calculator will compute the
-	// benefits for in subsequent calls to Calc()
-	SetBeneficiaries(...human.Person)
+	// BenefitRecievable returns the recievable amount of child benefits for the
+	// given finances and the children set in the calculator
+	BenefitRecievable() float64
 	// SetFinances makes subsequent calculations based on the given finances
-	SetFinances(Financer)
+	SetFinances(HouseholdFinances)
+	// SetBeneficiaries sets the children which the calculator will compute the
+	// benefits for in subsequent calls to BenefitRecievable()
+	SetBeneficiaries([]*human.Person)
 }
 
 // RRSPCalculator is used to calculate recievable or payable tax on transactions
 // related to Registered Retirement Saving Plan (RRSP) accounts
 type RRSPCalculator interface {
-	// TaxPaid calculates the tax payable upon withdrawal
-	TaxPaid(withdrawal float64) float64
-	// TaxRefund calculates the refundable tax upon deposit/contribution
-	TaxRefund(contribution float64) (float64, error)
+	// TaxPaid calculates the tax payable on the amount withdrawn. It should
+	// return the tax credits after the withdrawal
+	TaxPaid(withdrawal float64) (float64, []TaxCredit)
+	// TaxRefund calculates the refundable tax upon deposit/contribution. It
+	// should return the tax credits after the contribution
+	TaxRefund(contribution float64) (float64, []TaxCredit)
 	// ContributionEarned calculates the newly acquired contribution room
 	ContributionEarned() float64
-	// SetFinances makes subsequent calculations based on the given finances
-	SetFinances(*IndividualFinances)
+	// SetFinances stores the given financial data in the underlying tax
+	// calculator. Subsequent calls to other functions are based on the
+	// the given finances. Changes to the given finances after calling
+	// this function should affect future calculations
+	SetFinances(HouseholdFinances, []TaxCredit)
+	// SetDependents sets the dependents which the calculator might use for tax-
+	// related calculations
+	SetDependents([]*human.Person)
+	// SetTargetSpouseA makes subsequent calls based on spouse A finances
+	SetTargetSpouseA()
+	// SetTargetSpouseB makes subsequent calls based on spouse B finances
+	SetTargetSpouseB()
 }
 
 // TaxCalculator is used to calculate payable tax on earnings
@@ -49,23 +61,70 @@ type TaxCalculator interface {
 	// TaxPayable returns the payable amount of tax for the set finances.
 	// The tax credit represent any amount owed to the tax payer without
 	// implications for how they might be used.
-	TaxPayable() (float64, []TaxCredit)
+	TaxPayable() (spouseA, spouseB float64, combinedCredits []TaxCredit)
 	// SetFinances stores the given financial data in the underlying tax
 	// calculator. Subsequent calls to other functions are based on the
 	// the given finances. Changes to the given finances after calling
 	// this function should affect future calculations
-	SetFinances(*IndividualFinances)
-	// SetCredits stores the given credits in the underlying tax calculator.
-	// Subsequent calls to other functions will be influenced by the given tax
-	// credits. Treatment of given credits is implementation-specific. Ideally,
-	// These given credits are originated by the same tax calculator.
-	SetCredits([]TaxCredit)
+	SetFinances(HouseholdFinances, []TaxCredit)
+	// SetDependents sets the dependents which the calculator might use for tax-
+	// related calculations
+	SetDependents([]*human.Person)
+	// TaxYear returns the tax year of the calculator
+	Year() uint
+	// Regions is the tax regions of the calculator. The underlying implementation
+	// may compute the taxes for multiple regions
+	Regions() []Region
 }
 
 // TaxCredit represents an amount that is owed to the tax payer
 type TaxCredit interface {
-	// Amount is the amount owed to tax payer
-	Amount() float64
-	// Source describes the source of this tax credit
-	Source() string
+	// SetAmounts sets the initial, used, and remaining abouts of this tax credit
+	SetAmounts(initial, used, remaining float64)
+	// Amounts returns the tax credit amounts
+	Amounts() (initial, used, remaining float64)
+	// Rule returns the rule of how this tax credit can be used
+	Rule() CreditRule
+	// ReferenceFinancer returns the owner of this tax credit
+	ReferenceFinancer() Financer
+	// Source is the financial source of this tax credit. If the credit is
+	// not associated with a specific source, it should return 'SrcNone'
+	Source() FinancialSource
+	// ShallowCopy returns a copy of this instance, where reference financer
+	// is the same as the original instance
+	ShallowCopy() TaxCredit
+	// Year returns the tax year from which the tax credit was calculated
+	Year() uint
+	// Region returns the tax region for which the tax credit was calculated
+	Region() Region
+	// Description is a short description for the reason of the tax credit
+	Description() string
+}
+
+// CreditRuleType is an enum type for recognized methods of using tax credits
+type CreditRuleType int
+
+const (
+	// unknown/uninitialized
+	_ CreditRuleType = iota
+	// CrRuleTypeCashable indicates cashable credits
+	// that may result in negative payable tax amount
+	CrRuleTypeCashable
+	// CrRuleTypeCanCarryForward indicates non-cashable
+	// credits which may only reduce payable tax to zero
+	// and the remaining balance may be carried forward
+	// to the future
+	CrRuleTypeCanCarryForward
+	// CrRuleTypeNotCarryForward indicates non-cashable
+	// credits which may only reduce payable tax to zero.
+	// Unused balance cannot be carried forward to the future
+	CrRuleTypeNotCarryForward
+)
+
+// CreditRule associate a credit source with a method of using its credit amount
+type CreditRule struct {
+	// the name of the credit source
+	CrSource string
+	// the way of using the credit source
+	Type CreditRuleType
 }

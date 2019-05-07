@@ -9,9 +9,8 @@ import (
 
 // Sentinel errors that can ben wrapped and returned by this package
 var (
-	ErrNoFormula  = errors.New("not formula given/set")
-	ErrNoRRSPRoom = errors.New("no enough RRSP contribution room")
-	ErrNoTaxCalc  = errors.New("no tax calculator given")
+	ErrNoFormula = errors.New("not formula given/set")
+	ErrNoTaxCalc = errors.New("no tax calculator given")
 )
 
 // Formula computes the max contribution room acquired for a given income

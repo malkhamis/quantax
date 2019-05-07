@@ -2,36 +2,36 @@ package income
 
 import "github.com/malkhamis/quantax/core"
 
-type testIncomeDeductor struct {
-	totalIncome     float64
-	totalDeductions float64
-	totalMiscAmount float64
-	incomeSrcs      map[core.FinancialSource]struct{}
-	deducSrcs       map[core.FinancialSource]struct{}
-	miscSrcs        map[core.FinancialSource]struct{}
-	version         uint64
+type testFinancer struct {
+	_currentTotalAmount int // don't set
+	onTotalAmount       []float64
+
+	onIncomeSources    []core.FinancialSource
+	onDeductionSources []core.FinancialSource
+	onMiscSources      []core.FinancialSource
+	onAllSources       []core.FinancialSource
 }
 
-func (tid testIncomeDeductor) TotalIncome(sources ...core.FinancialSource) float64 {
-	return tid.totalIncome
+func (tf *testFinancer) TotalAmount(sources ...core.FinancialSource) float64 {
+
+	total := tf.onTotalAmount[tf._currentTotalAmount]
+	tf._currentTotalAmount++
+	return total
 }
-func (tid testIncomeDeductor) TotalDeductions(sources ...core.FinancialSource) float64 {
-	return tid.totalDeductions
+func (tf *testFinancer) IncomeSources() []core.FinancialSource {
+	return tf.onIncomeSources
 }
-func (tid testIncomeDeductor) MiscAmount(sources ...core.FinancialSource) float64 {
-	return tid.totalMiscAmount
+func (tf *testFinancer) DeductionSources() []core.FinancialSource {
+	return tf.onDeductionSources
 }
-func (tid testIncomeDeductor) IncomeSources() map[core.FinancialSource]struct{} {
-	return tid.incomeSrcs
+func (tf *testFinancer) MiscSources() []core.FinancialSource {
+	return tf.onMiscSources
 }
-func (tid testIncomeDeductor) DeductionSources() map[core.FinancialSource]struct{} {
-	return tid.deducSrcs
+func (tf *testFinancer) AllSources() []core.FinancialSource {
+	return tf.onAllSources
 }
-func (tid testIncomeDeductor) MiscSources() map[core.FinancialSource]struct{} {
-	return tid.miscSrcs
-}
-func (tid testIncomeDeductor) Version() uint64 {
-	return tid.version
+func (tf *testFinancer) Clone() core.FinanceMutator {
+	return nil // not needed for this package
 }
 
 type testAdjuster struct {

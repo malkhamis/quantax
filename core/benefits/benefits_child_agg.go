@@ -11,6 +11,8 @@ import (
 // implements the following interface:
 //  core.ChildBenefitCalculator
 type ChildBenfitAggregator struct {
+	finances    core.HouseholdFinances
+	children    []*human.Person
 	calculators []core.ChildBenefitCalculator
 }
 
@@ -36,30 +38,34 @@ func NewChildBenefitAggregator(c0, c1 core.ChildBenefitCalculator, extras ...cor
 	return cAgg, nil
 }
 
-// Calc returns the aggregate recievable amount of child benefits
-func (agg *ChildBenfitAggregator) Calc() float64 {
+// BenefitRecievable returns the aggregate recievable amount of child benefits
+func (agg *ChildBenfitAggregator) BenefitRecievable() float64 {
 
 	var total float64
 	for _, c := range agg.calculators {
-		total += c.Calc()
+		agg.setupChildBenefitCalculator(c)
+		total += c.BenefitRecievable()
 	}
 	return total
 }
 
 // SetBeneficiaries sets the children which the calculator will compute the
-// benefits for in subsequent calls to Calc()
-func (agg *ChildBenfitAggregator) SetBeneficiaries(children ...human.Person) {
-	for _, c := range agg.calculators {
-		c.SetBeneficiaries(children...)
-	}
+// benefits for in subsequent calls to BenefitRecievable()
+func (agg *ChildBenfitAggregator) SetBeneficiaries(children []*human.Person) {
+	agg.children = children
 }
 
 // SetFinances stores the given financial data in this calculator. Subsequent
 // calls to other calculator functions will be based on the the given finances.
 // Changes to the given finances after calling this function will affect future
 // calculations. If finances is nil, a non-nil, empty finances is set
-func (agg *ChildBenfitAggregator) SetFinances(finances core.Financer) {
-	for _, c := range agg.calculators {
-		c.SetFinances(finances)
-	}
+func (agg *ChildBenfitAggregator) SetFinances(finances core.HouseholdFinances) {
+	agg.finances = finances
+}
+
+// setupChildBenefitCalculator sets up the given calculator with the finances as
+// well as dependents stored in this aggregator
+func (agg *ChildBenfitAggregator) setupChildBenefitCalculator(c core.ChildBenefitCalculator) {
+	c.SetBeneficiaries(agg.children)
+	c.SetFinances(agg.finances)
 }

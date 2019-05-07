@@ -32,7 +32,7 @@ func TestBCECTBMaxReducer_Apply(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	child1, child2 := human.Person{AgeMonths: 0}, human.Person{AgeMonths: 6}
+	child1, child2 := &human.Person{AgeMonths: 0}, &human.Person{AgeMonths: 6}
 	income := 110000.0
 	max := 2.0 * 12.0 * 55
 	expected := max - (2 * 0.0132 * 10000)
@@ -124,7 +124,7 @@ func TestBCECTBMaxReducer_Clone(t *testing.T) {
 	}
 
 	income := 100000.0
-	child1, child2 := human.Person{AgeMonths: 0}, human.Person{AgeMonths: 6}
+	child1, child2 := &human.Person{AgeMonths: 0}, &human.Person{AgeMonths: 6}
 	originalResults := originalFormula.Apply(income, child1, child2)
 
 	clone := originalFormula.Clone()

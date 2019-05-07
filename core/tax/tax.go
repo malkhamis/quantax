@@ -3,24 +3,30 @@ package tax
 
 import (
 	"github.com/malkhamis/quantax/core"
+	"github.com/malkhamis/quantax/core/human"
 	"github.com/pkg/errors"
 )
 
 // Sentinel errors that can ben wrapped and returned by this package
 var (
-	ErrNoFormula           = errors.New("no formula given/set")
-	ErrNoContraFormula     = errors.New("no contra-formula given/set")
-	ErrNoCreditor          = errors.New("no creditor given/set")
-	ErrDupCreditSource     = errors.New("duplicates are not allowed")
-	ErrUnknownCreditSource = errors.New("unknown credit source")
-	ErrNoIncCalc           = errors.New("no income calculator given")
-	ErrNoCalc              = errors.New("no benefit calculator given")
+	ErrNoFormula       = errors.New("no formula given/set")
+	ErrNoContraFormula = errors.New("no contra-formula given/set")
+	ErrNoIncCalc       = errors.New("no income calculator given")
+	ErrInvalidTaxArg   = errors.New("invalid tax arguments")
+	ErrTooManyYears    = errors.New("too many tax years")
+	ErrNoCalc          = errors.New("no tax calculator given")
+	ErrNoCreditor      = errors.New("no creditor given/set")
+	ErrDupCreditSource = errors.New("duplicate credit sources are not allowed")
 )
 
 // Formula computes payable taxes on the given income
 type Formula interface {
 	// Apply applies the formula on the income
 	Apply(netIncome float64) float64
+	// Year is the tax year this contra formula is associated with
+	Year() uint
+	// Region is the tax region this contra formula is associated with
+	Region() core.Region
 	// Clone returns a copy of this formula
 	Clone() Formula
 	// Validate checks if the formula is valid for use
@@ -29,12 +35,18 @@ type Formula interface {
 
 // ContraFormula computes reduction on payable taxes for the given finances
 type ContraFormula interface {
-	// Apply applies the contra-formula and returns a slice of Credits that is
-	// sorted in a priority-of-use sequence, where the first item has the highest
-	// priority of use before the next item
-	Apply(finances *core.IndividualFinances, netIncome float64) []*taxCredit
+	// Apply applies the contra-formula and returns a slice of tax credits
+	Apply(*TaxPayer) []*TaxCredit
+	// FilterAndSort removes tax credits that are not recognized by this contra-
+	// formula and sort the remaining items in a priority-of-use sequence, where
+	// the first item has the highest priority of use before the next one
+	FilterAndSort(*[]core.TaxCredit)
 	// Clone returns a copy of this contra-formula
 	Clone() ContraFormula
+	// Year is the tax year this contra formula is associated with
+	Year() uint
+	// Region is the tax region this contra formula is associated with
+	Region() core.Region
 	// Validate checks if the formula is valid for use
 	Validate() error
 }
@@ -67,9 +79,31 @@ func (cfg CalcConfig) validate() error {
 		return errors.Wrap(err, "invalid contra-formula")
 	}
 
+	if cfg.TaxFormula.Year() != cfg.ContraTaxFormula.Year() {
+		return errors.Wrap(ErrInvalidTaxArg, "formula/contra-formula tax year mismatch")
+	}
+
+	if cfg.TaxFormula.Region() != cfg.ContraTaxFormula.Region() {
+		return errors.Wrap(ErrInvalidTaxArg, "formula/contra-formula tax region mismatch")
+	}
+
 	if cfg.IncomeCalc == nil {
 		return ErrNoIncCalc
 	}
 
 	return nil
+}
+
+// TaxPayer represents an individual who pays taxes
+type TaxPayer struct {
+	// the financial data of the subject tax payer
+	Finances core.Financer
+	// the net income for tax purposes
+	NetIncome float64
+	// the financial data of the tax payer's spouse
+	SpouseFinances core.Financer
+	// the net income of the spouse if applicable
+	SpouseNetIncome float64
+	// Dependents the dependents of the tax payer
+	Dependents []*human.Person
 }

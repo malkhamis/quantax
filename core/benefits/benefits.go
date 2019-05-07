@@ -19,7 +19,7 @@ var (
 // ChildBenefitFormula represents a method for calculating child benefits
 type ChildBenefitFormula interface {
 	// Apply returns the sum of benefits for all beneficiaries
-	Apply(netIncome float64, children ...human.Person) float64
+	Apply(netIncome float64, children ...*human.Person) float64
 	// Validate checks if the formula is valid for use
 	Validate() error
 	// Clone returns a copy of the formula
@@ -50,4 +50,14 @@ func (cfg CalcConfigCB) validate() error {
 	}
 
 	return nil
+}
+
+func getChildCount(children []*human.Person) int {
+	childCount := len(children)
+	for _, c := range children {
+		if c == nil {
+			childCount--
+		}
+	}
+	return childCount
 }

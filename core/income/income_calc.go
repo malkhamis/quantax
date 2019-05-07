@@ -31,10 +31,6 @@ func NewCalculator(recipe *Recipe) (*Calculator, error) {
 // If the given finances is nil, it returns 0.0
 func (c *Calculator) NetIncome() float64 {
 
-	if c.finances == nil {
-		return 0.0
-	}
-
 	netIncome := c.TotalIncome() - c.TotalDeductions()
 	return netIncome
 }
@@ -44,14 +40,10 @@ func (c *Calculator) NetIncome() float64 {
 // If the given finances is nil, it returns 0.0
 func (c *Calculator) TotalIncome() float64 {
 
-	if c.finances == nil {
-		return 0.0
-	}
-
 	var totalIncome float64
-	for source := range c.finances.IncomeSources() {
+	for _, source := range c.finances.IncomeSources() {
 
-		incomeFromSrc := c.finances.TotalIncome(source)
+		incomeFromSrc := c.finances.TotalAmount(source)
 
 		adjuster, isAdjustable := c.incomeAdjusters[source]
 		if isAdjustable {
@@ -70,14 +62,10 @@ func (c *Calculator) TotalIncome() float64 {
 // If the given finances is nil, it returns 0.0
 func (c *Calculator) TotalDeductions() float64 {
 
-	if c.finances == nil {
-		return 0.0
-	}
-
 	var totalDeductions float64
-	for source := range c.finances.DeductionSources() {
+	for _, source := range c.finances.DeductionSources() {
 
-		deducFromSrc := c.finances.TotalDeductions(source)
+		deducFromSrc := c.finances.TotalAmount(source)
 
 		adjuster, isAdjustable := c.deducAdjusters[source]
 		if isAdjustable {
@@ -91,9 +79,14 @@ func (c *Calculator) TotalDeductions() float64 {
 	return totalDeductions
 }
 
-// SetFinances sets the given finances to this calculator, making subsequent
-// calls based on them
+// SetFinances stores the given financial data in this calculator. Subsequent
+// calls to other calculator functions will be based on the the given finances.
+// Changes to the given finances after calling this function will affect future
+// calculations. If finances is nil, a noop instance is set
 func (c *Calculator) SetFinances(finances core.Financer) {
+	if finances == nil {
+		finances = core.NewFinancerNop()
+	}
 	c.finances = finances
 }
 
@@ -110,6 +103,7 @@ func (c *Calculator) initialize(recipe *Recipe) {
 		deducAdjusters[source] = adjuster.Clone()
 	}
 
+	c.finances = core.NewFinancerNop()
 	c.incomeAdjusters = incomeAdjusters
 	c.deducAdjusters = deducAdjusters
 }

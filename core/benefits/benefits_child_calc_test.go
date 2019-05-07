@@ -56,7 +56,7 @@ func TestCalculator_Calc_NilFinances(t *testing.T) {
 	}
 
 	calculator.SetFinances(nil)
-	actual := calculator.Calc()
+	actual := calculator.BenefitRecievable()
 	expected := 0.0
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
@@ -74,8 +74,8 @@ func TestCalculator_Calc(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	calculator.SetFinances(core.NewEmptyIndividualFinances())
-	actual := calculator.Calc()
+	calculator.SetFinances(core.NewHouseholdFinancesNop())
+	actual := calculator.BenefitRecievable()
 	expected := 3000.0 / 2.0
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
@@ -86,9 +86,9 @@ func TestCalculator_Calc(t *testing.T) {
 func TestCalculator_SetBeneficiaries(t *testing.T) {
 
 	c := &ChildBenfitCalculator{}
-	children := []human.Person{{AgeMonths: 1}, {AgeMonths: 2}}
+	children := []*human.Person{&human.Person{AgeMonths: 1}, &human.Person{AgeMonths: 2}}
 
-	c.SetBeneficiaries(children...)
+	c.SetBeneficiaries(children)
 	if len(c.children) != len(children) {
 		t.Fatalf("expected %d children, got: %d", len(children), len(c.children))
 	}
@@ -102,7 +102,7 @@ func TestCalculator_SetBeneficiaries(t *testing.T) {
 		}
 	}
 
-	c.SetBeneficiaries()
+	c.SetBeneficiaries(nil)
 	if len(c.children) != 0 {
 		t.Errorf("expected no children, got: %d", len(c.children))
 	}

@@ -3,8 +3,14 @@ package tax
 import (
 	"testing"
 
+	"github.com/go-test/deep"
+	"github.com/malkhamis/quantax/core"
 	"github.com/pkg/errors"
 )
+
+func init() {
+	deep.CompareUnexportedFields = true
+}
 
 func TestCalcConfig_validate(t *testing.T) {
 
@@ -18,9 +24,9 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "valid",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
-				TaxFormula:       testTaxFormula{},
-				ContraTaxFormula: &testTaxContraFormula{},
+				IncomeCalc:       &testIncomeCalculator{},
+				TaxFormula:       &testTaxFormula{},
+				ContraTaxFormula: &testContraTaxFormula{},
 			},
 			err: nil,
 		},
@@ -28,9 +34,9 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "invalid-tax-formula",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
-				TaxFormula:       testTaxFormula{onValidate: simulatedErr},
-				ContraTaxFormula: &testTaxContraFormula{},
+				IncomeCalc:       &testIncomeCalculator{},
+				TaxFormula:       &testTaxFormula{onValidate: simulatedErr},
+				ContraTaxFormula: &testContraTaxFormula{},
 			},
 			err: simulatedErr,
 		},
@@ -38,9 +44,9 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "invalid-contratax-formula",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
-				TaxFormula:       testTaxFormula{},
-				ContraTaxFormula: &testTaxContraFormula{onValidate: simulatedErr},
+				IncomeCalc:       &testIncomeCalculator{},
+				TaxFormula:       &testTaxFormula{},
+				ContraTaxFormula: &testContraTaxFormula{onValidate: simulatedErr},
 			},
 			err: simulatedErr,
 		},
@@ -48,9 +54,9 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "nil-tax-formula",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
+				IncomeCalc:       &testIncomeCalculator{},
 				TaxFormula:       nil,
-				ContraTaxFormula: &testTaxContraFormula{},
+				ContraTaxFormula: &testContraTaxFormula{},
 			},
 			err: ErrNoFormula,
 		},
@@ -58,8 +64,8 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "nil-contratax-formula",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
-				TaxFormula:       testTaxFormula{},
+				IncomeCalc:       &testIncomeCalculator{},
+				TaxFormula:       &testTaxFormula{},
 				ContraTaxFormula: nil,
 			},
 			err: ErrNoContraFormula,
@@ -68,18 +74,36 @@ func TestCalcConfig_validate(t *testing.T) {
 		{
 			name: "invalid-contratax-formula",
 			cfg: CalcConfig{
-				IncomeCalc:       testIncomeCalculator{},
+				IncomeCalc:       &testIncomeCalculator{},
 				TaxFormula:       nil,
-				ContraTaxFormula: &testTaxContraFormula{},
+				ContraTaxFormula: &testContraTaxFormula{},
 			},
 			err: ErrNoFormula,
+		},
+		{
+			name: "year-mismatch",
+			cfg: CalcConfig{
+				IncomeCalc:       &testIncomeCalculator{},
+				TaxFormula:       &testTaxFormula{onYear: 2019},
+				ContraTaxFormula: &testContraTaxFormula{onYear: 2020},
+			},
+			err: ErrInvalidTaxArg,
+		},
+		{
+			name: "region-mismatch",
+			cfg: CalcConfig{
+				IncomeCalc:       &testIncomeCalculator{},
+				TaxFormula:       &testTaxFormula{onRegion: core.Region("Somewhere")},
+				ContraTaxFormula: &testContraTaxFormula{onRegion: core.Region("NoMan")},
+			},
+			err: ErrInvalidTaxArg,
 		},
 		{
 			name: "nil-income-calculator",
 			cfg: CalcConfig{
 				IncomeCalc:       nil,
-				TaxFormula:       testTaxFormula{},
-				ContraTaxFormula: &testTaxContraFormula{},
+				TaxFormula:       &testTaxFormula{},
+				ContraTaxFormula: &testContraTaxFormula{},
 			},
 			err: ErrNoIncCalc,
 		},

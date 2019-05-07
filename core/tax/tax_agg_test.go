@@ -1,18 +1,21 @@
 package tax
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/go-test/deep"
 	"github.com/malkhamis/quantax/core"
+	"github.com/malkhamis/quantax/core/human"
 	"github.com/pkg/errors"
 )
 
-func TestAggregator(t *testing.T) {
+func TestNewAggregator(t *testing.T) {
 
-	c0, c1, c2 := &Calculator{}, &Calculator{}, &Calculator{}
+	c0, c1, c2 := &Calculator{taxYear: 2000}, &Calculator{}, &Calculator{}
 	_, err := NewAggregator(c0, c1, c2)
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
+	if errors.Cause(err) != ErrTooManyYears {
+		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrTooManyYears, err)
 	}
 
 	_, err = NewAggregator(nil, nil, nil)
@@ -20,17 +23,32 @@ func TestAggregator(t *testing.T) {
 		t.Errorf("unexpected error\nwant: %v\n got: %v", ErrNoCalc, err)
 	}
 
+	c0, c1, c2 = &Calculator{}, &Calculator{}, &Calculator{}
+	_, err = NewAggregator(c0, c1, c2)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
 }
 
-func TestAggregator_TaxPayable(t *testing.T) {
+func TestAggregator(t *testing.T) {
 
-	incCalc := testIncomeCalculator{onTotalIncome: 3000.0}
-	formula := testTaxFormula{onApply: incCalc.TotalIncome() / 2.0}
+	finances := core.NewHouseholdFinancesNop()
+
+	incCalc := &testIncomeCalculator{onTotalIncome: 3000.0}
+	formula := &testTaxFormula{onApply: incCalc.TotalIncome() / 2.0}
 
 	cfg := CalcConfig{
-		TaxFormula:       formula,
-		ContraTaxFormula: &testTaxContraFormula{},
-		IncomeCalc:       incCalc,
+		TaxFormula: formula,
+		ContraTaxFormula: &testContraTaxFormula{
+			onApply: []*TaxCredit{
+				&TaxCredit{
+					AmountRemaining: 100,
+					CrRule:          core.CreditRule{Type: core.CrRuleTypeCashable},
+				},
+			},
+		},
+		IncomeCalc: incCalc,
 	}
 
 	c0, err := NewCalculator(cfg)
@@ -53,45 +71,110 @@ func TestAggregator_TaxPayable(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	aggregator.SetFinances(core.NewEmptyIndividualFinances())
-	actual, _ := aggregator.TaxPayable()
+	aggregator.SetFinances(finances, nil)
+	actualA, actualB, cr := aggregator.TaxPayable()
 	expected := (3000.0 / 2.0) * float64(len(aggregator.calculators))
-	if actual != expected {
-		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
+	expected -= 300.0
+	if actualA != expected {
+		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actualA)
+	}
+	if actualB != expected {
+		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actualB)
+	}
+	if len(cr) != 6 {
+		t.Errorf("expected 6 tax credits, got: %d", len(cr))
 	}
 }
 
-func TestAggregator_SetCredits(t *testing.T) {
+func TestAggregator_Year(t *testing.T) {
 
-	c0, c1, c2 := &Calculator{}, &Calculator{}, &Calculator{}
-	agg, err := NewAggregator(c0, c1, c2)
+	c0, c1 := &Calculator{taxYear: 2019}, &Calculator{taxYear: 2019}
+	agg, err := NewAggregator(c0, c1)
 	if err != nil {
-		t.Errorf("unexpected error: %v", err)
+		t.Fatal(err)
 	}
 
-	tc0 := &taxCredit{owner: c0}
-	tc1 := &taxCredit{owner: c1}
-	tcAnonymous := &taxCredit{owner: nil}
-	credits := []core.TaxCredit{tc0, tc1, tcAnonymous}
-
-	agg.SetCredits(credits)
-
-	if len(c0.credits) != 1 {
-		t.Fatalf("expected exactly one credit in c0, got: %d", len(c0.credits))
+	year := agg.Year()
+	if year != 2019 {
+		t.Errorf("expected tax year to be 2019, got: %d", year)
 	}
-	if c0.credits[0] != tc0 {
-		t.Error("expected c0 to accept owned tc0 as credit")
-	}
+}
 
-	if len(c1.credits) != 1 {
-		t.Fatalf("expected exactly one credit in c1, got: %d", len(c1.credits))
-	}
-	if c1.credits[0] != tc1 {
-		t.Error("expected c1 to accept owned tc0 as credit")
+func TestAggregator_Regions(t *testing.T) {
+
+	c0, c1 := &Calculator{taxRegion: "BC"}, &Calculator{taxRegion: "Canada"}
+	agg, err := NewAggregator(c0, c1)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	if len(c2.credits) != 0 {
-		t.Fatalf("expected zero credit in c2, got: %d", len(c2.credits))
+	regions := agg.Regions()
+	diff := deep.Equal(regions, []core.Region{"BC", "Canada"})
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+}
+
+func TestAggregator_SetDependents(t *testing.T) {
+
+	deps := []*human.Person{
+		&human.Person{Name: "test1"},
+		&human.Person{Name: "test2"},
+	}
+
+	agg := &Aggregator{}
+	agg.SetDependents(deps)
+
+	diff := deep.Equal(agg.dependents, deps)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+}
+
+func TestAggregator_setupTaxCalculator(t *testing.T) {
+
+	c0 := &Calculator{taxYear: 2019, taxRegion: "BC"}
+
+	deps := []*human.Person{
+		&human.Person{Name: "test1"},
+		&human.Person{Name: "test2"},
+	}
+
+	finances := core.NewHouseholdFinancesNop()
+	crA := &testTaxCredit{
+		onReferenceFinancer: finances.SpouseA(),
+		onAmounts:           [3]float64{2000, 1000, 1000},
+		onRegion:            "BC",
+		onYear:              2019,
+	}
+	crB := &testTaxCredit{
+		onReferenceFinancer: finances.SpouseB(),
+		onAmounts:           [3]float64{4000, 2000, 2000},
+		onRegion:            "Canada",
+		onYear:              2019,
+	}
+
+	agg := &Aggregator{
+		finances:   finances,
+		credits:    []core.TaxCredit{crA, crB},
+		dependents: deps,
+	}
+
+	agg.setupTaxCalculator(c0)
+
+	diff := deep.Equal(c0.credits, []core.TaxCredit{crA, crB})
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
+	}
+
+	if c0.finances != finances {
+		t.Errorf("expected first calculator to be set with given household finances")
+	}
+
+	diff = deep.Equal(c0.dependents, deps)
+	if diff != nil {
+		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
 }

@@ -4,7 +4,7 @@ package core
 type FinancialSource int
 
 const (
-	SrcUnknown FinancialSource = iota
+	SrcNone FinancialSource = iota
 
 	IncomeSourcesBegin
 	IncSrcEarned        // employment and labour income
@@ -48,32 +48,4 @@ func (s FinancialSource) IsMiscSource() bool {
 // IsUnknownSource returns true if this source is an unidentified source
 func (s FinancialSource) IsUnknownSource() bool {
 	return !s.IsIncomeSource() && !s.IsDeductionSource() && !s.IsMiscSource()
-}
-
-// amountBySource maps amounts to their financial source types
-type amountBySource map[FinancialSource]float64
-
-// Sum returns the sum of all amounts
-func (s amountBySource) Sum() float64 {
-	var total float64
-	for _, amount := range s {
-		total += amount
-	}
-	return total
-}
-
-// Clone returns a copy of this instance
-func (s amountBySource) Clone() amountBySource {
-
-	var clone amountBySource
-
-	if s != nil {
-		clone = make(amountBySource)
-	}
-
-	for source, amount := range s {
-		clone[source] = amount
-	}
-
-	return clone
 }

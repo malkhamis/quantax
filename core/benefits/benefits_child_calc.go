@@ -13,8 +13,8 @@ import (
 type ChildBenfitCalculator struct {
 	formula          ChildBenefitFormula
 	incomeCalculator core.IncomeCalculator
-	children         []human.Person
-	finances         core.Financer
+	children         []*human.Person
+	finances         core.HouseholdFinances
 }
 
 // compile-time check for interface implementation
@@ -36,19 +36,18 @@ func NewChildBenefitCalculator(cfg CalcConfigCB) (*ChildBenfitCalculator, error)
 	return c, nil
 }
 
-// Calc returns the recievable amount of child benefits
-func (c *ChildBenfitCalculator) Calc() float64 {
+// BenefitRecievable returns the recievable amount of child benefits
+func (c *ChildBenfitCalculator) BenefitRecievable() float64 {
 
-	netIncome := c.incomeCalculator.NetIncome()
+	netIncome := c.householdNetIncome()
 	benefits := c.formula.Apply(netIncome, c.children...)
 	return benefits
 }
 
 // SetBeneficiaries sets the children which the calculator will compute the
-// benefits for in subsequent calls to Calc()
-func (c *ChildBenfitCalculator) SetBeneficiaries(children ...human.Person) {
-	c.children = make([]human.Person, len(children))
-	copy(c.children, children)
+// benefits for in subsequent calls to BenefitRecievable()
+func (c *ChildBenfitCalculator) SetBeneficiaries(children []*human.Person) {
+	c.children = children
 }
 
 // SetFinances stores the given financial data in this calculator. Subsequent
@@ -56,7 +55,22 @@ func (c *ChildBenfitCalculator) SetBeneficiaries(children ...human.Person) {
 // Changes to the given finances after calling this function will affect future
 // calculations. If finances is nil, a non-nil, empty finances is set. It must
 // be noted that this function also calls SetFinances on the income calculator
-func (c *ChildBenfitCalculator) SetFinances(finances core.Financer) {
+func (c *ChildBenfitCalculator) SetFinances(finances core.HouseholdFinances) {
+	if finances == nil {
+		finances = core.NewHouseholdFinancesNop()
+	}
+
 	c.finances = finances
-	c.incomeCalculator.SetFinances(finances)
+}
+
+// householdNetIncome calculates the net income of the stored household finances
+func (c *ChildBenfitCalculator) householdNetIncome() float64 {
+
+	c.incomeCalculator.SetFinances(c.finances.SpouseA())
+	netIncome := c.incomeCalculator.NetIncome()
+
+	c.incomeCalculator.SetFinances(c.finances.SpouseB())
+	netIncome += c.incomeCalculator.NetIncome()
+
+	return netIncome
 }

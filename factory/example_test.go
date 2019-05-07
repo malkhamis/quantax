@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/malkhamis/quantax/core"
+	"github.com/malkhamis/quantax/core/finance"
 	"github.com/malkhamis/quantax/core/human"
 )
 
@@ -16,15 +17,16 @@ func ExampleNewTaxFactory() {
 		return
 	}
 
-	finances := core.NewEmptyIndividualFinances()
-	calculator.SetFinances(finances)
+	myFinances := finance.NewIndividualFinances()
+	finances := finance.NewHouseholdFinances(myFinances, nil)
+	calculator.SetFinances(finances, nil)
 
-	finances.AddAmount(core.IncSrcEarned, 170000.0)
-	finances.AddAmount(core.IncSrcCapitalGainCA, 20000)
-	finances.AddAmount(core.IncSrcTFSA, 12000)
-	finances.AddAmount(core.DeducSrcRRSP, 10000)
+	myFinances.AddAmount(core.IncSrcEarned, 170000.0)
+	myFinances.AddAmount(core.IncSrcCapitalGainCA, 20000)
+	myFinances.AddAmount(core.IncSrcTFSA, 12000)
+	myFinances.AddAmount(core.DeducSrcRRSP, 10000)
 
-	aggTax, _ := calculator.TaxPayable()
+	aggTax, _, _ := calculator.TaxPayable()
 	fmt.Printf("%.2f\n", aggTax) // Output: 52821.09
 }
 
@@ -37,11 +39,14 @@ func ExampleNewChildBenefitFactory() {
 		return
 	}
 
-	children := []human.Person{{Name: "A", AgeMonths: 3}, {Name: "B", AgeMonths: 3}}
-	calculator.SetBeneficiaries(children...)
+	children := []*human.Person{
+		&human.Person{Name: "A", AgeMonths: 3},
+		&human.Person{Name: "B", AgeMonths: 3},
+	}
+	calculator.SetBeneficiaries(children)
 
-	f1 := core.NewEmptyIndividualFinances()
-	f2 := core.NewEmptyIndividualFinances()
+	f1 := finance.NewIndividualFinances()
+	f2 := finance.NewIndividualFinances()
 
 	f1.AddAmount(core.IncSrcEarned, 109500.0)
 	f1.AddAmount(core.IncSrcCapitalGainCA, 1000)
@@ -51,9 +56,9 @@ func ExampleNewChildBenefitFactory() {
 	f1.AddAmount(core.IncSrcCapitalGainCA, 500)
 	f2.AddAmount(core.DeducSrcRRSP, 15000)
 
-	finances := core.NewHouseholdFinances(f1, f2)
+	finances := finance.NewHouseholdFinances(f1, f2)
 	calculator.SetFinances(finances)
-	total := calculator.Calc()
+	total := calculator.BenefitRecievable()
 
 	fmt.Printf("%.2f", total) // Output: 6742.54
 }
@@ -73,16 +78,12 @@ func ExampleNewRRSPFactory() {
 		return
 	}
 
-	finances := core.NewEmptyIndividualFinances()
-	finances.AddAmount(core.IncSrcEarned, 100000.0)
-	finances.SetRRSPAmounts(core.RRSPAmounts{ContributionRoom: 15000.0})
+	myFinances := finance.NewIndividualFinances()
+	hf := finance.NewHouseholdFinances(myFinances, nil)
+	myFinances.AddAmount(core.IncSrcEarned, 100000.0)
 
-	calculator.SetFinances(finances)
-	taxRecievable, err := calculator.TaxRefund(15000.0)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	calculator.SetFinances(hf, nil)
+	taxRecievable, _ := calculator.TaxRefund(15000.0)
 
 	fmt.Printf("%.2f", taxRecievable) // Output: 5182.74
 }

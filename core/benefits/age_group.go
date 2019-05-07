@@ -15,40 +15,54 @@ type AgeGroupBenefits struct {
 
 type multiAgeGroupBenefits []AgeGroupBenefits
 
-func (ma multiAgeGroupBenefits) MaxAnnualAmount(child human.Person) float64 {
+func (ma multiAgeGroupBenefits) MaxAnnualAmount(child *human.Person) float64 {
 
-	var max float64
+	if child == nil {
+		return 0.0
+	}
+
+	var (
+		childClone = *child
+		max        float64
+	)
 
 	for range make([]struct{}, 12) {
 		for _, ageGroup := range ma {
 
-			if ageGroup.IsInAgeGroup(child) {
+			if ageGroup.IsInAgeGroup(&childClone) {
 				max += ageGroup.AmountsPerMonth.Upper()
 			}
 			// we still want to loop in case the child
 			// belongs to multiple benefit classes
 		}
-		child.AgeMonths++
+		childClone.AgeMonths++
 	}
 
 	return max
 
 }
 
-func (ma multiAgeGroupBenefits) MinAnnualAmount(child human.Person) float64 {
+func (ma multiAgeGroupBenefits) MinAnnualAmount(child *human.Person) float64 {
 
-	var min float64
+	if child == nil {
+		return 0.0
+	}
+
+	var (
+		childClone = *child
+		min        float64
+	)
 
 	for range make([]struct{}, 12) {
 		for _, ageGroup := range ma {
 
-			if ageGroup.IsInAgeGroup(child) {
+			if ageGroup.IsInAgeGroup(&childClone) {
 				min += ageGroup.AmountsPerMonth.Lower()
 			}
 			// we still want to loop in case the child
 			// belongs to multiple benefit classes
 		}
-		child.AgeMonths++
+		childClone.AgeMonths++
 	}
 
 	return min
@@ -70,7 +84,11 @@ func NewAgeGroupBenefits(ages human.AgeRange, minmaxAmnts core.Bracket) (AgeGrou
 
 // IsInAgeGroup returns true if the age of the given person is with the range
 // of this group's age range
-func (g AgeGroupBenefits) IsInAgeGroup(person human.Person) bool {
+func (g AgeGroupBenefits) IsInAgeGroup(person *human.Person) bool {
+
+	if person == nil {
+		return false
+	}
 
 	geqMinAge := person.AgeMonths >= g.AgesMonths.Min()
 	leqMaxAge := person.AgeMonths <= g.AgesMonths.Max()
