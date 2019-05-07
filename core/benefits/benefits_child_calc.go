@@ -36,8 +36,8 @@ func NewChildBenefitCalculator(cfg CalcConfigCB) (*ChildBenfitCalculator, error)
 	return c, nil
 }
 
-// Calc returns the recievable amount of child benefits
-func (c *ChildBenfitCalculator) Calc() float64 {
+// BenefitRecievable returns the recievable amount of child benefits
+func (c *ChildBenfitCalculator) BenefitRecievable() float64 {
 
 	netIncome := c.householdNetIncome()
 	benefits := c.formula.Apply(netIncome, c.children...)
@@ -45,8 +45,8 @@ func (c *ChildBenfitCalculator) Calc() float64 {
 }
 
 // SetBeneficiaries sets the children which the calculator will compute the
-// benefits for in subsequent calls to Calc()
-func (c *ChildBenfitCalculator) SetBeneficiaries(children ...*human.Person) {
+// benefits for in subsequent calls to BenefitRecievable()
+func (c *ChildBenfitCalculator) SetBeneficiaries(children []*human.Person) {
 	c.children = children
 }
 

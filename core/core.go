@@ -21,15 +21,14 @@ type IncomeCalculator interface {
 // ChildBenefitCalculator is used to calculate recievable child benefits for
 // families with dependent children.
 type ChildBenefitCalculator interface {
-	// Calc returns the recievable amount of child benefits for the given
-	// finances and the children set in the calculator
-	Calc() float64
+	// BenefitRecievable returns the recievable amount of child benefits for the
+	// given finances and the children set in the calculator
+	BenefitRecievable() float64
 	// SetFinances makes subsequent calculations based on the given finances
 	SetFinances(HouseholdFinances)
-	// TODO eliminate this variadic param
 	// SetBeneficiaries sets the children which the calculator will compute the
-	// benefits for in subsequent calls to Calc()
-	SetBeneficiaries(...*human.Person)
+	// benefits for in subsequent calls to BenefitRecievable()
+	SetBeneficiaries([]*human.Person)
 }
 
 // RRSPCalculator is used to calculate recievable or payable tax on transactions

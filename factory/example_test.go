@@ -43,7 +43,7 @@ func ExampleNewChildBenefitFactory() {
 		&human.Person{Name: "A", AgeMonths: 3},
 		&human.Person{Name: "B", AgeMonths: 3},
 	}
-	calculator.SetBeneficiaries(children...)
+	calculator.SetBeneficiaries(children)
 
 	f1 := finance.NewIndividualFinances()
 	f2 := finance.NewIndividualFinances()
@@ -58,7 +58,7 @@ func ExampleNewChildBenefitFactory() {
 
 	finances := finance.NewHouseholdFinances(f1, f2)
 	calculator.SetFinances(finances)
-	total := calculator.Calc()
+	total := calculator.BenefitRecievable()
 
 	fmt.Printf("%.2f", total) // Output: 6742.54
 }

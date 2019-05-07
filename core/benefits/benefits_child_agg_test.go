@@ -51,7 +51,7 @@ func TestCalculatorAgg_Calc(t *testing.T) {
 	}
 
 	aggregator.SetFinances(core.NewHouseholdFinancesNop())
-	actual := aggregator.Calc()
+	actual := aggregator.BenefitRecievable()
 	expected := (3000.0 / 2.0) * float64(len(aggregator.calculators))
 	if actual != expected {
 		t.Errorf("unexpected results\nwant: %.2f\n got: %.2f", expected, actual)
@@ -112,7 +112,7 @@ func TestAggregator_setupChildBenefitCalculator(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	aggregator.SetBeneficiaries(children...)
+	aggregator.SetBeneficiaries(children)
 	aggregator.SetFinances(finances)
 	aggregator.setupChildBenefitCalculator(c0)
 
