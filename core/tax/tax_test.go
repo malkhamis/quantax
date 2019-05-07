@@ -3,9 +3,14 @@ package tax
 import (
 	"testing"
 
+	"github.com/go-test/deep"
 	"github.com/malkhamis/quantax/core"
 	"github.com/pkg/errors"
 )
+
+func init() {
+	deep.CompareUnexportedFields = true
+}
 
 func TestCalcConfig_validate(t *testing.T) {
 
