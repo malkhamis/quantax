@@ -63,7 +63,6 @@ func (agg *Aggregator) Regions() []core.Region {
 	return regions
 }
 
-// TODO: this one and SetDependents should only cache the given params
 // SetFinances sets the given finances in all underlying tax calculators
 func (agg *Aggregator) SetFinances(f core.HouseholdFinances, credits []core.TaxCredit) {
 	agg.finances = f

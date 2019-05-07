@@ -58,7 +58,6 @@ type CalcConfig struct {
 	ContraTaxFormula ContraFormula
 }
 
-// TODO: validate formual and contra formula are for the same region and year?
 // validate checks if the configurations are valid for use by calc constructors
 func (cfg CalcConfig) validate() error {
 

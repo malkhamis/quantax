@@ -11,6 +11,8 @@ import (
 // implements the following interface:
 //  core.ChildBenefitCalculator
 type ChildBenfitAggregator struct {
+	finances    core.HouseholdFinances
+	children    []*human.Person
 	calculators []core.ChildBenefitCalculator
 }
 
@@ -41,18 +43,16 @@ func (agg *ChildBenfitAggregator) Calc() float64 {
 
 	var total float64
 	for _, c := range agg.calculators {
+		agg.setupChildBenefitCalculator(c)
 		total += c.Calc()
 	}
 	return total
 }
 
-// TODO: should only cache them and set in the underlying calculator before use
 // SetBeneficiaries sets the children which the calculator will compute the
 // benefits for in subsequent calls to Calc()
 func (agg *ChildBenfitAggregator) SetBeneficiaries(children ...*human.Person) {
-	for _, c := range agg.calculators {
-		c.SetBeneficiaries(children...)
-	}
+	agg.children = children
 }
 
 // SetFinances stores the given financial data in this calculator. Subsequent
@@ -60,7 +60,12 @@ func (agg *ChildBenfitAggregator) SetBeneficiaries(children ...*human.Person) {
 // Changes to the given finances after calling this function will affect future
 // calculations. If finances is nil, a non-nil, empty finances is set
 func (agg *ChildBenfitAggregator) SetFinances(finances core.HouseholdFinances) {
-	for _, c := range agg.calculators {
-		c.SetFinances(finances)
-	}
+	agg.finances = finances
+}
+
+// setupChildBenefitCalculator sets up the given calculator with the finances as
+// well as dependents stored in this aggregator
+func (agg *ChildBenfitAggregator) setupChildBenefitCalculator(c core.ChildBenefitCalculator) {
+	c.SetBeneficiaries(agg.children...)
+	c.SetFinances(agg.finances)
 }
