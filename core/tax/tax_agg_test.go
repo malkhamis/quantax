@@ -163,7 +163,7 @@ func TestAggregator_setupTaxCalculator(t *testing.T) {
 
 	agg.setupTaxCalculator(c0)
 
-	diff := deep.Equal(c0.crSpouseA, []core.TaxCredit{crA})
+	diff := deep.Equal(c0.credits, []core.TaxCredit{crA, crB})
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}

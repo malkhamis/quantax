@@ -48,12 +48,7 @@ func TestCalculator_SetFinances(t *testing.T) {
 	calc := &Calculator{}
 	calc.SetFinances(f, credits)
 
-	diff := deep.Equal(calc.crSpouseA[0], crSpouseA)
-	if diff != nil {
-		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
-	}
-
-	diff = deep.Equal(calc.crSpouseB[0], crSpouseB)
+	diff := deep.Equal(calc.credits, credits)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
@@ -74,123 +69,95 @@ func TestCalculator_SetFinances_Nil(t *testing.T) {
 	}
 }
 
-func TestCalculator_setCredits_Nil_Credit(t *testing.T) {
+func TestCalculator_isValidTaxCredit_NilCredit(t *testing.T) {
 
 	calc := &Calculator{}
-	credits := []core.TaxCredit{nil}
-	calc.setCredits(credits)
-
-	if len(calc.crSpouseA) != 0 {
-		t.Error("expected no credits to be set")
-	}
-	if len(calc.crSpouseB) != 0 {
-		t.Error("expected no credits to be set")
+	valid := calc.isValidTaxCredit(nil)
+	if valid {
+		t.Error("expected nil tax credit to be invalid")
 	}
 }
 
-func TestCalculator_setCredits_Zero_Credit(t *testing.T) {
+func TestCalculator_isValidTaxCredit_ZeroCredit(t *testing.T) {
 
 	calc := &Calculator{}
-	credits := []core.TaxCredit{
-		&testTaxCredit{onAmounts: [3]float64{0, 0, 0}},
+	cr := &testTaxCredit{onAmounts: [3]float64{0, 0, 0}}
+	valid := calc.isValidTaxCredit(cr)
+	if valid {
+		t.Error("expected zero tax credit to be invalid")
 	}
-	calc.setCredits(credits)
 
-	if len(calc.crSpouseA) != 0 {
-		t.Error("expected no credits to be set")
-	}
-	if len(calc.crSpouseB) != 0 {
-		t.Error("expected no credits to be set")
-	}
 }
 
-func TestCalculator_setCredits_different_tax_region(t *testing.T) {
+func TestCalculator_isValidTaxCredit_different_tax_region(t *testing.T) {
 
 	calc := &Calculator{taxRegion: core.Region(t.Name())}
-	credits := []core.TaxCredit{
-		&testTaxCredit{
-			onRegion:  "something-else",
-			onAmounts: [3]float64{0, 0, 1000},
-		},
+	cr := &testTaxCredit{
+		onRegion:  "something-else",
+		onAmounts: [3]float64{0, 0, 1000},
 	}
-	calc.setCredits(credits)
 
-	if len(calc.crSpouseA) != 0 {
-		t.Error("expected no credits to be set")
-	}
-	if len(calc.crSpouseB) != 0 {
-		t.Error("expected no credits to be set")
+	valid := calc.isValidTaxCredit(cr)
+	if valid {
+		t.Error("expected tax credit for different region to be invalid")
 	}
 }
 
-func TestCalculator_setCredits_future_credits(t *testing.T) {
+func TestCalculator_isValidTaxCredit_future_credits(t *testing.T) {
 
 	calc := &Calculator{taxRegion: core.Region(t.Name()), taxYear: 2019}
-	credits := []core.TaxCredit{
-		&testTaxCredit{
-			onRegion:  core.Region(t.Name()),
-			onAmounts: [3]float64{0, 0, 1000},
-			onYear:    2020,
-		},
+	cr := &testTaxCredit{
+		onRegion:  core.Region(t.Name()),
+		onAmounts: [3]float64{0, 0, 1000},
+		onYear:    2020,
 	}
-	calc.setCredits(credits)
 
-	if len(calc.crSpouseA) != 0 {
-		t.Error("expected no credits to be set")
-	}
-	if len(calc.crSpouseB) != 0 {
-		t.Error("expected no credits to be set")
+	valid := calc.isValidTaxCredit(cr)
+	if valid {
+		t.Error("expected future tax credit to be invalid")
 	}
 }
 
-func TestCalculator_setCredits_different_finances(t *testing.T) {
+func TestCalculator_isValidTaxCredit_different_finances(t *testing.T) {
 
 	calc := &Calculator{
 		finances:  core.NewHouseholdFinancesNop(),
 		taxRegion: core.Region(t.Name()),
 		taxYear:   2019,
 	}
-	credits := []core.TaxCredit{
-		&testTaxCredit{
-			onRegion:            core.Region(t.Name()),
-			onAmounts:           [3]float64{0, 0, 1000},
-			onYear:              2019,
-			onReferenceFinancer: core.NewFinancerNop(),
-		},
-	}
-	calc.setCredits(credits)
 
-	if len(calc.crSpouseA) != 0 {
-		t.Error("expected no credits to be set")
+	cr := &testTaxCredit{
+		onRegion:            core.Region(t.Name()),
+		onAmounts:           [3]float64{0, 0, 1000},
+		onYear:              2019,
+		onReferenceFinancer: core.NewFinancerNop(),
 	}
-	if len(calc.crSpouseB) != 0 {
-		t.Error("expected no credits to be set")
+
+	valid := calc.isValidTaxCredit(cr)
+	if valid {
+		t.Error("expected tax credit referencing foreign finances to be invalid")
 	}
 }
 
-func TestCalculator_setCredits_unreferenced_credit(t *testing.T) {
+func TestCalculator_isValidTaxCredit_unreferenced_credit(t *testing.T) {
 
 	calc := &Calculator{
 		finances:  core.NewHouseholdFinancesNop(),
 		taxRegion: core.Region(t.Name()),
 		taxYear:   2019,
 	}
-	credits := []core.TaxCredit{
-		&testTaxCredit{
-			onRegion:            core.Region(t.Name()),
-			onAmounts:           [3]float64{0, 0, 1000},
-			onYear:              2019,
-			onReferenceFinancer: nil,
-		},
+	cr := &testTaxCredit{
+		onRegion:            core.Region(t.Name()),
+		onAmounts:           [3]float64{0, 0, 1000},
+		onYear:              2019,
+		onReferenceFinancer: nil,
 	}
-	calc.setCredits(credits)
 
-	if len(calc.crSpouseA) != 0 {
-		t.Error("expected no credits to be set")
+	valid := calc.isValidTaxCredit(cr)
+	if valid {
+		t.Error("expected unreferenced tax credit to be invalid")
 	}
-	if len(calc.crSpouseB) != 0 {
-		t.Error("expected no credits to be set")
-	}
+
 }
 
 func TestCalculator_SetDependents(t *testing.T) {
@@ -370,27 +337,46 @@ func TestCalculator_totalTax(t *testing.T) {
 
 func TestCalculator_totalCredits(t *testing.T) {
 
-	crSpouseA := &testTaxCredit{onRegion: core.Region(t.Name())}
-	crSpouseB := &testTaxCredit{onRegion: core.Region("another")}
-	simulatedCr := []*TaxCredit{{}, {}}
+	financesSpouseA, financesSpouseB := core.NewFinancerNop(), core.NewFinancerNop()
+	finances := &testHouseholdFinances{
+		onSpouseA: financesSpouseA,
+		onSpouseB: financesSpouseB,
+	}
+
+	crSpouseA := &testTaxCredit{
+		onAmounts:           [3]float64{1000, 0, 1000},
+		onReferenceFinancer: financesSpouseA,
+	}
+	crSpouseB := &testTaxCredit{
+		onAmounts:           [3]float64{2000, 0, 2000},
+		onReferenceFinancer: financesSpouseB,
+	}
+
+	simulatedCr := []*TaxCredit{
+		// this credit is invalid, but we trust the actual formula to not
+		// do the same thing as we are only testing here
+		&TaxCredit{
+			AmountRemaining: 3000,
+			Ref:             nil,
+		},
+	}
+
 	calc := &Calculator{
-		finances:  core.NewHouseholdFinancesNop(),
-		crSpouseA: []core.TaxCredit{crSpouseA},
-		crSpouseB: []core.TaxCredit{crSpouseB},
+		finances: finances,
+		credits:  []core.TaxCredit{crSpouseA, crSpouseB, nil},
 		contraFormula: &testContraTaxFormula{
 			onApply: simulatedCr,
 		},
 	}
 
 	actualA, actualB := calc.totalCredits(0, 0)
-
-	expectedA := []core.TaxCredit{crSpouseA, simulatedCr[0], simulatedCr[1]}
+	expectedA := []core.TaxCredit{simulatedCr[0], crSpouseA}
 	diff := deep.Equal(actualA, expectedA)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))
 	}
 
-	expectedB := []core.TaxCredit{crSpouseB, simulatedCr[0], simulatedCr[1]}
+	expectedB := []core.TaxCredit{simulatedCr[0], crSpouseB}
 	diff = deep.Equal(actualB, expectedB)
 	if diff != nil {
 		t.Error("actual does not match expected\n", strings.Join(diff, "\n"))

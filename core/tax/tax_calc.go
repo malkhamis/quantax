@@ -15,8 +15,7 @@ type Calculator struct {
 	contraFormula    ContraFormula
 	incomeCalculator core.IncomeCalculator
 	finances         core.HouseholdFinances
-	crSpouseA        []core.TaxCredit
-	crSpouseB        []core.TaxCredit
+	credits          []core.TaxCredit
 	dependents       []*human.Person
 	taxYear          uint
 	taxRegion        core.Region
@@ -66,7 +65,8 @@ func (c *Calculator) SetFinances(f core.HouseholdFinances, credits []core.TaxCre
 
 	c.finances = f
 	c.panicIfEqNonNilSpouses()
-	c.setCredits(credits)
+
+	c.credits = credits
 }
 
 // SetDependents sets the dependents which the calculator might use for tax-
@@ -122,31 +122,31 @@ func (c *Calculator) totalCredits(netIncomeA, netIncomeB float64) (totalCrA, tot
 
 	taxPayerA, taxPayerB := c.makeTaxPayers(netIncomeA, netIncomeB)
 
-	newCrA := taxCreditGroup(
+	creditsA := taxCreditGroup(
 		c.contraFormula.Apply(taxPayerA),
 	).typecast()
 
-	newCrB := taxCreditGroup(
+	creditsB := taxCreditGroup(
 		c.contraFormula.Apply(taxPayerB),
 	).typecast()
 
-	crSpouseA := make([]core.TaxCredit, len(c.crSpouseA))
-	for i, cr := range c.crSpouseA {
-		crSpouseA[i] = cr.ShallowCopy()
+	for _, cr := range c.credits {
+
+		if !c.isValidTaxCredit(cr) {
+			continue
+		}
+
+		if cr.ReferenceFinancer() == c.finances.SpouseA() {
+			creditsA = append(creditsA, cr.ShallowCopy())
+			continue
+		}
+		creditsB = append(creditsB, cr.ShallowCopy())
 	}
 
-	crSpouseB := make([]core.TaxCredit, len(c.crSpouseB))
-	for i, cr := range c.crSpouseB {
-		crSpouseB[i] = cr.ShallowCopy()
-	}
+	c.contraFormula.FilterAndSort(&creditsA)
+	c.contraFormula.FilterAndSort(&creditsB)
 
-	totalCrA = append(crSpouseA, newCrA...)
-	totalCrB = append(crSpouseB, newCrB...)
-
-	c.contraFormula.FilterAndSort(&totalCrA)
-	c.contraFormula.FilterAndSort(&totalCrB)
-
-	return totalCrA, totalCrB
+	return creditsA, creditsB
 }
 
 // netPayableTax returns the payable tax after using the given credits. It also
@@ -190,45 +190,35 @@ func (c *Calculator) netPayableTax(taxAmount float64, credits []core.TaxCredit) 
 	return taxAmount
 }
 
-// setCredits stores relevent credits from the given credits in this calculator.
-// Subsequent calls to other calculator functions may or may not be influenced
-// by these credits.
-func (c *Calculator) setCredits(credits []core.TaxCredit) {
+// isValidTaxCredit returns true if the given tax credit is valid for use and
+// that it references a financer set in this calculator
+func (c *Calculator) isValidTaxCredit(cr core.TaxCredit) bool {
 
-	c.crSpouseA = make([]core.TaxCredit, 0)
-	c.crSpouseB = make([]core.TaxCredit, 0)
-
-	for _, cr := range credits {
-
-		if cr == nil {
-			continue
-		}
-
-		if _, _, remaining := cr.Amounts(); remaining == 0 {
-			continue
-		}
-
-		if cr.Region() != c.taxRegion {
-			continue
-		}
-
-		if cr.Year() > c.taxYear {
-			continue
-		}
-
-		ref := cr.ReferenceFinancer()
-		if ref == nil {
-			continue
-		}
-
-		if ref == c.finances.SpouseA() {
-			c.crSpouseA = append(c.crSpouseA, cr)
-		} else if ref == c.finances.SpouseB() {
-			c.crSpouseB = append(c.crSpouseB, cr)
-		}
-
+	if cr == nil {
+		return false
 	}
 
+	if _, _, remaining := cr.Amounts(); remaining == 0 {
+		return false
+	}
+
+	if cr.Region() != c.taxRegion {
+		return false
+	}
+
+	if cr.Year() > c.taxYear {
+		return false
+	}
+
+	ref := cr.ReferenceFinancer()
+	if ref == nil {
+		return false
+	}
+	if ref != c.finances.SpouseA() && ref != c.finances.SpouseB() {
+		return false
+	}
+
+	return true
 }
 
 // makeTaxPayers returns dual tax payers from the given net income amounts and
