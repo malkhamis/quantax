@@ -4,33 +4,53 @@ import (
 	"fmt"
 
 	"github.com/malkhamis/quantax/core"
-	"github.com/malkhamis/quantax/core/finance"
 	"github.com/malkhamis/quantax/core/human"
 )
 
 func ExampleNewTaxFactory() {
 
-	f := NewTaxFactory(2018, core.RegionCA, core.RegionBC)
-	calculator, err := f.NewCalculator()
+	initAmounts := map[core.FinancialSource]float64{
+		core.IncSrcEarned:        170000.0,
+		core.IncSrcCapitalGainCA: 10000,
+		core.IncSrcTFSA:          12000,
+		core.DeducSrcRRSP:        10000,
+	}
+	myFinances := NewFinanceFactory().NewHouseholdFinancesForSingle(initAmounts)
+
+	taxCalcFactory := NewTaxFactory(2018, core.RegionCA, core.RegionBC)
+	calculator, err := taxCalcFactory.NewCalculator()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+	calculator.SetFinances(myFinances, nil)
 
-	myFinances := finance.NewIndividualFinances()
-	finances := finance.NewHouseholdFinances(myFinances, nil)
-	calculator.SetFinances(finances, nil)
-
-	myFinances.AddAmount(core.IncSrcEarned, 170000.0)
-	myFinances.AddAmount(core.IncSrcCapitalGainCA, 20000)
-	myFinances.AddAmount(core.IncSrcTFSA, 12000)
-	myFinances.AddAmount(core.DeducSrcRRSP, 10000)
-
+	// we can mutate finances later without the need to set finances again
+	myFinances.MutableSpouseA().AddAmount(core.IncSrcCapitalGainCA, 10000)
 	aggTax, _, _ := calculator.TaxPayable()
 	fmt.Printf("%.2f\n", aggTax) // Output: 52821.09
 }
 
 func ExampleNewChildBenefitFactory() {
+
+	children := []*human.Person{
+		&human.Person{Name: "A", AgeMonths: 3},
+		&human.Person{Name: "B", AgeMonths: 3},
+	}
+
+	initAmountsA := map[core.FinancialSource]float64{
+		core.IncSrcEarned:        109500.0,
+		core.IncSrcCapitalGainCA: 1000,
+	}
+
+	initAmountsB := map[core.FinancialSource]float64{
+		core.IncSrcEarned: 14750,
+		core.IncSrcTFSA:   32000,
+		core.DeducSrcRRSP: 15000,
+	}
+
+	finFactory := NewFinanceFactory()
+	finances := finFactory.NewHouseholdFinancesForCouple(initAmountsA, initAmountsB)
 
 	f := NewChildBenefitFactory(2018, core.RegionCA, core.RegionBC)
 	calculator, err := f.NewCalculator()
@@ -38,26 +58,11 @@ func ExampleNewChildBenefitFactory() {
 		fmt.Println(err)
 		return
 	}
-
-	children := []*human.Person{
-		&human.Person{Name: "A", AgeMonths: 3},
-		&human.Person{Name: "B", AgeMonths: 3},
-	}
 	calculator.SetBeneficiaries(children)
-
-	f1 := finance.NewIndividualFinances()
-	f2 := finance.NewIndividualFinances()
-
-	f1.AddAmount(core.IncSrcEarned, 109500.0)
-	f1.AddAmount(core.IncSrcCapitalGainCA, 1000)
-
-	f2.AddAmount(core.IncSrcEarned, 14750)
-	f2.AddAmount(core.IncSrcTFSA, 32000)
-	f1.AddAmount(core.IncSrcCapitalGainCA, 500)
-	f2.AddAmount(core.DeducSrcRRSP, 15000)
-
-	finances := finance.NewHouseholdFinances(f1, f2)
 	calculator.SetFinances(finances)
+
+	// we can mutate finances later without the need to set finances again
+	finances.MutableSpouseA().AddAmount(core.IncSrcCapitalGainCA, 500)
 	total := calculator.BenefitRecievable()
 
 	fmt.Printf("%.2f", total) // Output: 6742.54
@@ -78,12 +83,25 @@ func ExampleNewRRSPFactory() {
 		return
 	}
 
-	myFinances := finance.NewIndividualFinances()
-	hf := finance.NewHouseholdFinances(myFinances, nil)
-	myFinances.AddAmount(core.IncSrcEarned, 100000.0)
+	initAmountsA := map[core.FinancialSource]float64{
+		core.IncSrcEarned: 100000.0,
+	}
+	initAmountsB := map[core.FinancialSource]float64{
+		core.IncSrcEarned: 50000.0,
+	}
 
-	calculator.SetFinances(hf, nil)
+	ff := NewFinanceFactory()
+	myFinances := ff.NewHouseholdFinancesForCouple(initAmountsA, initAmountsB)
+
+	calculator.SetFinances(myFinances, nil)
 	taxRecievable, _ := calculator.TaxRefund(15000.0)
+	fmt.Printf("%.2f\n", taxRecievable)
 
-	fmt.Printf("%.2f", taxRecievable) // Output: 5182.74
+	calculator.SetTargetSpouseB()
+	taxRecievable, _ = calculator.TaxRefund(15000.0)
+	fmt.Printf("%.2f\n", taxRecievable)
+
+	// Output:
+	// 5182.74
+	// 3468.28
 }
