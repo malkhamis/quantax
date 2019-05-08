@@ -185,15 +185,17 @@ func (thf *testHouseholdFinances) Clone() core.HouseholdFinanceMutator {
 }
 
 type testFinancer struct {
-	onTotalAmount      float64
-	onIncomeSources    []core.FinancialSource
-	onDeductionSources []core.FinancialSource
-	onMiscSources      []core.FinancialSource
-	onAllSources       []core.FinancialSource
-	onClone            core.FinanceMutator
+	onTotalAmount            float64
+	onTotalAmountCapturedArg []core.FinancialSource
+	onIncomeSources          []core.FinancialSource
+	onDeductionSources       []core.FinancialSource
+	onMiscSources            []core.FinancialSource
+	onAllSources             []core.FinancialSource
+	onClone                  core.FinanceMutator
 }
 
 func (tf *testFinancer) TotalAmount(sources ...core.FinancialSource) float64 {
+	tf.onTotalAmountCapturedArg = sources
 	return tf.onTotalAmount
 }
 func (tf *testFinancer) IncomeSources() []core.FinancialSource {
