@@ -10,6 +10,17 @@ import (
 	"github.com/malkhamis/quantax/core/tax"
 )
 
+var (
+	crDescPersonalAmount = tax.CreditDescriptor{
+		CreditDescription:     "the basic personal amount",
+		TargetFinancialSource: core.SrcNone,
+		CreditRule: core.CreditRule{
+			CrSource: crSrcPersonalAmount,
+			Type:     core.CrRuleTypeNotCarryForward,
+		},
+	}
+)
+
 const (
 	crSrcPersonalAmount = "basic-personal-amount"
 )
@@ -81,13 +92,8 @@ var taxFormulaCanada2018 = &tax.CanadianFormula{
 var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
 		tax.ConstCreditor{
-			Amount:                0.150 * 12069,
-			CreditDescription:     crSrcPersonalAmount,
-			TargetFinancialSource: core.SrcNone,
-			CreditRule: core.CreditRule{
-				CrSource: crSrcPersonalAmount,
-				Type:     core.CrRuleTypeNotCarryForward,
-			},
+			Amount:           0.150 * 12069,
+			CreditDescriptor: crDescPersonalAmount,
 		},
 	},
 	TaxYear:   2019,
@@ -97,13 +103,8 @@ var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
 var taxContraFormulaCanada2018 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
 		tax.ConstCreditor{
-			Amount:                0.150 * 11809,
-			CreditDescription:     crSrcPersonalAmount,
-			TargetFinancialSource: core.SrcNone,
-			CreditRule: core.CreditRule{
-				CrSource: crSrcPersonalAmount,
-				Type:     core.CrRuleTypeNotCarryForward,
-			},
+			Amount:           0.150 * 11809,
+			CreditDescriptor: crDescPersonalAmount,
 		},
 	},
 	TaxYear:   2018,

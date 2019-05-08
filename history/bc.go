@@ -58,13 +58,8 @@ var taxFormulaBC2018 = &tax.CanadianFormula{
 var taxContraFormulaBC2019 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
 		tax.ConstCreditor{
-			Amount:                0.0506 * 10682,
-			CreditDescription:     crSrcPersonalAmount,
-			TargetFinancialSource: core.SrcNone,
-			CreditRule: core.CreditRule{
-				CrSource: crSrcPersonalAmount,
-				Type:     core.CrRuleTypeNotCarryForward,
-			},
+			Amount:           0.0506 * 10682,
+			CreditDescriptor: crDescPersonalAmount,
 		},
 	},
 	TaxYear:   2019,
@@ -74,13 +69,8 @@ var taxContraFormulaBC2019 = &tax.CanadianContraFormula{
 var taxContraFormulaBC2018 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
 		tax.ConstCreditor{
-			Amount:                0.0506 * 10412,
-			CreditDescription:     crSrcPersonalAmount,
-			TargetFinancialSource: core.SrcNone,
-			CreditRule: core.CreditRule{
-				CrSource: crSrcPersonalAmount,
-				Type:     core.CrRuleTypeNotCarryForward,
-			},
+			Amount:           0.0506 * 10412,
+			CreditDescriptor: crDescPersonalAmount,
 		},
 	},
 	TaxYear:   2018,
