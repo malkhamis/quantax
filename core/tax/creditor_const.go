@@ -2,8 +2,8 @@ package tax
 
 import "github.com/malkhamis/quantax/core"
 
-// CreditorConst is a Creditor that returns a constant amount
-type CreditorConst struct {
+// ConstCreditor is a Creditor that returns a constant amount
+type ConstCreditor struct {
 	// the amount to return when TaxCredit is called
 	Amount float64
 	// the credit rule to return when Rule is called
@@ -15,31 +15,31 @@ type CreditorConst struct {
 }
 
 // TaxCredit returns the Amount set in this creditor
-func (cc CreditorConst) TaxCredit(_ *TaxPayer) float64 {
+func (cc ConstCreditor) TaxCredit(_ *TaxPayer) float64 {
 	return cc.Amount
 }
 
 // Rule returns the credit rule set in this creditor
-func (cc CreditorConst) Rule() core.CreditRule {
+func (cc ConstCreditor) Rule() core.CreditRule {
 	return cc.CreditRule
 }
 
 // FinancialSource returns the financial source set in this creditor
-func (cc CreditorConst) FinancialSource() core.FinancialSource {
+func (cc ConstCreditor) FinancialSource() core.FinancialSource {
 	return cc.TargetFinancialSource
 }
 
 // Description returns a description of the tax credit
-func (cc CreditorConst) Description() string {
+func (cc ConstCreditor) Description() string {
 	return cc.CreditDescription
 }
 
 // Clone returns a deep copy of this creditor
-func (cc CreditorConst) Clone() Creditor {
+func (cc ConstCreditor) Clone() Creditor {
 	return cc.clone()
 }
 
 // clone returns a copy of this creditor
-func (cc CreditorConst) clone() CreditorConst {
+func (cc ConstCreditor) clone() ConstCreditor {
 	return cc
 }

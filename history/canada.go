@@ -80,7 +80,7 @@ var taxFormulaCanada2018 = &tax.CanadianFormula{
 
 var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
-		tax.CreditorConst{
+		tax.ConstCreditor{
 			Amount:                0.150 * 12069,
 			CreditDescription:     crSrcPersonalAmount,
 			TargetFinancialSource: core.SrcNone,
@@ -96,7 +96,7 @@ var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
 
 var taxContraFormulaCanada2018 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
-		tax.CreditorConst{
+		tax.ConstCreditor{
 			Amount:                0.150 * 11809,
 			CreditDescription:     crSrcPersonalAmount,
 			TargetFinancialSource: core.SrcNone,
