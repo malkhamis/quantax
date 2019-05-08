@@ -30,7 +30,7 @@ func TestFinanceFactory_NewFinances(t *testing.T) {
 	}
 }
 
-func TestFinanceFactory_NewHouseholFinancesForCouple(t *testing.T) {
+func TestFinanceFactory_NewHouseholdFinancesForCouple(t *testing.T) {
 
 	amountsA := map[core.FinancialSource]float64{
 		core.IncSrcEarned: 10000.0,
@@ -39,7 +39,7 @@ func TestFinanceFactory_NewHouseholFinancesForCouple(t *testing.T) {
 		core.IncSrcEarned: 20000.0,
 	}
 
-	finances := (&FinanceFactory{}).NewHouseholFinancesForCouple(amountsA, amountsB)
+	finances := (&FinanceFactory{}).NewHouseholdFinancesForCouple(amountsA, amountsB)
 
 	actualA := finances.SpouseA().TotalAmount(core.IncSrcEarned)
 	expectedA := 10000.0

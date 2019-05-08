@@ -26,7 +26,7 @@ func (f *FinanceFactory) NewFinances(amounts map[core.FinancialSource]float64) c
 // NewHouseholFinancesForCouple returns a household finances instance. References
 // for the finances of both spouses are initialized with the given amounts and
 // are never nil
-func (f *FinanceFactory) NewHouseholFinancesForCouple(amountsSpouseA, amountsSpouseB map[core.FinancialSource]float64) core.HouseholdFinanceMutator {
+func (f *FinanceFactory) NewHouseholdFinancesForCouple(amountsSpouseA, amountsSpouseB map[core.FinancialSource]float64) core.HouseholdFinanceMutator {
 
 	financesA := finance.NewIndividualFinances()
 	for src, amount := range amountsSpouseA {
