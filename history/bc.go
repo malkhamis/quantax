@@ -57,10 +57,8 @@ var taxFormulaBC2018 = &tax.CanadianFormula{
 
 var taxContraFormulaBC2019 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
-		tax.ConstCreditor{
-			Amount:           0.0506 * 10682,
-			CreditDescriptor: crDescPersonalAmount,
-		},
+		tax.ConstCreditor{Amount: 0.0506 * 10682, CreditDescriptor: crDescPersonalAmount},
+		tax.WeightedCreditor{Weight: 0.0506, CreditDescriptor: crDescTuitionAmount},
 	},
 	TaxYear:   2019,
 	TaxRegion: core.RegionBC,
@@ -68,10 +66,8 @@ var taxContraFormulaBC2019 = &tax.CanadianContraFormula{
 
 var taxContraFormulaBC2018 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
-		tax.ConstCreditor{
-			Amount:           0.0506 * 10412,
-			CreditDescriptor: crDescPersonalAmount,
-		},
+		tax.ConstCreditor{Amount: 0.0506 * 10412, CreditDescriptor: crDescPersonalAmount},
+		tax.WeightedCreditor{Weight: 0.0506, CreditDescriptor: crDescTuitionAmount},
 	},
 	TaxYear:   2018,
 	TaxRegion: core.RegionBC,

@@ -15,14 +15,19 @@ var (
 		CreditDescription:     "the basic personal amount",
 		TargetFinancialSource: core.SrcNone,
 		CreditRule: core.CreditRule{
-			CrSource: crSrcPersonalAmount,
+			CrSource: "personal-amount",
 			Type:     core.CrRuleTypeNotCarryForward,
 		},
 	}
-)
 
-const (
-	crSrcPersonalAmount = "basic-personal-amount"
+	crDescTuitionAmount = tax.CreditDescriptor{
+		CreditDescription:     "credits for paid university tuition fees",
+		TargetFinancialSource: core.MiscSrcTuition,
+		CreditRule: core.CreditRule{
+			CrSource: "tuition-amount",
+			Type:     core.CrRuleTypeCanCarryForward,
+		},
+	}
 )
 
 var (
@@ -91,10 +96,8 @@ var taxFormulaCanada2018 = &tax.CanadianFormula{
 
 var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
-		tax.ConstCreditor{
-			Amount:           0.150 * 12069,
-			CreditDescriptor: crDescPersonalAmount,
-		},
+		tax.ConstCreditor{Amount: 0.150 * 12069, CreditDescriptor: crDescPersonalAmount},
+		tax.WeightedCreditor{Weight: 0.150, CreditDescriptor: crDescTuitionAmount},
 	},
 	TaxYear:   2019,
 	TaxRegion: core.RegionCA,
@@ -102,10 +105,8 @@ var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
 
 var taxContraFormulaCanada2018 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
-		tax.ConstCreditor{
-			Amount:           0.150 * 11809,
-			CreditDescriptor: crDescPersonalAmount,
-		},
+		tax.ConstCreditor{Amount: 0.150 * 11809, CreditDescriptor: crDescPersonalAmount},
+		tax.WeightedCreditor{Weight: 0.150, CreditDescriptor: crDescTuitionAmount},
 	},
 	TaxYear:   2018,
 	TaxRegion: core.RegionCA,
