@@ -17,3 +17,29 @@ type Creditor interface {
 	// Clone returns a copy of this creditor
 	Clone() Creditor
 }
+
+// CreditDescriptor is a convenience type used by the types that implement the
+// Creditor interface
+type CreditDescriptor struct {
+	// the credit rule to return when Rule is called
+	CreditRule core.CreditRule
+	// the target financial source to return when FinancialSource is called
+	TargetFinancialSource core.FinancialSource
+	// a short description of the tax credit
+	CreditDescription string
+}
+
+// Rule returns the credit rule set in this credit descriptor
+func (cd CreditDescriptor) Rule() core.CreditRule {
+	return cd.CreditRule
+}
+
+// FinancialSource returns the financial source set in this credit descriptor
+func (cd CreditDescriptor) FinancialSource() core.FinancialSource {
+	return cd.TargetFinancialSource
+}
+
+// Description returns a description set in this credit descriptor
+func (cd CreditDescriptor) Description() string {
+	return cd.CreditDescription
+}

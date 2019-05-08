@@ -22,7 +22,7 @@ func TestConstCreditor_Rule(t *testing.T) {
 		CrSource: t.Name(),
 		Type:     1,
 	}
-	cc := &ConstCreditor{CreditRule: rule}
+	cc := &ConstCreditor{CreditDescriptor: CreditDescriptor{CreditRule: rule}}
 	if actual := cc.Rule(); actual != rule {
 		t.Errorf("unexpected tax rule\nwant: %v\n got: %v", rule, actual)
 	}
@@ -30,7 +30,7 @@ func TestConstCreditor_Rule(t *testing.T) {
 
 func TestConstCreditor_FinancialSource(t *testing.T) {
 
-	cc := &ConstCreditor{TargetFinancialSource: 1}
+	cc := &ConstCreditor{CreditDescriptor: CreditDescriptor{TargetFinancialSource: 1}}
 	if actual := cc.FinancialSource(); actual != 1 {
 		t.Errorf("unexpected financial source\nwant: %d\n got: %d", 1, actual)
 	}
@@ -38,7 +38,7 @@ func TestConstCreditor_FinancialSource(t *testing.T) {
 
 func TestConstCreditor_Description(t *testing.T) {
 
-	cc := &ConstCreditor{CreditDescription: t.Name()}
+	cc := &ConstCreditor{CreditDescriptor: CreditDescriptor{CreditDescription: t.Name()}}
 	if actual := cc.Description(); actual != t.Name() {
 		t.Errorf("unexpected description\nwant: %q\n got: %q", t.Name(), actual)
 	}
@@ -47,10 +47,12 @@ func TestConstCreditor_Description(t *testing.T) {
 func TestConstCreditor_clone(t *testing.T) {
 
 	original := ConstCreditor{
-		Amount:                1000,
-		CreditDescription:     t.Name(),
-		TargetFinancialSource: 2,
-		CreditRule:            core.CreditRule{CrSource: "test", Type: 3},
+		Amount: 1000,
+		CreditDescriptor: CreditDescriptor{
+			CreditDescription:     t.Name(),
+			TargetFinancialSource: 2,
+			CreditRule:            core.CreditRule{CrSource: "test", Type: 3},
+		},
 	}
 
 	cloneInternal := original.clone()

@@ -1,37 +1,15 @@
 package tax
 
-import "github.com/malkhamis/quantax/core"
-
 // ConstCreditor is a Creditor that returns a constant amount
 type ConstCreditor struct {
 	// the amount to return when TaxCredit is called
 	Amount float64
-	// the credit rule to return when Rule is called
-	CreditRule core.CreditRule
-	// the target financial source to return when FinancialSource is called
-	TargetFinancialSource core.FinancialSource
-	// a short description of the tax credit
-	CreditDescription string
+	CreditDescriptor
 }
 
 // TaxCredit returns the Amount set in this creditor
 func (cc ConstCreditor) TaxCredit(_ *TaxPayer) float64 {
 	return cc.Amount
-}
-
-// Rule returns the credit rule set in this creditor
-func (cc ConstCreditor) Rule() core.CreditRule {
-	return cc.CreditRule
-}
-
-// FinancialSource returns the financial source set in this creditor
-func (cc ConstCreditor) FinancialSource() core.FinancialSource {
-	return cc.TargetFinancialSource
-}
-
-// Description returns a description of the tax credit
-func (cc ConstCreditor) Description() string {
-	return cc.CreditDescription
 }
 
 // Clone returns a deep copy of this creditor
