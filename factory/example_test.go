@@ -34,7 +34,7 @@ func ExampleNewTaxFactory() {
 func ExampleNewChildBenefitFactory() {
 
 	children := []*human.Person{
-		&human.Person{Name: "A", AgeMonths: 0},
+		&human.Person{Name: "A", AgeMonths: 3},
 		&human.Person{Name: "B", AgeMonths: 3},
 	}
 
