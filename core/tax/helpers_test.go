@@ -12,6 +12,7 @@ var (
 	_ Creditor               = (*testCreditor)(nil)
 	_ core.IncomeCalculator  = (*testIncomeCalculator)(nil)
 	_ core.HouseholdFinances = (*testHouseholdFinances)(nil)
+	_ core.Financer          = (*testFinancer)(nil)
 	_ core.TaxCredit         = (*testTaxCredit)(nil)
 )
 
@@ -181,4 +182,34 @@ func (thf *testHouseholdFinances) MutableSpouseB() core.FinanceMutator {
 }
 func (thf *testHouseholdFinances) Clone() core.HouseholdFinanceMutator {
 	return thf
+}
+
+type testFinancer struct {
+	onTotalAmount            float64
+	onTotalAmountCapturedArg []core.FinancialSource
+	onIncomeSources          []core.FinancialSource
+	onDeductionSources       []core.FinancialSource
+	onMiscSources            []core.FinancialSource
+	onAllSources             []core.FinancialSource
+	onClone                  core.FinanceMutator
+}
+
+func (tf *testFinancer) TotalAmount(sources ...core.FinancialSource) float64 {
+	tf.onTotalAmountCapturedArg = sources
+	return tf.onTotalAmount
+}
+func (tf *testFinancer) IncomeSources() []core.FinancialSource {
+	return tf.onIncomeSources
+}
+func (tf *testFinancer) DeductionSources() []core.FinancialSource {
+	return tf.onDeductionSources
+}
+func (tf *testFinancer) MiscSources() []core.FinancialSource {
+	return tf.onMiscSources
+}
+func (tf *testFinancer) AllSources() []core.FinancialSource {
+	return tf.onAllSources
+}
+func (tf *testFinancer) Clone() core.FinanceMutator {
+	return tf.onClone
 }
