@@ -28,6 +28,24 @@ var (
 			Type:     core.CrRuleTypeCanCarryForward,
 		},
 	}
+
+	crDescCanadianEligibleDividends = tax.CreditDescriptor{
+		CreditDescription:     "credits for recieving Canadian-sourced eligible dividends",
+		TargetFinancialSource: core.IncSrcEligibleDividendsCA,
+		CreditRule: core.CreditRule{
+			CrSource: "canadian-eligible-dividends",
+			Type:     core.CrRuleTypeNotCarryForward,
+		},
+	}
+
+	crDescCanadianNonEligibleDividends = tax.CreditDescriptor{
+		CreditDescription:     "credits for recieving Canadian-sourced non-eligible dividends",
+		TargetFinancialSource: core.IncSrcNonEligibleDividendsCA,
+		CreditRule: core.CreditRule{
+			CrSource: "canadian-non-eligible-dividends",
+			Type:     core.CrRuleTypeNotCarryForward,
+		},
+	}
 )
 
 var (
@@ -35,17 +53,17 @@ var (
 		2019: TaxParams{
 			Formula:       taxFormulaCanada2019,
 			ContraFormula: taxContraFormulaCanada2019,
-			IncomeRecipe:  incomeRecipeNet,
+			IncomeRecipe:  incomeRecipeNetCA2019,
 		},
 		2018: TaxParams{
 			Formula:       taxFormulaCanada2018,
 			ContraFormula: taxContraFormulaCanada2018,
-			IncomeRecipe:  incomeRecipeNet,
+			IncomeRecipe:  incomeRecipeNetCA2018,
 		},
 	}
 
 	cbParamsCanada = yearlyCBParams{
-		2018: CBParams{cbFormulaCanada2018, incomeRecipeAFNI},
+		2018: CBParams{cbFormulaCanada2018, incomeRecipeAFNICA2018},
 	}
 
 	rrspParamsCanada = yearlyRRSPParams{
@@ -53,22 +71,6 @@ var (
 		2018: RRSPParams{rrspFormulaCanada2018},
 	}
 )
-
-var rrspFormulaCanada2019 = &rrsp.MaxCapper{
-	Rate:                           0.18,
-	Cap:                            26500,
-	IncomeSources:                  []core.FinancialSource{core.IncSrcEarned},
-	IncomeSourceForWithdrawal:      core.IncSrcRRSP,
-	DeductionSourceForContribution: core.DeducSrcRRSP,
-}
-
-var rrspFormulaCanada2018 = &rrsp.MaxCapper{
-	Rate:                           0.18,
-	Cap:                            26230.00,
-	IncomeSources:                  []core.FinancialSource{core.IncSrcEarned},
-	IncomeSourceForWithdrawal:      core.IncSrcRRSP,
-	DeductionSourceForContribution: core.DeducSrcRRSP,
-}
 
 var taxFormulaCanada2019 = &tax.CanadianFormula{
 	WeightedBrackets: core.WeightedBrackets{
@@ -80,6 +82,17 @@ var taxFormulaCanada2019 = &tax.CanadianFormula{
 	},
 	TaxRegion: core.RegionCA,
 	TaxYear:   2019,
+}
+
+var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
+	OrderedCreditors: []tax.Creditor{
+		tax.ConstCreditor{Amount: 0.150 * 12069, CreditDescriptor: crDescPersonalAmount},
+		tax.WeightedCreditor{Weight: 0.150, CreditDescriptor: crDescTuitionAmount},
+		tax.WeightedCreditor{Weight: 1.38 * 0.150198, CreditDescriptor: crDescCanadianEligibleDividends},
+		tax.WeightedCreditor{Weight: 1.15 * 0.090301, CreditDescriptor: crDescCanadianNonEligibleDividends},
+	},
+	TaxYear:   2019,
+	TaxRegion: core.RegionCA,
 }
 
 var taxFormulaCanada2018 = &tax.CanadianFormula{
@@ -94,19 +107,12 @@ var taxFormulaCanada2018 = &tax.CanadianFormula{
 	TaxYear:   2018,
 }
 
-var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
-	OrderedCreditors: []tax.Creditor{
-		tax.ConstCreditor{Amount: 0.150 * 12069, CreditDescriptor: crDescPersonalAmount},
-		tax.WeightedCreditor{Weight: 0.150, CreditDescriptor: crDescTuitionAmount},
-	},
-	TaxYear:   2019,
-	TaxRegion: core.RegionCA,
-}
-
 var taxContraFormulaCanada2018 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
 		tax.ConstCreditor{Amount: 0.150 * 11809, CreditDescriptor: crDescPersonalAmount},
 		tax.WeightedCreditor{Weight: 0.150, CreditDescriptor: crDescTuitionAmount},
+		tax.WeightedCreditor{Weight: 1.38 * 0.150198, CreditDescriptor: crDescCanadianEligibleDividends},
+		tax.WeightedCreditor{Weight: 1.16 * 0.100313, CreditDescriptor: crDescCanadianNonEligibleDividends},
 	},
 	TaxYear:   2018,
 	TaxRegion: core.RegionCA,
@@ -141,4 +147,20 @@ var cbFormulaCanada2018 = &benefits.CCBMaxReducer{
 			0.095: core.Bracket{65976, math.Inf(1)},
 		},
 	},
+}
+
+var rrspFormulaCanada2019 = &rrsp.MaxCapper{
+	Rate:                           0.18,
+	Cap:                            26500,
+	IncomeSources:                  []core.FinancialSource{core.IncSrcEarned},
+	IncomeSourceForWithdrawal:      core.IncSrcRRSP,
+	DeductionSourceForContribution: core.DeducSrcRRSP,
+}
+
+var rrspFormulaCanada2018 = &rrsp.MaxCapper{
+	Rate:                           0.18,
+	Cap:                            26230.00,
+	IncomeSources:                  []core.FinancialSource{core.IncSrcEarned},
+	IncomeSourceForWithdrawal:      core.IncSrcRRSP,
+	DeductionSourceForContribution: core.DeducSrcRRSP,
 }
