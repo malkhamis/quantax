@@ -20,15 +20,15 @@ const (
 	IncomeSourcesEnd
 
 	DeductionSourcesBegin
-	DeducSrcRRSP    // contribution to RRSP
-	DeducSrcMedical // medical deductions
-	DeducSrcOthers  // other deduction
+	DeducSrcChildCareExpense // child-care expenses (TODO: adjuster)
+	DeducSrcRRSP             // contribution to RRSP
+	DeducSrcOthers           // other deduction
 	DeductionSourcesEnd
 
 	MiscSourcesBegin
-	MiscSrcMedical // medical expenses
+	MiscSrcMedical // medical expenses (TODO: creditor)
 	MiscSrcTuition // tuition expenses
-	MiscSrcOthers  // other amounts
+	MiscSrcOthers  // other amounts (unaccounted for)
 	MiscSourcesEnd
 )
 
