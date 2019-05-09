@@ -44,6 +44,7 @@ var taxFormulaBC2019 = &tax.CanadianFormula{
 var taxContraFormulaBC2019 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
 		tax.ConstCreditor{Amount: 0.0506 * 10682, CreditDescriptor: crDescPersonalAmount},
+		tax.CanadianSpouseCreditor{BaseAmount: 9147, Weight: 0.0506, CreditDescriptor: crDescCanadianSpouse},
 		tax.WeightedCreditor{Weight: 0.0506, CreditDescriptor: crDescTuitionAmount},
 		tax.WeightedCreditor{Weight: 1.38 * 0.12, CreditDescriptor: crDescCanadianEligibleDividends},
 		tax.WeightedCreditor{Weight: 1.15 * 0.0196, CreditDescriptor: crDescCanadianNonEligibleDividends},
@@ -68,6 +69,7 @@ var taxFormulaBC2018 = &tax.CanadianFormula{
 var taxContraFormulaBC2018 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
 		tax.ConstCreditor{Amount: 0.0506 * 10412, CreditDescriptor: crDescPersonalAmount},
+		tax.CanadianSpouseCreditor{BaseAmount: 8915, Weight: 0.0506, CreditDescriptor: crDescCanadianSpouse},
 		tax.WeightedCreditor{Weight: 0.0506, CreditDescriptor: crDescTuitionAmount},
 		tax.WeightedCreditor{Weight: 1.38 * 0.10, CreditDescriptor: crDescCanadianEligibleDividends},
 		tax.WeightedCreditor{Weight: 1.16 * 0.0207, CreditDescriptor: crDescCanadianNonEligibleDividends},

@@ -46,6 +46,15 @@ var (
 			Type:     core.CrRuleTypeNotCarryForward,
 		},
 	}
+
+	crDescCanadianSpouse = tax.CreditDescriptor{
+		CreditDescription:     "credits for having a Canadian spouse",
+		TargetFinancialSource: core.SrcNone,
+		CreditRule: core.CreditRule{
+			CrSource: "canadian-spouse-credit",
+			Type:     core.CrRuleTypeNotCarryForward,
+		},
+	}
 )
 
 var (
@@ -87,6 +96,7 @@ var taxFormulaCanada2019 = &tax.CanadianFormula{
 var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
 		tax.ConstCreditor{Amount: 0.150 * 12069, CreditDescriptor: crDescPersonalAmount},
+		tax.CanadianSpouseCreditor{BaseAmount: 12069, Weight: 0.150, CreditDescriptor: crDescCanadianSpouse},
 		tax.WeightedCreditor{Weight: 0.150, CreditDescriptor: crDescTuitionAmount},
 		tax.WeightedCreditor{Weight: 1.38 * 0.150198, CreditDescriptor: crDescCanadianEligibleDividends},
 		tax.WeightedCreditor{Weight: 1.15 * 0.090301, CreditDescriptor: crDescCanadianNonEligibleDividends},
@@ -110,6 +120,7 @@ var taxFormulaCanada2018 = &tax.CanadianFormula{
 var taxContraFormulaCanada2018 = &tax.CanadianContraFormula{
 	OrderedCreditors: []tax.Creditor{
 		tax.ConstCreditor{Amount: 0.150 * 11809, CreditDescriptor: crDescPersonalAmount},
+		tax.CanadianSpouseCreditor{BaseAmount: 11809, Weight: 0.150, CreditDescriptor: crDescCanadianSpouse},
 		tax.WeightedCreditor{Weight: 0.150, CreditDescriptor: crDescTuitionAmount},
 		tax.WeightedCreditor{Weight: 1.38 * 0.150198, CreditDescriptor: crDescCanadianEligibleDividends},
 		tax.WeightedCreditor{Weight: 1.16 * 0.100313, CreditDescriptor: crDescCanadianNonEligibleDividends},
