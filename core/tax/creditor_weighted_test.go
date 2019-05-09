@@ -20,7 +20,7 @@ func TestWeightedCreditor_TaxAmount(t *testing.T) {
 
 	actual, expected := creditor.TaxCredit(taxPayer), 0.15*1000
 	if actual != expected {
-		t.Errorf("expected result\nwant: %.2f\n got: %.2f", expected, actual)
+		t.Errorf("unexpected result\nwant: %.2f\n got: %.2f", expected, actual)
 	}
 
 	if finances.onTotalAmountCapturedArg[0] != core.MiscSrcTuition {
