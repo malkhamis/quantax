@@ -11,6 +11,11 @@ import (
 
 var (
 	taxParamsBC = yearlyTaxParams{
+		2022: TaxParams{
+			Formula:       taxFormulaBC2022,
+			ContraFormula: taxContraFormulaBC2022,
+			IncomeRecipe:  incomeRecipeNetCA2022,
+		},
 		2019: TaxParams{
 			Formula:       taxFormulaBC2019,
 			ContraFormula: taxContraFormulaBC2019,
@@ -27,6 +32,29 @@ var (
 		2018: CBParams{cbFormulaBC2018, incomeRecipeAFNICA2018},
 	}
 )
+
+var taxFormulaBC2022 = &tax.CanadianFormula{
+	WeightedBrackets: core.WeightedBrackets{
+		0.0506: core.Bracket{0, 43070},
+		0.0770: core.Bracket{43070, 86141},
+		0.1050: core.Bracket{86141, 98901},
+		0.1229: core.Bracket{98901, 120094},
+		0.1470: core.Bracket{120094, 162832},
+		0.1680: core.Bracket{162832, 227091},
+		0.2050: core.Bracket{227091, math.Inf(1)},
+	},
+	TaxRegion: core.RegionBC,
+	TaxYear:   2022,
+}
+
+var taxContraFormulaBC2022 = &tax.CanadianContraFormula{
+	OrderedCreditors: []tax.Creditor{
+		tax.ConstCreditor{Amount: 0.0506 * 11302, CreditDescriptor: crDescPersonalAmount},
+		tax.CanadianSpouseCreditor{BaseAmount: 11302, Weight: 0.0506, CreditDescriptor: crDescCanadianSpouse},
+	},
+	TaxYear:   2022,
+	TaxRegion: core.RegionBC,
+}
 
 var taxFormulaBC2019 = &tax.CanadianFormula{
 	WeightedBrackets: core.WeightedBrackets{

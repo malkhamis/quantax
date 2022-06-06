@@ -59,6 +59,11 @@ var (
 
 var (
 	taxParamsCanada = yearlyTaxParams{
+		2022: TaxParams{
+			Formula:       taxFormulaCanada2022,
+			ContraFormula: taxContraFormulaCanada2022,
+			IncomeRecipe:  incomeRecipeNetCA2022,
+		},
 		2019: TaxParams{
 			Formula:       taxFormulaCanada2019,
 			ContraFormula: taxContraFormulaCanada2019,
@@ -80,6 +85,30 @@ var (
 		2018: RRSPParams{rrspFormulaCanada2018},
 	}
 )
+
+/* 2022 */
+
+var taxFormulaCanada2022 = &tax.CanadianFormula{
+	WeightedBrackets: core.WeightedBrackets{
+		0.1500: core.Bracket{0, 50197},
+		0.2050: core.Bracket{50197, 100392},
+		0.2600: core.Bracket{100392, 155625},
+		0.2938: core.Bracket{155625, 221708},
+		0.3300: core.Bracket{221708, math.Inf(1)},
+	},
+	TaxRegion: core.RegionCA,
+	TaxYear:   2022,
+}
+
+var taxContraFormulaCanada2022 = &tax.CanadianContraFormula{
+	OrderedCreditors: []tax.Creditor{
+		tax.ConstCreditor{Amount: 0.150 * 14398, CreditDescriptor: crDescPersonalAmount},
+		tax.CanadianSpouseCreditor{BaseAmount: 14398, Weight: 0.150, CreditDescriptor: crDescCanadianSpouse},
+	},
+	TaxYear:   2022,
+	TaxRegion: core.RegionCA,
+}
+/* 2019 */
 
 var taxFormulaCanada2019 = &tax.CanadianFormula{
 	WeightedBrackets: core.WeightedBrackets{
@@ -104,6 +133,8 @@ var taxContraFormulaCanada2019 = &tax.CanadianContraFormula{
 	TaxYear:   2019,
 	TaxRegion: core.RegionCA,
 }
+
+/* 2018 */
 
 var taxFormulaCanada2018 = &tax.CanadianFormula{
 	WeightedBrackets: core.WeightedBrackets{

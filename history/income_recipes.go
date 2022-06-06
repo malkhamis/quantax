@@ -6,6 +6,13 @@ import (
 )
 
 var (
+	incomeRecipeNetCA2022 = &income.Recipe{
+		IncomeAdjusters: map[core.FinancialSource]income.Adjuster{
+			core.IncSrcCapitalGainCA:          income.WeightedAdjuster(0.5),
+			core.IncSrcTFSA:                   income.WeightedAdjuster(0.0),
+		},
+	}
+
 	incomeRecipeNetCA2019 = &income.Recipe{
 		IncomeAdjusters: map[core.FinancialSource]income.Adjuster{
 			core.IncSrcCapitalGainCA:          income.WeightedAdjuster(0.5),
